@@ -1,5 +1,5 @@
 {
-  "app_name": "RideFlow",
+  "app_name": "Nokta",
   "splash_loading": "Loading your ride experience...",
   "login_title": "Welcome Back",
   "login_subtitle": "Sign in to continue your journey",
@@ -42,7 +42,8 @@
   "notifications_title": "Notifications",
   "no_notifications": "No notifications yet",
   "mark_read": "Mark as read",
-  "error_generic": "Something went wrong",
+  "error_required": "Required",
+  "offline_banner": "You are offline",
   "retry": "Retry",
   "loading": "Loading...",
   "demo_user": "Demo User",

@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:delivery_app/core/widgets/nokta_bottom_nav_bar.dart';
 import 'package:delivery_app/features/auth/presentation/pages/login_page.dart';
 import 'package:delivery_app/features/home/presentation/pages/home_map_page.dart';
 import 'package:delivery_app/features/notifications/presentation/pages/notifications_page.dart';
@@ -53,28 +54,28 @@ class MainShellPage extends StatelessWidget {
         final tabsRouter = AutoTabsRouter.of(context);
         return Scaffold(
           body: child,
-          bottomNavigationBar: NavigationBar(
+          bottomNavigationBar: NoktaBottomNavBar(
             selectedIndex: tabsRouter.activeIndex,
             onDestinationSelected: tabsRouter.setActiveIndex,
             destinations: [
-              NavigationDestination(
-                icon: const Icon(Icons.map_outlined),
-                selectedIcon: const Icon(Icons.map),
+              NoktaNavDestination(
+                icon: Icons.home_outlined,
+                selectedIcon: Icons.home,
                 label: 'home_tab'.tr(),
               ),
-              NavigationDestination(
-                icon: const Icon(Icons.history),
-                selectedIcon: const Icon(Icons.history),
+              NoktaNavDestination(
+                icon: Icons.directions_car_outlined,
+                selectedIcon: Icons.directions_car,
                 label: 'trips_tab'.tr(),
               ),
-              NavigationDestination(
-                icon: const Icon(Icons.notifications_outlined),
-                selectedIcon: const Icon(Icons.notifications),
+              NoktaNavDestination(
+                icon: Icons.notifications_outlined,
+                selectedIcon: Icons.notifications,
                 label: 'notifications_tab'.tr(),
               ),
-              NavigationDestination(
-                icon: const Icon(Icons.person_outline),
-                selectedIcon: const Icon(Icons.person),
+              NoktaNavDestination(
+                icon: Icons.person_outline,
+                selectedIcon: Icons.person,
                 label: 'profile_tab'.tr(),
               ),
             ],

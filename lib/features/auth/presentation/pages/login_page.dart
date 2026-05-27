@@ -1,5 +1,8 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:delivery_app/core/widgets/app_logo.dart';
+import 'package:delivery_app/core/theme/nokta_colors.dart';
+import 'package:delivery_app/core/widgets/nokta_brand_icon.dart';
+import 'package:delivery_app/core/widgets/nokta_primary_button.dart';
+import 'package:delivery_app/core/widgets/nokta_text_field.dart';
 import 'package:delivery_app/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:delivery_app/injection_container.dart';
 import 'package:delivery_app/routes/app_router.dart';
@@ -29,6 +32,9 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return BlocProvider(
       create: (_) => sl<AuthBloc>(),
       child: BlocConsumer<AuthBloc, AuthState>(
@@ -44,94 +50,148 @@ class _LoginPageState extends State<LoginPage> {
         builder: (context, state) {
           final loading = state is AuthLoading;
           return Scaffold(
-            body: SafeArea(
-              child: Center(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(24),
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 420),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Hero(
-                            tag: 'app_logo',
-                            child: AppLogo(size: 80),
-                          ),
-                          const SizedBox(height: 24),
-                          Text(
-                            'login_title'.tr(),
-                            style: Theme.of(context).textTheme.headlineSmall,
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'login_subtitle'.tr(),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 32),
-                          TextFormField(
-                            controller: _emailController,
-                            decoration: InputDecoration(
-                              labelText: 'email'.tr(),
-                              prefixIcon: const Icon(Icons.email_outlined),
-                            ),
-                            keyboardType: TextInputType.emailAddress,
-                            validator: (v) =>
-                                v == null || v.isEmpty ? 'Required' : null,
-                          ),
-                          const SizedBox(height: 16),
-                          TextFormField(
-                            controller: _passwordController,
-                            decoration: InputDecoration(
-                              labelText: 'password'.tr(),
-                              prefixIcon: const Icon(Icons.lock_outline),
-                            ),
-                            obscureText: true,
-                            validator: (v) =>
-                                v == null || v.isEmpty ? 'Required' : null,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'login_hint'.tr(),
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                          const SizedBox(height: 24),
-                          FilledButton(
-                            onPressed: loading
-                                ? null
-                                : () {
-                                    if (_formKey.currentState!.validate()) {
-                                      context.read<AuthBloc>().add(
-                                            AuthLoginRequested(
-                                              email: _emailController.text,
-                                              password:
-                                                  _passwordController.text,
-                                            ),
-                                          );
-                                    }
-                                  },
-                            child: loading
-                                ? const SizedBox(
-                                    height: 20,
-                                    width: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                    ),
-                                  )
-                                : Text('login'.tr()),
-                          ),
-                        ],
+            backgroundColor: scheme.surface,
+            body: Stack(
+              children: [
+                Positioned.fill(
+                  child: IgnorePointer(
+                    child: CustomPaint(
+                      painter: _DotPatternPainter(
+                        color: scheme.primary.withValues(alpha: 0.03),
                       ),
                     ),
                   ),
                 ),
-              ),
+                SafeArea(
+                  child: Center(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(NoktaSpacing.md),
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 400),
+                        child: Container(
+                          padding: const EdgeInsets.all(NoktaSpacing.lg),
+                          decoration: BoxDecoration(
+                            color: scheme.surfaceContainerLowest,
+                            borderRadius:
+                                BorderRadius.circular(NoktaSpacing.radiusSheet),
+                            border: Border.all(
+                              color: scheme.outlineVariant.withValues(alpha: 0.3),
+                            ),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Color(0x0A000000),
+                                blurRadius: 24,
+                                offset: Offset(0, 8),
+                              ),
+                            ],
+                          ),
+                          child: Form(
+                            key: _formKey,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                Center(
+                                  child: Hero(
+                                    tag: 'app_logo',
+                                    child: NoktaBrandIcon(size: 64),
+                                  ),
+                                ),
+                                const SizedBox(height: NoktaSpacing.sm),
+                                Text(
+                                  'app_name'.tr(),
+                                  style: textTheme.headlineMedium,
+                                  textAlign: TextAlign.center,
+                                ),
+                                const SizedBox(height: NoktaSpacing.lg),
+                                Text(
+                                  'login_title'.tr(),
+                                  style: textTheme.titleLarge,
+                                  textAlign: TextAlign.center,
+                                ),
+                                const SizedBox(height: NoktaSpacing.xs),
+                                Text(
+                                  'login_subtitle'.tr(),
+                                  style: textTheme.bodyMedium,
+                                  textAlign: TextAlign.center,
+                                ),
+                                const SizedBox(height: NoktaSpacing.lg),
+                                NoktaTextField(
+                                  controller: _emailController,
+                                  hintText: 'demo@delivery.app',
+                                  prefixIcon: Icons.mail_outline,
+                                  keyboardType: TextInputType.emailAddress,
+                                  validator: (v) => v == null || v.isEmpty
+                                      ? 'error_required'.tr()
+                                      : null,
+                                ),
+                                const SizedBox(height: NoktaSpacing.md),
+                                NoktaTextField(
+                                  controller: _passwordController,
+                                  hintText: '••••••••',
+                                  prefixIcon: Icons.lock_outline,
+                                  obscureText: true,
+                                  validator: (v) => v == null || v.isEmpty
+                                      ? 'error_required'.tr()
+                                      : null,
+                                ),
+                                const SizedBox(height: NoktaSpacing.sm),
+                                Text(
+                                  'login_hint'.tr(),
+                                  style: textTheme.labelSmall?.copyWith(
+                                    color: scheme.outline,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                                const SizedBox(height: NoktaSpacing.lg),
+                                NoktaPrimaryButton(
+                                  label: 'login'.tr(),
+                                  loading: loading,
+                                  onPressed: () {
+                                    if (_formKey.currentState!.validate()) {
+                                      context.read<AuthBloc>().add(
+                                            AuthLoginRequested(
+                                              email: _emailController.text,
+                                              password: _passwordController.text,
+                                            ),
+                                          );
+                                    }
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           );
         },
       ),
     );
   }
+}
+
+class _DotPatternPainter extends CustomPainter {
+  _DotPatternPainter({required this.color});
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..color = color;
+    const spacing = 16.0;
+    const radius = 1.0;
+
+    for (var x = 0.0; x < size.width; x += spacing) {
+      for (var y = 0.0; y < size.height; y += spacing) {
+        canvas.drawCircle(Offset(x, y), radius, paint);
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

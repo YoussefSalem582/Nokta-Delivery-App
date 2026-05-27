@@ -1,12 +1,13 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:delivery_app/core/widgets/app_logo.dart';
+import 'package:delivery_app/core/theme/nokta_colors.dart';
+import 'package:delivery_app/core/widgets/nokta_brand_icon.dart';
+import 'package:delivery_app/core/widgets/nokta_loading_ring.dart';
 import 'package:delivery_app/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:delivery_app/injection_container.dart';
 import 'package:delivery_app/routes/app_router.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:lottie/lottie.dart';
 
 @RoutePage()
 class SplashPage extends StatefulWidget {
@@ -16,9 +17,35 @@ class SplashPage extends StatefulWidget {
   State<SplashPage> createState() => _SplashPageState();
 }
 
-class _SplashPageState extends State<SplashPage> {
+class _SplashPageState extends State<SplashPage>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _fadeController;
+  late final Animation<double> _fadeAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _fadeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+    _fadeAnimation = CurvedAnimation(
+      parent: _fadeController,
+      curve: Curves.easeOut,
+    );
+    _fadeController.forward();
+  }
+
+  @override
+  void dispose() {
+    _fadeController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
     return BlocProvider(
       create: (_) => sl<AuthBloc>()..add(const AuthCheckRequested()),
       child: BlocListener<AuthBloc, AuthState>(
@@ -30,28 +57,39 @@ class _SplashPageState extends State<SplashPage> {
           }
         },
         child: Scaffold(
-          body: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Hero(
-                  tag: 'app_logo',
-                  child: AppLogo(size: 96),
+          backgroundColor: Theme.of(context).colorScheme.surface,
+          body: SafeArea(
+            child: FadeTransition(
+              opacity: _fadeAnimation,
+              child: Padding(
+                padding: const EdgeInsets.all(NoktaSpacing.md),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Spacer(flex: 2),
+                    Hero(
+                      tag: 'app_logo',
+                      child: NoktaBrandIcon(size: 64, filled: false),
+                    ),
+                    const SizedBox(height: NoktaSpacing.md),
+                    Text(
+                      'app_name'.tr(),
+                      style: textTheme.displayLarge,
+                    ),
+                    const Spacer(),
+                    const NoktaLoadingRing(),
+                    const SizedBox(height: NoktaSpacing.lg),
+                    Text(
+                      'splash_loading'.tr(),
+                      style: textTheme.bodyLarge?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const Spacer(flex: 2),
+                  ],
                 ),
-                const SizedBox(height: 24),
-                Text(
-                  'app_name'.tr(),
-                  style: Theme.of(context).textTheme.headlineMedium,
-                ),
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: 120,
-                  height: 120,
-                  child: Lottie.asset('assets/lottie/loading.json'),
-                ),
-                const SizedBox(height: 8),
-                Text('splash_loading'.tr()),
-              ],
+              ),
             ),
           ),
         ),

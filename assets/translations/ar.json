@@ -1,5 +1,5 @@
 {
-  "app_name": "رايد فلو",
+  "app_name": "Nokta",
   "splash_loading": "جاري تحميل تجربة الرحلة...",
   "login_title": "مرحباً بعودتك",
   "login_subtitle": "سجل الدخول لمتابعة رحلتك",
@@ -42,6 +42,8 @@
   "notifications_title": "الإشعارات",
   "no_notifications": "لا توجد إشعارات بعد",
   "mark_read": "تحديد كمقروء",
+  "error_required": "مطلوب",
+  "offline_banner": "أنت غير متصل",
   "error_generic": "حدث خطأ ما",
   "retry": "إعادة المحاولة",
   "loading": "جاري التحميل...",

@@ -1,7 +1,9 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:delivery_app/core/theme/nokta_colors.dart';
 import 'package:delivery_app/core/utils/map_config.dart';
 import 'package:delivery_app/core/utils/ui_helpers.dart';
 import 'package:delivery_app/core/widgets/delivery_map.dart';
+import 'package:delivery_app/core/widgets/nokta_primary_button.dart';
 import 'package:delivery_app/features/home/presentation/bloc/map_bloc.dart';
 import 'package:delivery_app/features/home/presentation/widgets/request_ride_sheet.dart';
 import 'package:delivery_app/injection_container.dart';
@@ -20,8 +22,28 @@ class HomeMapPage extends StatelessWidget {
       create: (_) => sl<MapBloc>()..add(const MapStarted()),
       child: BlocBuilder<MapBloc, MapState>(
         builder: (context, state) {
+          final scheme = Theme.of(context).colorScheme;
+
           return Scaffold(
-            appBar: AppBar(title: Text('home_title'.tr())),
+            extendBodyBehindAppBar: true,
+            appBar: AppBar(
+              backgroundColor: scheme.surface,
+              title: Text('app_name'.tr()),
+              leading: IconButton(
+                icon: Icon(Icons.menu, color: scheme.onSurfaceVariant),
+                onPressed: () {},
+              ),
+              actions: [
+                Padding(
+                  padding: const EdgeInsets.only(right: NoktaSpacing.sm),
+                  child: CircleAvatar(
+                    radius: 20,
+                    backgroundColor: scheme.surfaceContainerHigh,
+                    child: Icon(Icons.person, color: scheme.primary, size: 22),
+                  ),
+                ),
+              ],
+            ),
             body: Stack(
               children: [
                 if (state is MapReady)
@@ -32,7 +54,7 @@ class HomeMapPage extends StatelessWidget {
                     markers: [
                       MapMarkerData(
                         point: state.userPosition,
-                        color: Theme.of(context).colorScheme.primary,
+                        color: scheme.primaryContainer,
                         icon: Icons.my_location,
                       ),
                     ],
@@ -40,34 +62,64 @@ class HomeMapPage extends StatelessWidget {
                 else
                   const LoadingView(),
                 if (state is MapReady && state.usingFallback)
-                  const Positioned(
-                    top: 0,
+                  Positioned(
+                    top: kToolbarHeight + MediaQuery.paddingOf(context).top,
                     left: 0,
                     right: 0,
-                    child: OfflineBanner(),
-                  ),
-                Positioned(
-                  left: 16,
-                  right: 16,
-                  bottom: 24,
-                  child: AnimatedSlide(
-                    offset: state is MapReady
-                        ? Offset.zero
-                        : const Offset(0, 1),
-                    duration: const Duration(milliseconds: 400),
-                    curve: Curves.easeOutCubic,
-                    child: FilledButton.icon(
-                      onPressed: state is MapReady
-                          ? () => _showRequestSheet(context, state)
-                          : null,
-                      icon: const Icon(Icons.local_taxi),
-                      label: Text('request_ride'.tr()),
-                      style: FilledButton.styleFrom(
-                        minimumSize: const Size.fromHeight(52),
+                    child: Material(
+                      color: NoktaColors.tertiaryFixedDim,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: NoktaSpacing.md,
+                          vertical: NoktaSpacing.sm,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.cloud_off,
+                              size: 18,
+                              color: scheme.onSurface,
+                            ),
+                            const SizedBox(width: NoktaSpacing.sm),
+                            Text(
+                              'offline_banner'.tr(),
+                              style: Theme.of(context).textTheme.labelSmall,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
+                if (state is MapReady)
+                  Positioned(
+                    left: NoktaSpacing.md,
+                    right: NoktaSpacing.md,
+                    bottom: NoktaSpacing.md,
+                    child: AnimatedSlide(
+                      offset: Offset.zero,
+                      duration: const Duration(milliseconds: 400),
+                      curve: Curves.easeOutCubic,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          borderRadius:
+                              BorderRadius.circular(NoktaSpacing.radiusMd),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: NoktaColors.elevationShadow,
+                              blurRadius: 12,
+                              offset: Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: NoktaPrimaryButton(
+                          label: 'request_ride'.tr(),
+                          icon: Icons.directions_car,
+                          onPressed: () => _showRequestSheet(context, state),
+                        ),
+                      ),
+                    ),
+                  ),
               ],
             ),
           );
@@ -83,7 +135,7 @@ class HomeMapPage extends StatelessWidget {
     final trip = await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      showDragHandle: true,
+      backgroundColor: Colors.transparent,
       builder: (_) => BlocProvider(
         create: (_) => sl<RequestRideBloc>(),
         child: RequestRideSheet(
