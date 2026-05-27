@@ -1,4 +1,5 @@
 import 'package:delivery_app/config/routes/route_names.dart';
+import 'package:delivery_app/core/utils/ui_helpers.dart';
 import 'package:delivery_app/features/notifications/shared/domain/entities/notification_entity.dart';
 import 'package:delivery_app/shared/spacing/app_spacing.dart';
 import 'package:delivery_app/features/trips/shared/presentation/widgets/trip_widgets.dart';
@@ -199,7 +200,7 @@ class _NotificationCard extends StatelessWidget {
                         children: [
                           Expanded(
                             child: Text(
-                              item.title.tr(),
+                              localizeNotificationText(item.title),
                               style: Theme.of(context).textTheme.labelLarge?.copyWith(
                                     color: scheme.onSurface,
                                     fontWeight:
@@ -220,7 +221,7 @@ class _NotificationCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        item.body.tr(),
+                        localizeNotificationText(item.body),
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                       const SizedBox(height: AppSpacing.sm),

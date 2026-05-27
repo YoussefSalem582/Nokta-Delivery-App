@@ -104,34 +104,36 @@ class _TrackingPageState extends State<TrackingPage> {
 
               return Stack(
                 children: [
-                  DeliveryMap(
-                    key: _mapKey,
-                    center: mapData.driverPosition,
-                    zoom: MapConfig.defaultZoom,
-                    followCenter: state is TrackingActive,
-                    fitRouteBounds: true,
-                    traveledRoute: mapData.traveledRoute,
-                    remainingRoute: mapData.remainingRoute,
-                    markers: [
-                      MapMarkerData(
-                        point: mapData.route.first,
-                        color: scheme.secondary,
-                        icon: Icons.trip_origin,
-                      ),
-                      MapMarkerData(
-                        point: mapData.driverPosition,
-                        color: scheme.primary,
-                        icon: Icons.local_taxi,
-                        size: 36,
-                        animate: state is TrackingActive,
-                        rotation: mapData.driverBearing,
-                      ),
-                      MapMarkerData(
-                        point: mapData.route.last,
-                        color: scheme.error,
-                        icon: Icons.location_on,
-                      ),
-                    ],
+                  Positioned.fill(
+                    child: DeliveryMap(
+                      key: _mapKey,
+                      center: mapData.driverPosition,
+                      zoom: MapConfig.defaultZoom,
+                      followCenter: state is TrackingActive,
+                      fitRouteBounds: true,
+                      traveledRoute: mapData.traveledRoute,
+                      remainingRoute: mapData.remainingRoute,
+                      markers: [
+                        MapMarkerData(
+                          point: mapData.route.first,
+                          color: scheme.secondary,
+                          icon: Icons.trip_origin,
+                        ),
+                        MapMarkerData(
+                          point: mapData.driverPosition,
+                          color: scheme.primary,
+                          icon: Icons.local_taxi,
+                          size: 36,
+                          animate: state is TrackingActive,
+                          rotation: mapData.driverBearing,
+                        ),
+                        MapMarkerData(
+                          point: mapData.route.last,
+                          color: scheme.error,
+                          icon: Icons.location_on,
+                        ),
+                      ],
+                    ),
                   ),
                   Positioned(
                     right: AppSpacing.md,

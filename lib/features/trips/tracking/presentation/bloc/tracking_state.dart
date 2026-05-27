@@ -77,18 +77,21 @@ class TrackingActive extends TrackingState {
 
   @override
   List<Object?> get props => [
-        trip,
-        route,
+        trip.id,
+        trip.status,
         driverPosition,
         driverBearing,
-        traveledRoute,
-        remainingRoute,
         progress,
         etaMinutes,
         driverRating,
         driverVehicle,
         driverPhone,
       ];
+
+  @override
+  String toString() =>
+      'TrackingActive(tripId: ${trip.id}, status: ${trip.status.name}, '
+      'progress: ${(progress * 100).toStringAsFixed(0)}%, eta: $etaMinutes min)';
 }
 
 class TrackingCompleted extends TrackingState {
@@ -116,16 +119,17 @@ class TrackingCompleted extends TrackingState {
 
   @override
   List<Object?> get props => [
-        trip,
-        route,
+        trip.id,
+        trip.status,
         driverPosition,
-        driverBearing,
-        traveledRoute,
-        remainingRoute,
         driverRating,
         driverVehicle,
         driverPhone,
       ];
+
+  @override
+  String toString() =>
+      'TrackingCompleted(tripId: ${trip.id}, status: ${trip.status.name})';
 }
 
 class TrackingError extends TrackingState {

@@ -91,14 +91,7 @@ class DeliveryMapState extends State<DeliveryMap> with TickerProviderStateMixin 
         zoom: widget.zoom,
       );
     }
-    if (widget.fitRouteBounds &&
-        _allRoutePoints().length >= 2 &&
-        (oldWidget.polylines != widget.polylines ||
-            oldWidget.traveledRoute != widget.traveledRoute ||
-            oldWidget.remainingRoute != widget.remainingRoute)) {
-      _didFitBounds = false;
-      _maybeFitBounds();
-    }
+    // Fit bounds only once on first layout — not on progress splits during live tracking.
   }
 
   List<MapMarkerData> get _allMarkers {
@@ -129,6 +122,7 @@ class DeliveryMapState extends State<DeliveryMap> with TickerProviderStateMixin 
       options: MapOptions(
         initialCenter: widget.center,
         initialZoom: widget.zoom,
+        backgroundColor: scheme.surfaceContainer,
         interactionOptions: const InteractionOptions(
           flags: InteractiveFlag.all,
         ),

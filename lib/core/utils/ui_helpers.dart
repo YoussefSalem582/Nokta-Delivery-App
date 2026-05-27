@@ -7,6 +7,15 @@ String tripStatusLabel(TripStatus status) {
   return 'status_${status.name}'.tr();
 }
 
+/// Translates notification title/body when stored as i18n keys; returns
+/// legacy plain-text entries unchanged (avoids Easy Localization warnings).
+String localizeNotificationText(String value) {
+  if (RegExp(r'^[a-z][a-z0-9_]*$').hasMatch(value)) {
+    return value.tr();
+  }
+  return value;
+}
+
 Color tripStatusColor(TripStatus status, BuildContext context) {
   final scheme = Theme.of(context).colorScheme;
   return switch (status) {
