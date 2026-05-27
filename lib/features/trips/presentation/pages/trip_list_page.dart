@@ -1,8 +1,8 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:delivery_app/core/architecture/entities/trip_entity.dart';
 import 'package:delivery_app/core/sync/sync_service.dart';
-import 'package:delivery_app/core/utils/responsive.dart';
+import 'package:delivery_app/core/theme/nokta_colors.dart';
 import 'package:delivery_app/core/utils/ui_helpers.dart';
+import 'package:delivery_app/core/widgets/nokta_trip_card.dart';
 import 'package:delivery_app/features/trips/presentation/bloc/trip_list_bloc.dart';
 import 'package:delivery_app/injection_container.dart';
 import 'package:delivery_app/routes/app_router.dart';
@@ -11,26 +11,39 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 @RoutePage()
-class TripListPage extends StatefulWidget {
+class TripListPage extends StatelessWidget {
   const TripListPage({super.key});
 
-  @override
-  State<TripListPage> createState() => _TripListPageState();
-}
-
-class _TripListPageState extends State<TripListPage> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => sl<TripListBloc>()..add(const TripListLoadRequested()),
       child: Scaffold(
+        backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
         appBar: AppBar(
+          backgroundColor: Theme.of(context).colorScheme.surface,
           title: Text('trips_title'.tr()),
+          leading: IconButton(
+            icon: Icon(Icons.menu, color: Theme.of(context).colorScheme.onSurfaceVariant),
+            onPressed: () {},
+          ),
           actions: [
             IconButton(
               tooltip: 'simulate_offline'.tr(),
               onPressed: () => sl<SyncService>().syncAll(),
               icon: const Icon(Icons.sync),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(right: NoktaSpacing.sm),
+              child: CircleAvatar(
+                radius: 16,
+                backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
+                child: Icon(
+                  Icons.person,
+                  size: 18,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ),
             ),
           ],
         ),
@@ -49,7 +62,20 @@ class _TripListPageState extends State<TripListPage> {
             }
             if (state is TripListLoaded) {
               if (state.trips.isEmpty) {
-                return Center(child: Text('no_trips'.tr()));
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.directions_car_outlined,
+                        size: 64,
+                        color: Theme.of(context).colorScheme.outline,
+                      ),
+                      const SizedBox(height: NoktaSpacing.md),
+                      Text('no_trips'.tr(), style: Theme.of(context).textTheme.titleLarge),
+                    ],
+                  ),
+                );
               }
               return RefreshIndicator(
                 onRefresh: () async {
@@ -57,19 +83,18 @@ class _TripListPageState extends State<TripListPage> {
                       .read<TripListBloc>()
                       .add(const TripListRefreshRequested());
                 },
-                child: CustomScrollView(
-                  slivers: [
-                    if (state.isOffline)
-                      SliverToBoxAdapter(child: OfflineBanner()),
-                    SliverPadding(
-                      padding: Responsive.pagePadding(context),
-                      sliver: SliverList.separated(
-                        itemCount: state.trips.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 12),
-                        itemBuilder: (context, index) {
-                          final trip = state.trips[index];
-                          return _TripCard(trip: trip);
-                        },
+                child: ListView(
+                  padding: const EdgeInsets.all(NoktaSpacing.md),
+                  children: [
+                    if (state.isOffline) const NoktaOfflineTripsBanner(),
+                    ...state.trips.map(
+                      (trip) => Padding(
+                        padding: const EdgeInsets.only(bottom: NoktaSpacing.md),
+                        child: NoktaTripCard(
+                          trip: trip,
+                          onTap: () =>
+                              context.router.push(TripDetailRoute(tripId: trip.id)),
+                        ),
                       ),
                     ),
                   ],
@@ -78,67 +103,6 @@ class _TripListPageState extends State<TripListPage> {
             }
             return const SizedBox.shrink();
           },
-        ),
-      ),
-    );
-  }
-}
-
-class _TripCard extends StatelessWidget {
-  const _TripCard({required this.trip});
-
-  final TripEntity trip;
-
-  @override
-  Widget build(BuildContext context) {
-    return Hero(
-      tag: 'trip_${trip.id}',
-      child: Material(
-        color: Colors.transparent,
-        child: Card(
-          child: InkWell(
-            borderRadius: BorderRadius.circular(16),
-            onTap: () => context.router.push(TripDetailRoute(tripId: trip.id)),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          trip.pickupAddress,
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                      ),
-                      Chip(
-                        label: Text(tripStatusLabel(trip.status)),
-                        backgroundColor: tripStatusColor(trip.status, context)
-                            .withValues(alpha: 0.15),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Text('→ ${trip.dropoffAddress}'),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text('${'fare'.tr()}: ${trip.fare.toStringAsFixed(2)}'),
-                      if (trip.isPendingSync)
-                        Text(
-                          'offline_mode'.tr(),
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.error,
-                          ),
-                        ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
         ),
       ),
     );

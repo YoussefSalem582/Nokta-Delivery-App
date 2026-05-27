@@ -1,6 +1,9 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:delivery_app/core/architecture/entities/trip_entity.dart';
+import 'package:delivery_app/core/theme/nokta_colors.dart';
 import 'package:delivery_app/core/utils/ui_helpers.dart';
+import 'package:delivery_app/core/widgets/nokta_primary_button.dart';
+import 'package:delivery_app/core/widgets/nokta_trip_widgets.dart';
 import 'package:delivery_app/features/trips/presentation/bloc/trip_detail_bloc.dart';
 import 'package:delivery_app/injection_container.dart';
 import 'package:delivery_app/routes/app_router.dart';
@@ -20,7 +23,14 @@ class TripDetailPage extends StatelessWidget {
       create: (_) =>
           sl<TripDetailBloc>()..add(TripDetailLoadRequested(tripId)),
       child: Scaffold(
-        appBar: AppBar(title: Text('trip_detail'.tr())),
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => context.router.maybePop(),
+          ),
+          title: Text('trip_detail'.tr()),
+        ),
         body: BlocBuilder<TripDetailBloc, TripDetailState>(
           builder: (context, state) {
             if (state is TripDetailLoading) {
@@ -47,8 +57,10 @@ class _TripDetailBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(NoktaSpacing.md),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -56,43 +68,49 @@ class _TripDetailBody extends StatelessWidget {
             tag: 'trip_${trip.id}',
             child: Material(
               color: Colors.transparent,
-              child: Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(trip.pickupAddress,
-                          style: Theme.of(context).textTheme.titleLarge),
-                      const SizedBox(height: 8),
-                      Text('→ ${trip.dropoffAddress}'),
-                      const SizedBox(height: 12),
-                      Chip(label: Text(tripStatusLabel(trip.status))),
-                    ],
-                  ),
+              child: Container(
+                padding: const EdgeInsets.all(NoktaSpacing.md),
+                decoration: BoxDecoration(
+                  color: scheme.surfaceContainerLowest,
+                  borderRadius: BorderRadius.circular(NoktaSpacing.radiusLg),
+                  border: Border.all(color: scheme.outlineVariant),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        NoktaStatusChip(status: trip.status),
+                        Text(
+                          '${trip.fare.toStringAsFixed(2)} EGP',
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: NoktaSpacing.md),
+                    _RouteSummary(pickup: trip.pickupAddress, dropoff: trip.dropoffAddress),
+                  ],
                 ),
               ),
             ),
           ),
-          const SizedBox(height: 16),
-          Card(
-            child: ListTile(
-              leading: const CircleAvatar(child: Icon(Icons.person)),
-              title: Text(trip.driverName ?? 'driver'.tr()),
-              subtitle: Text(trip.driverPhone ?? ''),
-            ),
+          const SizedBox(height: NoktaSpacing.md),
+          _DriverCard(
+            name: trip.driverName ?? 'driver'.tr(),
+            phone: trip.driverPhone,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: NoktaSpacing.md),
           _StatusTimeline(status: trip.status),
-          const SizedBox(height: 24),
-          FilledButton.icon(
-            onPressed: () =>
-                context.router.push(TrackingRoute(tripId: trip.id)),
-            icon: const Icon(Icons.navigation),
-            label: Text('track_trip'.tr()),
+          const SizedBox(height: NoktaSpacing.lg),
+          NoktaPrimaryButton(
+            label: 'track_trip'.tr(),
+            icon: Icons.navigation,
+            onPressed: () => context.router.push(TrackingRoute(tripId: trip.id)),
           ),
-          if (trip.status != TripStatus.completed) ...[
-            const SizedBox(height: 12),
+          if (trip.status != TripStatus.completed &&
+              trip.status != TripStatus.cancelled) ...[
+            const SizedBox(height: NoktaSpacing.sm),
             OutlinedButton(
               onPressed: () {
                 context.read<TripDetailBloc>().add(
@@ -102,19 +120,172 @@ class _TripDetailBody extends StatelessWidget {
                       ),
                     );
               },
-              child: Text('Simulate Driver Arrived'),
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size.fromHeight(NoktaSpacing.buttonHeight),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(NoktaSpacing.radiusMd),
+                ),
+              ),
+              child: Text('simulate_driver_arrived'.tr()),
             ),
-            const SizedBox(height: 12),
-            FilledButton.tonal(
+            const SizedBox(height: NoktaSpacing.sm),
+            NoktaPrimaryButton(
+              label: 'complete_trip'.tr(),
+              usePrimaryContainer: true,
               onPressed: () {
                 context.read<TripDetailBloc>().add(
                       TripDetailCompleteRequested(trip.id),
                     );
               },
-              child: Text('complete_trip'.tr()),
             ),
           ],
         ],
+      ),
+    );
+  }
+}
+
+class _RouteSummary extends StatelessWidget {
+  const _RouteSummary({required this.pickup, required this.dropoff});
+
+  final String pickup;
+  final String dropoff;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Column(
+          children: [
+            Container(
+              width: 12,
+              height: 12,
+              decoration: BoxDecoration(
+                color: scheme.onSurface,
+                shape: BoxShape.circle,
+              ),
+            ),
+            Container(
+              width: 2,
+              height: 24,
+              color: scheme.outlineVariant,
+            ),
+            Container(
+              width: 12,
+              height: 12,
+              decoration: BoxDecoration(
+                color: scheme.primary,
+                shape: BoxShape.circle,
+                border: Border.all(color: scheme.surfaceContainerLowest, width: 2),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(width: NoktaSpacing.md),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('pickup'.tr(), style: Theme.of(context).textTheme.labelSmall),
+              Text(
+                pickup,
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+              ),
+              const SizedBox(height: NoktaSpacing.md),
+              Text('dropoff'.tr(), style: Theme.of(context).textTheme.labelSmall),
+              Text(
+                dropoff,
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _DriverCard extends StatelessWidget {
+  const _DriverCard({required this.name, this.phone});
+
+  final String name;
+  final String? phone;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
+    return Container(
+      padding: const EdgeInsets.all(NoktaSpacing.md),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(NoktaSpacing.radiusLg),
+        border: Border.all(color: scheme.outlineVariant),
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 24,
+            backgroundColor: scheme.surfaceContainer,
+            child: Icon(Icons.person, color: scheme.outline),
+          ),
+          const SizedBox(width: NoktaSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(name, style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      color: scheme.onSurface,
+                    )),
+                Row(
+                  children: [
+                    Icon(Icons.star, size: 16, color: NoktaColors.tertiaryFixedDim),
+                    const SizedBox(width: 4),
+                    Text('4.9 • 124 rides', style: Theme.of(context).textTheme.bodyMedium),
+                  ],
+                ),
+                if (phone != null && phone!.isNotEmpty)
+                  Text(phone!, style: Theme.of(context).textTheme.bodyMedium),
+              ],
+            ),
+          ),
+          _DriverActionButton(icon: Icons.chat_bubble_outline, onPressed: () {}),
+          const SizedBox(width: NoktaSpacing.sm),
+          _DriverActionButton(icon: Icons.call, onPressed: () {}),
+        ],
+      ),
+    );
+  }
+}
+
+class _DriverActionButton extends StatelessWidget {
+  const _DriverActionButton({required this.icon, required this.onPressed});
+
+  final IconData icon;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
+    return Material(
+      color: scheme.surfaceContainer,
+      shape: const CircleBorder(),
+      child: InkWell(
+        onTap: onPressed,
+        customBorder: const CircleBorder(),
+        child: SizedBox(
+          width: 40,
+          height: 40,
+          child: Icon(icon, size: 20, color: scheme.primary),
+        ),
       ),
     );
   }
@@ -135,37 +306,130 @@ class _StatusTimeline extends StatelessWidget {
       TripStatus.completed,
     ];
     final currentIndex = steps.indexOf(status).clamp(0, steps.length - 1);
+    final scheme = Theme.of(context).colorScheme;
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('status'.tr(), style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 12),
-            ...List.generate(steps.length, (index) {
-              final active = index <= currentIndex;
-              return AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                margin: const EdgeInsets.only(bottom: 8),
-                child: Row(
-                  children: [
-                    Icon(
-                      active ? Icons.check_circle : Icons.radio_button_unchecked,
-                      color: active
-                          ? Theme.of(context).colorScheme.primary
-                          : Theme.of(context).colorScheme.outline,
-                    ),
-                    const SizedBox(width: 12),
-                    Text(tripStatusLabel(steps[index])),
-                  ],
+    return Container(
+      padding: const EdgeInsets.all(NoktaSpacing.lg),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(NoktaSpacing.radiusLg),
+        border: Border.all(color: scheme.outlineVariant),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('status'.tr(), style: Theme.of(context).textTheme.labelLarge),
+          const SizedBox(height: NoktaSpacing.lg),
+          ...List.generate(steps.length, (index) {
+            final active = index <= currentIndex;
+            final current = index == currentIndex;
+            final isLast = index == steps.length - 1;
+
+            return _TimelineStep(
+              label: tripStatusLabel(steps[index]),
+              subtitle: active ? formatTripDate(DateTime.now()) : null,
+              active: active,
+              current: current,
+              isLast: isLast,
+              icon: _stepIcon(steps[index], active),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  IconData _stepIcon(TripStatus step, bool active) {
+    if (!active) return Icons.radio_button_unchecked;
+    return switch (step) {
+      TripStatus.inProgress => Icons.directions_car,
+      TripStatus.completed => Icons.check,
+      _ => Icons.check,
+    };
+  }
+}
+
+class _TimelineStep extends StatelessWidget {
+  const _TimelineStep({
+    required this.label,
+    required this.active,
+    required this.current,
+    required this.isLast,
+    required this.icon,
+    this.subtitle,
+  });
+
+  final String label;
+  final String? subtitle;
+  final bool active;
+  final bool current;
+  final bool isLast;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 24,
+            child: Column(
+              children: [
+                Container(
+                  width: 24,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    color: active ? scheme.primary : scheme.surfaceContainer,
+                    shape: BoxShape.circle,
+                    border: current
+                        ? Border.all(
+                            color: scheme.primary.withValues(alpha: 0.3),
+                            width: 2,
+                          )
+                        : null,
+                  ),
+                  child: Icon(
+                    icon,
+                    size: 14,
+                    color: active ? scheme.onPrimary : scheme.outline,
+                  ),
                 ),
-              );
-            }),
-          ],
-        ),
+                if (!isLast)
+                  Expanded(
+                    child: Container(
+                      width: 2,
+                      margin: const EdgeInsets.symmetric(vertical: 4),
+                      color: active ? scheme.primary : scheme.outlineVariant,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(width: NoktaSpacing.md),
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.only(bottom: isLast ? 0 : NoktaSpacing.lg),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                          color: current ? scheme.primary : scheme.onSurface,
+                        ),
+                  ),
+                  if (subtitle != null)
+                    Text(subtitle!, style: Theme.of(context).textTheme.bodyMedium),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 }
+

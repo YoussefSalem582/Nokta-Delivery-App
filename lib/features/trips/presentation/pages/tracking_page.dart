@@ -1,15 +1,16 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:delivery_app/core/architecture/entities/trip_entity.dart';
 import 'package:delivery_app/core/architecture/repositories/trip_repository.dart';
+import 'package:delivery_app/core/theme/nokta_colors.dart';
 import 'package:delivery_app/core/utils/map_config.dart';
 import 'package:delivery_app/core/utils/ui_helpers.dart';
 import 'package:delivery_app/core/widgets/delivery_map.dart';
+import 'package:delivery_app/core/widgets/nokta_trip_widgets.dart';
 import 'package:delivery_app/features/home/presentation/bloc/map_bloc.dart';
 import 'package:delivery_app/injection_container.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:lottie/lottie.dart';
 
 @RoutePage()
 class TrackingPage extends StatefulWidget {
@@ -60,7 +61,40 @@ class _TrackingPageState extends State<TrackingPage> {
     return BlocProvider.value(
       value: _trackingBloc,
       child: Scaffold(
-        appBar: AppBar(title: Text('tracking_title'.tr())),
+        extendBodyBehindAppBar: true,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: Padding(
+            padding: const EdgeInsets.only(left: NoktaSpacing.sm),
+            child: Material(
+              color: Theme.of(context).colorScheme.surfaceContainerLowest,
+              shape: const CircleBorder(),
+              elevation: 2,
+              child: IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () => context.router.maybePop(),
+              ),
+            ),
+          ),
+          title: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+            decoration: BoxDecoration(
+              color: Theme.of(context)
+                  .colorScheme
+                  .surfaceContainerLowest
+                  .withValues(alpha: 0.9),
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: Text(
+              'tracking_title'.tr(),
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+            ),
+          ),
+          centerTitle: true,
+        ),
         body: BlocBuilder<TrackingBloc, TrackingState>(
           builder: (context, state) {
             if (state is! TrackingActive) {
@@ -80,7 +114,7 @@ class _TrackingPageState extends State<TrackingPage> {
                   markers: [
                     MapMarkerData(
                       point: active.route.first,
-                      color: Colors.green,
+                      color: scheme.secondary,
                       icon: Icons.trip_origin,
                     ),
                     MapMarkerData(
@@ -98,57 +132,113 @@ class _TrackingPageState extends State<TrackingPage> {
                   ],
                 ),
                 Positioned(
-                  left: 16,
-                  right: 16,
-                  bottom: 24,
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 400),
-                    curve: Curves.easeOutCubic,
-                    padding: const EdgeInsets.all(16),
+                  right: NoktaSpacing.md,
+                  bottom: 200,
+                  child: FloatingActionButton(
+                    onPressed: () {},
+                    child: const Icon(Icons.my_location),
+                  ),
+                ),
+                Positioned(
+                  left: NoktaSpacing.md,
+                  right: NoktaSpacing.md,
+                  bottom: NoktaSpacing.md,
+                  child: Container(
+                    padding: const EdgeInsets.all(NoktaSpacing.md),
                     decoration: BoxDecoration(
-                      color: scheme.surface,
-                      borderRadius: BorderRadius.circular(16),
+                      color: scheme.surfaceContainerLowest,
+                      borderRadius: BorderRadius.circular(NoktaSpacing.radiusLg),
+                      border: Border.all(color: scheme.outlineVariant),
                       boxShadow: const [
-                        BoxShadow(blurRadius: 12, color: Colors.black26),
+                        BoxShadow(
+                          color: NoktaColors.elevationShadow,
+                          blurRadius: 12,
+                          offset: Offset(0, 4),
+                        ),
                       ],
                     ),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            SizedBox(
-                              width: 48,
-                              height: 48,
-                              child: Lottie.asset(
-                                'assets/lottie/loading.json',
-                                animate: true,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    active.trip.driverName ?? 'driver'.tr(),
-                                    style:
-                                        Theme.of(context).textTheme.titleMedium,
+                                    'eta'.tr().toUpperCase(),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelSmall
+                                        ?.copyWith(
+                                          letterSpacing: 1,
+                                        ),
                                   ),
-                                  Text(tripStatusLabel(active.trip.status)),
+                                  Text(
+                                    '${active.etaMinutes} ${'minutes'.tr()}',
+                                    style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                                          color: scheme.primary,
+                                          fontSize: 40,
+                                          height: 1,
+                                        ),
+                                  ),
                                 ],
                               ),
                             ),
-                            Text(
-                              '${active.etaMinutes} ${'minutes'.tr()}',
-                              style:
-                                  Theme.of(context).textTheme.headlineSmall,
+                            NoktaStatusChip(status: active.trip.status, compact: true),
+                          ],
+                        ),
+                        Divider(
+                          color: scheme.outlineVariant.withValues(alpha: 0.3),
+                          height: NoktaSpacing.lg,
+                        ),
+                        Row(
+                          children: [
+                            CircleAvatar(
+                              radius: 24,
+                              backgroundColor: scheme.surfaceContainerHigh,
+                              child: Icon(Icons.person, color: scheme.outline),
+                            ),
+                            const SizedBox(width: NoktaSpacing.md),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    '${'driver'.tr()}: ${active.trip.driverName ?? 'driver'.tr()}',
+                                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                                          color: scheme.onSurface,
+                                        ),
+                                  ),
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        Icons.star,
+                                        size: 16,
+                                        color: NoktaColors.tertiaryFixedDim,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text('4.9', style: Theme.of(context).textTheme.bodyMedium),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 12),
-                        LinearProgressIndicator(value: active.progress),
+                        const SizedBox(height: NoktaSpacing.md),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(4),
+                          child: LinearProgressIndicator(
+                            value: active.progress,
+                            minHeight: 6,
+                            backgroundColor: scheme.surfaceContainer,
+                            color: scheme.primary,
+                          ),
+                        ),
                       ],
                     ),
                   ),
