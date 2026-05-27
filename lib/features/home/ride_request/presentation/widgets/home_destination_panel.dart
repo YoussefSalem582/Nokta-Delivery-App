@@ -1,5 +1,5 @@
-import 'package:delivery_app/core/theme/nokta_colors.dart';
-import 'package:delivery_app/core/widgets/nokta_bottom_nav_bar.dart';
+import 'package:delivery_app/shared/spacing/app_spacing.dart';
+import 'package:delivery_app/shared/widgets/navigation/app_bottom_nav_bar.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
@@ -22,12 +22,12 @@ class HomeDestinationPanel extends StatelessWidget {
       elevation: 0,
       color: scheme.surfaceContainerLowest,
       borderRadius: const BorderRadius.vertical(
-        top: Radius.circular(NoktaSpacing.radiusLg),
+        top: Radius.circular(AppSpacing.radiusLg),
       ),
       child: Container(
         decoration: BoxDecoration(
           borderRadius: const BorderRadius.vertical(
-            top: Radius.circular(NoktaSpacing.radiusLg),
+            top: Radius.circular(AppSpacing.radiusLg),
           ),
           border: isDark
               ? Border(top: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.4)))
@@ -43,34 +43,34 @@ class HomeDestinationPanel extends StatelessWidget {
                 ],
         ),
         padding: const EdgeInsets.fromLTRB(
-          NoktaSpacing.md,
-          NoktaSpacing.sm,
-          NoktaSpacing.md,
-          NoktaSpacing.lg,
+          AppSpacing.md,
+          AppSpacing.sm,
+          AppSpacing.md,
+          AppSpacing.lg,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const NoktaSheetHandle(),
+            const AppSheetHandle(),
             Text(
               'request_ride_title'.tr(),
               style: Theme.of(context).textTheme.titleLarge,
             ),
-            const SizedBox(height: NoktaSpacing.md),
+            const SizedBox(height: AppSpacing.md),
             Material(
               color: isDark ? scheme.surfaceContainerHigh : scheme.surfaceContainerLow,
-              borderRadius: BorderRadius.circular(NoktaSpacing.radiusMd),
+              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
               child: InkWell(
                 onTap: onSearchTap,
-                borderRadius: BorderRadius.circular(NoktaSpacing.radiusMd),
+                borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
                 child: Container(
-                  height: NoktaSpacing.inputHeight,
-                  padding: const EdgeInsets.symmetric(horizontal: NoktaSpacing.md),
+                  height: AppSpacing.inputHeight,
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
                   child: Row(
                     children: [
                       Icon(Icons.search, color: scheme.primary),
-                      const SizedBox(width: NoktaSpacing.sm),
+                      const SizedBox(width: AppSpacing.sm),
                       Expanded(
                         child: Text(
                           'search_destination'.tr(),
@@ -84,7 +84,7 @@ class HomeDestinationPanel extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: NoktaSpacing.md),
+            const SizedBox(height: AppSpacing.md),
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
@@ -94,13 +94,13 @@ class HomeDestinationPanel extends StatelessWidget {
                     label: 'quick_home'.tr(),
                     onTap: () => onQuickDestination?.call('home'),
                   ),
-                  const SizedBox(width: NoktaSpacing.sm),
+                  const SizedBox(width: AppSpacing.sm),
                   _QuickChip(
                     icon: Icons.work_outline,
                     label: 'quick_work'.tr(),
                     onTap: () => onQuickDestination?.call('work'),
                   ),
-                  const SizedBox(width: NoktaSpacing.sm),
+                  const SizedBox(width: AppSpacing.sm),
                   _QuickChip(
                     icon: Icons.flight_takeoff,
                     label: 'quick_airport'.tr(),

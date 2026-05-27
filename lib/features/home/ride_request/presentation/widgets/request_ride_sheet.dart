@@ -1,8 +1,9 @@
-import 'package:delivery_app/core/theme/nokta_colors.dart';
+import 'package:delivery_app/config/theme/app_colors.dart';
+import 'package:delivery_app/shared/spacing/app_spacing.dart';
 import 'package:delivery_app/core/utils/demo_destinations.dart';
-import 'package:delivery_app/core/widgets/nokta_bottom_nav_bar.dart';
-import 'package:delivery_app/core/widgets/nokta_primary_button.dart';
-import 'package:delivery_app/core/widgets/nokta_ride_option.dart';
+import 'package:delivery_app/shared/widgets/navigation/app_bottom_nav_bar.dart';
+import 'package:delivery_app/shared/widgets/buttons/app_button.dart';
+import 'package:delivery_app/features/home/ride_request/presentation/widgets/ride_option_card.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
@@ -77,11 +78,11 @@ class _RequestRideSheetState extends State<RequestRideSheet> {
         decoration: BoxDecoration(
           color: scheme.surfaceContainerLowest,
           borderRadius: const BorderRadius.vertical(
-            top: Radius.circular(NoktaSpacing.radiusSheet),
+            top: Radius.circular(AppSpacing.radiusSheet),
           ),
           boxShadow: const [
             BoxShadow(
-              color: NoktaColors.elevationShadow,
+              color: AppColors.elevationShadow,
               blurRadius: 12,
               offset: Offset(0, -4),
             ),
@@ -91,27 +92,27 @@ class _RequestRideSheetState extends State<RequestRideSheet> {
           top: false,
           child: Padding(
             padding: const EdgeInsets.fromLTRB(
-              NoktaSpacing.md,
+              AppSpacing.md,
               0,
-              NoktaSpacing.md,
-              NoktaSpacing.lg,
+              AppSpacing.md,
+              AppSpacing.lg,
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const NoktaSheetHandle(),
+                const AppSheetHandle(),
                 Text(
                   'request_ride_title'.tr(),
                   style: Theme.of(context).textTheme.headlineMedium,
                 ),
-                const SizedBox(height: NoktaSpacing.lg),
+                const SizedBox(height: AppSpacing.lg),
                 _LocationInputs(
                   pickupController: _pickupController,
                   dropoffController: _dropoffController,
                 ),
-                const SizedBox(height: NoktaSpacing.lg),
-                NoktaPrimaryButton(
+                const SizedBox(height: AppSpacing.lg),
+                AppButton(
                   label: 'continue'.tr(),
                   usePrimaryContainer: true,
                   onPressed: _continue,
@@ -157,7 +158,7 @@ class _LocationInputs extends StatelessWidget {
               controller: pickupController,
               hint: 'pickup'.tr(),
             ),
-            const SizedBox(height: NoktaSpacing.sm),
+            const SizedBox(height: AppSpacing.sm),
             _LocationRow(
               icon: Icons.location_on,
               iconColor: scheme.error,
@@ -196,11 +197,11 @@ class _LocationRow extends StatelessWidget {
         ),
         Expanded(
           child: Container(
-            height: NoktaSpacing.inputHeight,
-            padding: const EdgeInsets.symmetric(horizontal: NoktaSpacing.md),
+            height: AppSpacing.inputHeight,
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             decoration: BoxDecoration(
               color: scheme.surfaceContainerLow,
-              borderRadius: BorderRadius.circular(NoktaSpacing.radiusMd),
+              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
             ),
             alignment: Alignment.center,
             child: TextField(

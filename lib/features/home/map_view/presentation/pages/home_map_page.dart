@@ -1,25 +1,25 @@
 import 'dart:async';
 
-import 'package:auto_route/auto_route.dart';
+import 'package:delivery_app/config/routes/route_names.dart';
 import 'package:delivery_app/core/network/route_service.dart';
-import 'package:delivery_app/core/theme/nokta_colors.dart';
-import 'package:delivery_app/core/utils/app_toast.dart';
+import 'package:delivery_app/config/theme/app_colors.dart';
+import 'package:delivery_app/shared/spacing/app_spacing.dart';
+import 'package:delivery_app/shared/widgets/banners/app_toast.dart';
 import 'package:delivery_app/core/utils/map_config.dart';
 import 'package:delivery_app/core/utils/ui_helpers.dart';
 import 'package:delivery_app/core/widgets/delivery_map.dart';
-import 'package:delivery_app/core/widgets/nokta_ride_option.dart';
-import 'package:delivery_app/features/home/presentation/bloc/map_bloc.dart';
-import 'package:delivery_app/features/home/presentation/widgets/home_destination_panel.dart';
-import 'package:delivery_app/features/home/presentation/widgets/request_ride_sheet.dart';
-import 'package:delivery_app/features/home/presentation/widgets/ride_selection_sheet.dart';
+import 'package:delivery_app/features/home/ride_request/presentation/widgets/ride_option_card.dart';
+import 'package:delivery_app/features/home/map_view/presentation/bloc/map_bloc.dart';
+import 'package:delivery_app/features/home/ride_request/presentation/widgets/home_destination_panel.dart';
+import 'package:delivery_app/features/home/ride_request/presentation/widgets/request_ride_sheet.dart';
+import 'package:delivery_app/features/home/ride_request/presentation/widgets/ride_selection_sheet.dart';
 import 'package:delivery_app/injection_container.dart';
-import 'package:delivery_app/routes/app_router.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
 
-@RoutePage()
 class HomeMapPage extends StatefulWidget {
   const HomeMapPage({super.key});
 
@@ -75,7 +75,10 @@ class _HomeMapPageState extends State<HomeMapPage> {
 
     if (trip != null && context.mounted) {
       AppToast.success(context, 'trip_requested_success'.tr());
-      context.router.push(TrackingRoute(tripId: trip.id));
+      context.pushNamed(
+        RouteNames.tracking,
+        pathParameters: {'tripId': trip.id},
+      );
     }
   }
 
@@ -120,7 +123,7 @@ class _HomeMapPageState extends State<HomeMapPage> {
               ),
               actions: [
                 Padding(
-                  padding: const EdgeInsets.only(right: NoktaSpacing.sm),
+                  padding: const EdgeInsets.only(right: AppSpacing.sm),
                   child: CircleAvatar(
                     radius: 20,
                     backgroundColor: scheme.surfaceContainerHigh,
@@ -168,17 +171,17 @@ class _HomeMapPageState extends State<HomeMapPage> {
                     left: 0,
                     right: 0,
                     child: Material(
-                      color: NoktaColors.tertiaryFixedDim,
+                      color: AppColors.tertiaryFixedDim,
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: NoktaSpacing.md,
-                          vertical: NoktaSpacing.sm,
+                          horizontal: AppSpacing.md,
+                          vertical: AppSpacing.sm,
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(Icons.cloud_off, size: 18, color: scheme.onSurface),
-                            const SizedBox(width: NoktaSpacing.sm),
+                            const SizedBox(width: AppSpacing.sm),
                             Text(
                               'offline_banner'.tr(),
                               style: Theme.of(context).textTheme.labelSmall,
@@ -190,7 +193,7 @@ class _HomeMapPageState extends State<HomeMapPage> {
                   ),
                 if (state is MapReady)
                   Positioned(
-                    right: NoktaSpacing.md,
+                    right: AppSpacing.md,
                     bottom: 220,
                     child: FloatingActionButton(
                       onPressed: () => _mapKey.currentState?.recenter(state.userPosition),

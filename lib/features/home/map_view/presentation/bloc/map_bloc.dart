@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:delivery_app/core/architecture/entities/trip_entity.dart';
-import 'package:delivery_app/core/architecture/repositories/trip_repository.dart';
+import 'package:delivery_app/features/trips/shared/domain/entities/trip_entity.dart';
+import 'package:delivery_app/features/trips/shared/domain/usecases/trip_usecases.dart';
 import 'package:delivery_app/core/network/fcm_service.dart';
 import 'package:delivery_app/core/network/route_service.dart';
 import 'package:delivery_app/core/utils/constants.dart';
@@ -14,12 +14,16 @@ import 'package:latlong2/latlong.dart';
 part 'map_event.dart';
 
 class RequestRideBloc extends Bloc<RequestRideEvent, RequestRideState> {
-  RequestRideBloc({required this._repository, required this._fcmService})
-    : super(const RequestRideInitial()) {
+  RequestRideBloc({
+    required RequestTripUseCase requestTrip,
+    required FcmService fcmService,
+  })  : _requestTrip = requestTrip,
+        _fcmService = fcmService,
+        super(const RequestRideInitial()) {
     on<RequestRideSubmitted>(_onSubmit);
   }
 
-  final TripRepository _repository;
+  final RequestTripUseCase _requestTrip;
   final FcmService _fcmService;
 
   Future<void> _onSubmit(
@@ -27,24 +31,27 @@ class RequestRideBloc extends Bloc<RequestRideEvent, RequestRideState> {
     Emitter<RequestRideState> emit,
   ) async {
     emit(const RequestRideLoading());
-    try {
-      final trip = await _repository.requestTrip(
+    final result = await _requestTrip(
+      RequestTripParams(
         pickupAddress: event.pickupAddress,
         dropoffAddress: event.dropoffAddress,
         pickupLat: event.pickupLat,
         pickupLng: event.pickupLng,
         dropoffLat: event.dropoffLat,
         dropoffLng: event.dropoffLng,
-      );
-      await _fcmService.simulateTripNotification(
-        title: 'notification_trip_update',
-        body: 'notification_trip_accepted',
-        tripId: trip.id,
-      );
-      emit(RequestRideSuccess(trip));
-    } catch (e) {
-      emit(RequestRideError(e.toString()));
-    }
+      ),
+    );
+    await result.fold(
+      (failure) async => emit(RequestRideError(failure.message)),
+      (trip) async {
+        await _fcmService.simulateTripNotification(
+          title: 'notification_trip_update',
+          body: 'notification_trip_accepted',
+          tripId: trip.id,
+        );
+        emit(RequestRideSuccess(trip));
+      },
+    );
   }
 }
 

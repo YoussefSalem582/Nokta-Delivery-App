@@ -1,9 +1,9 @@
-import 'package:delivery_app/core/theme/nokta_colors.dart';
-import 'package:delivery_app/core/utils/app_toast.dart';
-import 'package:delivery_app/core/widgets/nokta_bottom_nav_bar.dart';
-import 'package:delivery_app/core/widgets/nokta_primary_button.dart';
-import 'package:delivery_app/core/widgets/nokta_ride_option.dart';
-import 'package:delivery_app/features/home/presentation/bloc/map_bloc.dart';
+import 'package:delivery_app/shared/spacing/app_spacing.dart';
+import 'package:delivery_app/shared/widgets/banners/app_toast.dart';
+import 'package:delivery_app/shared/widgets/navigation/app_bottom_nav_bar.dart';
+import 'package:delivery_app/shared/widgets/buttons/app_button.dart';
+import 'package:delivery_app/features/home/ride_request/presentation/widgets/ride_option_card.dart';
+import 'package:delivery_app/features/home/map_view/presentation/bloc/map_bloc.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -39,7 +39,7 @@ class _RideSelectionSheetState extends State<RideSelectionSheet> {
         decoration: BoxDecoration(
           color: scheme.surfaceContainerLowest,
           borderRadius: const BorderRadius.vertical(
-            top: Radius.circular(NoktaSpacing.radiusSheet),
+            top: Radius.circular(AppSpacing.radiusSheet),
           ),
           boxShadow: const [
             BoxShadow(
@@ -64,26 +64,26 @@ class _RideSelectionSheetState extends State<RideSelectionSheet> {
               top: false,
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(
-                  NoktaSpacing.md,
+                  AppSpacing.md,
                   0,
-                  NoktaSpacing.md,
-                  NoktaSpacing.lg,
+                  AppSpacing.md,
+                  AppSpacing.lg,
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const NoktaSheetHandle(),
+                    const AppSheetHandle(),
                     ..._options.map(
                       (option) => Padding(
-                        padding: const EdgeInsets.only(bottom: NoktaSpacing.sm),
-                        child: NoktaRideOptionCard(
+                        padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                        child: RideOptionCard(
                           option: option,
                           selected: _selected == option.tier,
                           onTap: () => setState(() => _selected = option.tier),
                         ),
                       ),
                     ),
-                    const SizedBox(height: NoktaSpacing.sm),
+                    const SizedBox(height: AppSpacing.sm),
                     Row(
                       children: [
                         Expanded(
@@ -92,7 +92,7 @@ class _RideSelectionSheetState extends State<RideSelectionSheet> {
                             icon: Icons.credit_card,
                           ),
                         ),
-                        const SizedBox(width: NoktaSpacing.sm),
+                        const SizedBox(width: AppSpacing.sm),
                         _PaymentChip(
                           label: 'promo'.tr(),
                           icon: null,
@@ -100,8 +100,8 @@ class _RideSelectionSheetState extends State<RideSelectionSheet> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: NoktaSpacing.md),
-                    NoktaPrimaryButton(
+                    const SizedBox(height: AppSpacing.md),
+                    AppButton(
                       label: 'confirm_ride_tier'.tr(
                         args: [_selectedOption.nameKey.tr()],
                       ),
@@ -153,11 +153,11 @@ class _PaymentChip extends StatelessWidget {
 
     if (compact) {
       return Container(
-        height: NoktaSpacing.buttonHeight,
-        padding: const EdgeInsets.symmetric(horizontal: NoktaSpacing.md),
+        height: AppSpacing.buttonHeight,
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
         decoration: BoxDecoration(
           color: scheme.surfaceContainerLow,
-          borderRadius: BorderRadius.circular(NoktaSpacing.radiusMd),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
           border: Border.all(color: scheme.outlineVariant),
         ),
         child: Center(
@@ -171,18 +171,18 @@ class _PaymentChip extends StatelessWidget {
     }
 
     return Container(
-      height: NoktaSpacing.buttonHeight,
-      padding: const EdgeInsets.symmetric(horizontal: NoktaSpacing.md),
+      height: AppSpacing.buttonHeight,
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
       decoration: BoxDecoration(
         color: scheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(NoktaSpacing.radiusMd),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
         border: Border.all(color: scheme.outlineVariant),
       ),
       child: Row(
         children: [
           if (icon != null) ...[
             Icon(icon, size: 20, color: scheme.primary),
-            const SizedBox(width: NoktaSpacing.sm),
+            const SizedBox(width: AppSpacing.sm),
           ],
           Expanded(
             child: Text(
