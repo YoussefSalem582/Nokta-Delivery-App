@@ -1,10 +1,12 @@
-# RideFlow — Flutter Ride-Hailing / Delivery App Template
+# Nokta — Flutter Ride-Hailing / Delivery App
 
 > **Scalable Uber-like MVP template** — Clean Architecture + BLoC, offline-first Hive cache with reconnect + background sync, live OpenStreetMap tracking via flutter_map, FCM push alerts, bilingual EN/AR with RTL, dark/light themes, responsive tablet layouts, and Talker-observable demo flows. Production-oriented structure ready to swap mock API for a real backend.
 
 ## Features
 
-- **Clean Architecture** — `data` / `domain` (entities + repos) / `presentation` (BLoC + UI)
+- **Clean Architecture** — per-feature `shared/` (data + domain) + sub-features (`auth/login/`, `trips/trip_list/`, etc.)
+- **Use cases** — BLoCs call use cases returning `Either<Failure, T>` (dartz)
+- **Navigation** — GoRouter with `RouteNames`, auth-aware redirects, tab shell via `StatefulShellRoute`
 - **Offline-first** — Hive cache for trips, orders, user, notifications, OSRM routes; pending sync queue with deduped status updates
 - **Unified caching** — 5-minute TTL metadata, stale-while-revalidate in trip/order lists, profile cache-first load, disk route cache (50-entry LRU)
 - **Dual sync** — `NetworkStatus` reconnect sync (trips queue + orders + profile refresh) + `workmanager` stub for background
@@ -13,7 +15,7 @@
 - **Themes & i18n** — Dark/light mode, Inter + Cairo typography (locale-aware), English/Arabic with RTL via `easy_localization`
 - **UI polish** — Skeleton loaders, toast notifications, form validation (Formz), staggered animations, cached avatars
 - **Observability** — Talker logs for Dio, BLoC, and in-app debug console (long-press profile avatar)
-- **Navigation** — AutoRoute with tab shell + deep links to trip detail/tracking
+- **Navigation** — GoRouter tab shell + deep links to trip detail/tracking
 
 ## Screens
 
@@ -41,7 +43,6 @@
 
 ```bash
 flutter pub get
-dart run build_runner build --delete-conflicting-outputs
 ```
 
 ### 2. Maps (flutter_map)
@@ -99,15 +100,22 @@ flutter run
 
 ```
 lib/
-├── core/architecture/   # entities, repos, datasources
-├── core/network/        # Dio mock API, FCM, NetworkStatus, OfflineCubit
-├── core/sync/           # SyncService + WorkManager
-├── core/theme/          # AppTheme, ThemeCubit, LocaleCubit
-├── features/            # splash, auth, home, trips, profile, notifications
-├── routes/              # AutoRoute config
+├── config/              # routes (GoRouter), theme tokens (AppColors, Light/DarkTheme), EnvConfig
+├── core/                # ApiClient, failures, use cases, connectivity, cache (Hive sync), sync, map utils
+├── shared/              # AppSpacing, AppButton, offline banner, toasts
+├── features/
+│   ├── settings/        # SettingsCubit (theme + locale)
+│   ├── auth/            # shared/ + splash, onboarding, auth_select, login, register, forgot_password
+│   ├── home/            # main_shell, map_view, ride_request
+│   ├── trips/           # shared/ + trip_list, trip_detail, tracking
+│   ├── notifications/   # shared/ + notification_list
+│   └── profile/         # shared/ + profile_view, orders
+├── app.dart             # MaterialApp.router + global BLoC providers
 ├── injection_container.dart
 └── main.dart
 ```
+
+See [AGENTS.md](AGENTS.md) for conventions.
 
 ## Package highlights
 
