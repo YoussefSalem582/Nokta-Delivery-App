@@ -155,5 +155,18 @@
   "order_details": "Order details",
   "save": "Save",
   "promo_code_hint": "Enter promo code",
-  "cancel": "Cancel"
+  "cancel": "Cancel",
+  "chat_title": "Chat",
+  "chat_hint": "Type a message…",
+  "chat_send": "Send message",
+  "chat_driver_welcome": "Hi! I'm your driver. Let me know if you need anything.",
+  "chat_driver_reply": "Got it, thanks! I'll keep you updated.",
+  "call_title": "Call",
+  "call_connecting": "Connecting…",
+  "call_active": "Connected",
+  "call_ended": "Call ended",
+  "call_mute": "Mute",
+  "call_speaker": "Speaker",
+  "call_end": "End call",
+  "call_no_driver": "No driver assigned to this trip yet"
 }

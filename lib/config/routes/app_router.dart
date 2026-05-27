@@ -14,6 +14,8 @@ import '../../features/auth/splash/presentation/pages/splash_page.dart';
 import '../../features/home/main_shell/presentation/pages/main_shell_page.dart';
 import '../../features/trips/tracking/presentation/pages/tracking_page.dart';
 import '../../features/trips/trip_detail/presentation/pages/trip_detail_page.dart';
+import '../../features/trips/driver_chat/presentation/pages/driver_chat_page.dart';
+import '../../features/trips/driver_call/presentation/pages/driver_call_page.dart';
 import '../../injection_container.dart';
 import '../environment/env_config.dart';
 import 'route_names.dart';
@@ -163,6 +165,28 @@ class AppRouter {
           return _fadePage(
             state: state,
             child: TrackingPage(tripId: tripId),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/trips/:tripId/chat',
+        name: RouteNames.driverChat,
+        pageBuilder: (context, state) {
+          final tripId = state.pathParameters['tripId']!;
+          return _fadePage(
+            state: state,
+            child: DriverChatPage(tripId: tripId),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/trips/:tripId/call',
+        name: RouteNames.driverCall,
+        pageBuilder: (context, state) {
+          final tripId = state.pathParameters['tripId']!;
+          return _fadePage(
+            state: state,
+            child: DriverCallPage(tripId: tripId),
           );
         },
       ),

@@ -3,7 +3,6 @@ import 'package:delivery_app/features/trips/shared/domain/entities/trip_entity.d
 import 'package:delivery_app/config/theme/app_colors.dart';
 import 'package:delivery_app/shared/spacing/app_spacing.dart';
 import 'package:delivery_app/core/utils/map_launcher.dart';
-import 'package:delivery_app/core/utils/phone_launcher.dart';
 import 'package:delivery_app/core/utils/ui_helpers.dart';
 import 'package:delivery_app/core/widgets/avatar_image.dart';
 import 'package:delivery_app/shared/widgets/buttons/app_button.dart';
@@ -90,6 +89,7 @@ class _TripDetailBody extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.md),
           _DriverCard(
+            tripId: trip.id,
             name: trip.driverName ?? 'driver'.tr(),
             phone: trip.driverPhone,
             avatarUrl: trip.driverAvatarUrl,
@@ -160,11 +160,13 @@ class _TripDetailBody extends StatelessWidget {
 
 class _DriverCard extends StatelessWidget {
   const _DriverCard({
+    required this.tripId,
     required this.name,
     this.phone,
     this.avatarUrl,
   });
 
+  final String tripId;
   final String name;
   final String? phone;
   final String? avatarUrl;
@@ -213,7 +215,10 @@ class _DriverCard extends StatelessWidget {
               button: true,
               child: _DriverActionButton(
                 icon: Icons.chat_bubble_outline,
-                onPressed: () => launchSms(phone!),
+                onPressed: () => context.pushNamed(
+                  RouteNames.driverChat,
+                  pathParameters: {'tripId': tripId},
+                ),
               ),
             ),
             const SizedBox(width: AppSpacing.sm),
@@ -222,7 +227,10 @@ class _DriverCard extends StatelessWidget {
               button: true,
               child: _DriverActionButton(
                 icon: Icons.call,
-                onPressed: () => launchPhoneCall(phone!),
+                onPressed: () => context.pushNamed(
+                  RouteNames.driverCall,
+                  pathParameters: {'tripId': tripId},
+                ),
               ),
             ),
           ],

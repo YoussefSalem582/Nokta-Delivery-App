@@ -155,5 +155,18 @@
   "order_details": "تفاصيل الطلب",
   "save": "حفظ",
   "promo_code_hint": "أدخل كود الخصم",
-  "cancel": "إلغاء"
+  "cancel": "إلغاء",
+  "chat_title": "محادثة",
+  "chat_hint": "اكتب رسالة…",
+  "chat_send": "إرسال رسالة",
+  "chat_driver_welcome": "مرحباً! أنا سائقك. أخبرني إذا احتجت أي شيء.",
+  "chat_driver_reply": "تم، شكراً! سأبقيك على اطلاع.",
+  "call_title": "مكالمة",
+  "call_connecting": "جاري الاتصال…",
+  "call_active": "متصل",
+  "call_ended": "انتهت المكالمة",
+  "call_mute": "كتم",
+  "call_speaker": "مكبر الصوت",
+  "call_end": "إنهاء المكالمة",
+  "call_no_driver": "لم يُعيَّن سائق لهذه الرحلة بعد"
 }

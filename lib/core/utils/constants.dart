@@ -6,6 +6,7 @@ class AppConstants {
   static const pendingSyncBox = 'pending_sync_box';
   static const cacheMetaBox = 'cache_meta_box';
   static const routeCacheBox = 'route_cache_box';
+  static const chatMessagesBox = 'chat_messages_box';
 
   static const cacheTtl = Duration(minutes: 5);
   static const routeCacheMaxEntries = 50;

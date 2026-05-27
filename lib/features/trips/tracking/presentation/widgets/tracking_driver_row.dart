@@ -1,13 +1,15 @@
+import 'package:delivery_app/config/routes/route_names.dart';
 import 'package:delivery_app/config/theme/app_colors.dart';
-import 'package:delivery_app/core/utils/phone_launcher.dart';
 import 'package:delivery_app/core/widgets/avatar_image.dart';
 import 'package:delivery_app/shared/spacing/app_spacing.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class TrackingDriverRow extends StatelessWidget {
   const TrackingDriverRow({
     super.key,
+    required this.tripId,
     required this.driverName,
     this.avatarUrl,
     this.rating,
@@ -15,6 +17,7 @@ class TrackingDriverRow extends StatelessWidget {
     this.phone,
   });
 
+  final String tripId;
   final String driverName;
   final String? avatarUrl;
   final double? rating;
@@ -72,22 +75,40 @@ class TrackingDriverRow extends StatelessWidget {
             ],
           ),
         ),
-        if (phone != null && phone!.isNotEmpty)
+        if (phone != null && phone!.isNotEmpty) ...[
+          Semantics(
+            label: 'message_driver'.tr(),
+            button: true,
+            child: _ContactButton(
+              icon: Icons.chat_bubble_outline,
+              onPressed: () => context.pushNamed(
+                RouteNames.driverChat,
+                pathParameters: {'tripId': tripId},
+              ),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.sm),
           Semantics(
             label: 'call_driver'.tr(),
             button: true,
-            child: _CallButton(
-              onPressed: () => launchPhoneCall(phone!),
+            child: _ContactButton(
+              icon: Icons.call,
+              onPressed: () => context.pushNamed(
+                RouteNames.driverCall,
+                pathParameters: {'tripId': tripId},
+              ),
             ),
           ),
+        ],
       ],
     );
   }
 }
 
-class _CallButton extends StatelessWidget {
-  const _CallButton({required this.onPressed});
+class _ContactButton extends StatelessWidget {
+  const _ContactButton({required this.icon, required this.onPressed});
 
+  final IconData icon;
   final VoidCallback onPressed;
 
   @override
@@ -103,7 +124,7 @@ class _CallButton extends StatelessWidget {
         child: SizedBox(
           width: 48,
           height: 48,
-          child: Icon(Icons.call, size: 22, color: scheme.primary),
+          child: Icon(icon, size: 22, color: scheme.primary),
         ),
       ),
     );

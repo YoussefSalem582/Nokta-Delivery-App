@@ -4,6 +4,27 @@
 
 ---
 
+## 2026-05-27 — Driver chat and call screens
+
+**What changed:** Added in-app driver messaging and simulated voice call flows under the trips domain.
+
+**Screens / routes:**
+
+- `DriverChatPage` at `/trips/:tripId/chat` — message bubbles, send field, Hive-backed thread, demo driver auto-reply
+- `DriverCallPage` at `/trips/:tripId/call` — connecting state, elapsed timer, mute/speaker/end controls (demo only)
+
+**Navigation:**
+
+- Trip detail and tracking driver row chat/call buttons push GoRouter routes (replacing `launchSms` / `launchPhoneCall`)
+
+**Data / DI:**
+
+- `chat_messages_box` Hive storage, `ChatRepository`, chat use cases, `DriverChatBloc`, `DriverCallBloc`
+
+**Files touched:** `trips/shared/` chat layer, `driver_chat/`, `driver_call/`, `app_router.dart`, `route_names.dart`, `injection_container.dart`, `trip_detail_page.dart`, `tracking_driver_row.dart`, `en.json`, `ar.json`
+
+---
+
 ## 2026-05-27 — Wire all buttons and icons
 
 **What changed:** Replaced non-functional stub controls across main-shell tabs and trip/profile flows with working demo actions.

@@ -2,7 +2,7 @@
 
 > [INDEX](INDEX.md) > Current Status
 >
-> **Last Updated:** May 27, 2026 — All main-shell buttons/icons wired (logo AppBar, profile nav, wallet top-up, driver contact, payment/promo pickers).
+> **Last Updated:** May 27, 2026 — Driver chat and simulated in-app call screens added for trip detail and tracking.
 
 > **Version:** `1.0.0+1`
 > **Flutter:** 3.16+ (SDK ^3.12.0)
@@ -28,7 +28,7 @@ Nokta is a Flutter ride-hailing / delivery MVP template with Clean Architecture 
 |---------|--------|
 | Auth (splash, onboarding, login, register) | ✅ Demo complete |
 | Home / map / ride request | ✅ Demo complete (payment/promo pickers wired) |
-| Trips (list, detail, tracking) | ✅ Demo complete (driver call/SMS on detail) |
+| Trips (list, detail, tracking) | ✅ Demo complete (in-app chat + simulated call) |
 | Notifications | ✅ Demo complete |
 | Profile / orders | ✅ Demo complete (wallet top-up, edit name, order details) |
 | Settings (theme, locale) | ✅ Complete |

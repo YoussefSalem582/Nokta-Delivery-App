@@ -24,7 +24,7 @@ class TrackingBottomSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return switch (state) {
-      TrackingActive active => _ActiveSheet(active: active),
+      TrackingActive active => _ActiveSheet(active: active, tripId: tripId),
       TrackingCompleted completed => _CompletedSheet(
           completed: completed,
           tripId: tripId,
@@ -35,9 +35,10 @@ class TrackingBottomSheet extends StatelessWidget {
 }
 
 class _ActiveSheet extends StatelessWidget {
-  const _ActiveSheet({required this.active});
+  const _ActiveSheet({required this.active, required this.tripId});
 
   final TrackingActive active;
+  final String tripId;
 
   @override
   Widget build(BuildContext context) {
@@ -98,6 +99,7 @@ class _ActiveSheet extends StatelessWidget {
             height: AppSpacing.lg,
           ),
           TrackingDriverRow(
+            tripId: tripId,
             driverName: driverName,
             avatarUrl: active.trip.driverAvatarUrl,
             rating: active.driverRating,
@@ -178,6 +180,7 @@ class _CompletedSheet extends StatelessWidget {
             height: AppSpacing.lg,
           ),
           TrackingDriverRow(
+            tripId: tripId,
             driverName: driverName,
             avatarUrl: completed.trip.driverAvatarUrl,
             rating: completed.driverRating,
