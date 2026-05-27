@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-/// Nokta Visual Language tokens from Stitch design system.
-abstract final class NoktaColors {
+/// Nokta design tokens.
+abstract final class AppColors {
   static const primary = Color(0xFF0050CB);
   static const primaryContainer = Color(0xFF0066FF);
   static const onPrimary = Color(0xFFFFFFFF);
@@ -42,20 +42,4 @@ abstract final class NoktaColors {
   static const darkSurface = Color(0xFF0F172A);
 
   static const elevationShadow = Color(0x14000000);
-}
-
-abstract final class NoktaSpacing {
-  static const xs = 4.0;
-  static const sm = 8.0;
-  static const md = 16.0;
-  static const lg = 24.0;
-  static const xl = 32.0;
-
-  static const buttonHeight = 52.0;
-  static const inputHeight = 52.0;
-  static const bottomNavHeight = 56.0;
-  static const radiusSm = 8.0;
-  static const radiusMd = 12.0;
-  static const radiusLg = 16.0;
-  static const radiusSheet = 24.0;
 }
