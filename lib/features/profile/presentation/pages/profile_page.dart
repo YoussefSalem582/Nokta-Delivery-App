@@ -464,7 +464,7 @@ class _SettingsTab extends StatelessWidget {
           child: OutlinedButton.icon(
             onPressed: () {
               context.read<AuthBloc>().add(const AuthLogoutRequested());
-              context.router.replaceAll([const LoginRoute()]);
+              context.router.replaceAll([const SplashRoute()]);
             },
             icon: Icon(Icons.logout, color: scheme.error),
             label: Text(

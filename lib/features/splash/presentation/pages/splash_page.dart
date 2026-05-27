@@ -54,7 +54,7 @@ class _SplashPageState extends State<SplashPage>
           if (state is AuthAuthenticated) {
             context.router.replaceAll([const MainShellRoute()]);
           } else if (state is AuthUnauthenticated) {
-            context.router.replaceAll([const LoginRoute()]);
+            context.router.replaceAll([const OnboardingRoute()]);
           }
         },
         child: Scaffold(
