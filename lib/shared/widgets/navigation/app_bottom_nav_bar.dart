@@ -1,8 +1,9 @@
-import 'package:delivery_app/core/theme/nokta_colors.dart';
+import 'package:delivery_app/config/theme/app_colors.dart';
+import 'package:delivery_app/shared/spacing/app_spacing.dart';
 import 'package:flutter/material.dart';
 
-class NoktaBottomNavBar extends StatelessWidget {
-  const NoktaBottomNavBar({
+class AppBottomNavBar extends StatelessWidget {
+  const AppBottomNavBar({
     super.key,
     required this.selectedIndex,
     required this.onDestinationSelected,
@@ -11,25 +12,28 @@ class NoktaBottomNavBar extends StatelessWidget {
 
   final int selectedIndex;
   final ValueChanged<int> onDestinationSelected;
-  final List<NoktaNavDestination> destinations;
+  final List<AppNavDestination> destinations;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       decoration: BoxDecoration(
         color: scheme.surfaceContainerLowest,
         border: isDark
-            ? Border(top: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.4)))
+            ? Border(
+                top: BorderSide(
+                  color: scheme.outlineVariant.withValues(alpha: 0.4),
+                ),
+              )
             : null,
         boxShadow: isDark
             ? null
             : const [
                 BoxShadow(
-                  color: NoktaColors.elevationShadow,
+                  color: AppColors.elevationShadow,
                   blurRadius: 12,
                   offset: Offset(0, -4),
                 ),
@@ -38,12 +42,13 @@ class NoktaBottomNavBar extends StatelessWidget {
       child: SafeArea(
         top: false,
         child: SizedBox(
-          height: NoktaSpacing.bottomNavHeight,
+          height: AppSpacing.bottomNavHeight,
           child: Row(
             children: List.generate(destinations.length, (index) {
               final dest = destinations[index];
               final selected = index == selectedIndex;
-              final color = selected ? scheme.primary : scheme.onSurfaceVariant;
+              final color =
+                  selected ? scheme.primary : scheme.onSurfaceVariant;
 
               return Expanded(
                 child: InkWell(
@@ -86,8 +91,8 @@ class NoktaBottomNavBar extends StatelessWidget {
   }
 }
 
-class NoktaNavDestination {
-  const NoktaNavDestination({
+class AppNavDestination {
+  const AppNavDestination({
     required this.icon,
     required this.selectedIcon,
     required this.label,
@@ -98,8 +103,8 @@ class NoktaNavDestination {
   final String label;
 }
 
-class NoktaSheetHandle extends StatelessWidget {
-  const NoktaSheetHandle({super.key});
+class AppSheetHandle extends StatelessWidget {
+  const AppSheetHandle({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -107,7 +112,7 @@ class NoktaSheetHandle extends StatelessWidget {
       child: Container(
         width: 32,
         height: 4,
-        margin: const EdgeInsets.symmetric(vertical: NoktaSpacing.sm),
+        margin: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.outlineVariant,
           borderRadius: BorderRadius.circular(999),

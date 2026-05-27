@@ -1,8 +1,9 @@
-import 'package:delivery_app/core/theme/nokta_colors.dart';
+import 'package:delivery_app/shared/spacing/app_spacing.dart';
 import 'package:flutter/material.dart';
 
-class NoktaTextField extends StatefulWidget {
-  const NoktaTextField({
+/// Shared text field styled with app theme tokens.
+class AppTextField extends StatefulWidget {
+  const AppTextField({
     super.key,
     required this.controller,
     this.hintText,
@@ -34,10 +35,10 @@ class NoktaTextField extends StatefulWidget {
   final Iterable<String>? autofillHints;
 
   @override
-  State<NoktaTextField> createState() => _NoktaTextFieldState();
+  State<AppTextField> createState() => _AppTextFieldState();
 }
 
-class _NoktaTextFieldState extends State<NoktaTextField> {
+class _AppTextFieldState extends State<AppTextField> {
   late bool _obscured;
 
   @override
@@ -67,29 +68,34 @@ class _NoktaTextFieldState extends State<NoktaTextField> {
         errorText: widget.errorText,
         filled: true,
         fillColor: Theme.of(context).inputDecorationTheme.fillColor,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.md,
+        ),
         prefixIcon: widget.prefixIcon != null
             ? Icon(widget.prefixIcon, color: scheme.outline)
             : null,
         suffixIcon: widget.obscureText
             ? IconButton(
                 icon: Icon(
-                  _obscured ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                  _obscured
+                      ? Icons.visibility_outlined
+                      : Icons.visibility_off_outlined,
                   color: scheme.outline,
                 ),
                 onPressed: () => setState(() => _obscured = !_obscured),
               )
             : null,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(NoktaSpacing.radiusMd),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
           borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(NoktaSpacing.radiusMd),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
           borderSide: BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(NoktaSpacing.radiusMd),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
           borderSide: BorderSide(color: scheme.primary, width: 2),
         ),
       ),

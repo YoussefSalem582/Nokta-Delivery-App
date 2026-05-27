@@ -1,10 +1,11 @@
-import 'package:delivery_app/core/theme/nokta_colors.dart';
+import 'package:delivery_app/core/constants/app_constants.dart';
+import 'package:delivery_app/config/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-/// Nokta wordmark from [assetPath] (wide SVG, ~3.28:1).
-class NoktaBrandIcon extends StatelessWidget {
-  const NoktaBrandIcon({
+/// App wordmark from [assetPath] (wide SVG, ~3.28:1).
+class AppBrandIcon extends StatelessWidget {
+  const AppBrandIcon({
     super.key,
     this.size = 64,
     this.filled = true,
@@ -36,7 +37,7 @@ class NoktaBrandIcon extends StatelessWidget {
           ),
           boxShadow: const [
             BoxShadow(
-              color: NoktaColors.elevationShadow,
+              color: AppColors.elevationShadow,
               blurRadius: 8,
               offset: Offset(0, 2),
             ),
@@ -59,15 +60,15 @@ class _LogoSvg extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final width = height * NoktaBrandIcon.aspectRatio;
+    final width = height * AppBrandIcon.aspectRatio;
 
     return RepaintBoundary(
       child: SvgPicture.asset(
-        NoktaBrandIcon.assetPath,
+        AppBrandIcon.assetPath,
         width: width,
         height: height,
         fit: BoxFit.contain,
-        semanticsLabel: 'Nokta',
+        semanticsLabel: AppConstants.appName,
         placeholderBuilder: (_) => SizedBox(
           width: width,
           height: height,
