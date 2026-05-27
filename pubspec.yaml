@@ -49,3 +49,4 @@ flutter:
     - assets/mock/
     - assets/translations/
     - assets/lottie/
+    - assets/logo.png

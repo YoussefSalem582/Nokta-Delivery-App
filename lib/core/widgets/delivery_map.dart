@@ -1,4 +1,5 @@
 import 'package:delivery_app/core/utils/map_config.dart';
+import 'package:delivery_app/core/widgets/animated_map_marker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -65,9 +66,15 @@ class _DeliveryMapState extends State<DeliveryMap> {
               .map(
                 (m) => Marker(
                   point: m.point,
-                  width: m.size,
-                  height: m.size,
-                  child: Icon(m.icon, color: m.color, size: m.size),
+                  width: m.animate ? m.size + 12 : m.size,
+                  height: m.animate ? m.size + 12 : m.size,
+                  child: m.animate
+                      ? AnimatedMapMarker(
+                          icon: m.icon,
+                          color: m.color,
+                          size: m.size,
+                        )
+                      : Icon(m.icon, color: m.color, size: m.size),
                 ),
               )
               .toList(),

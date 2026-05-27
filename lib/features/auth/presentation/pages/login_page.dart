@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:delivery_app/core/widgets/app_logo.dart';
 import 'package:delivery_app/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:delivery_app/injection_container.dart';
 import 'package:delivery_app/routes/app_router.dart';
@@ -56,11 +57,7 @@ class _LoginPageState extends State<LoginPage> {
                         children: [
                           Hero(
                             tag: 'app_logo',
-                            child: Icon(
-                              Icons.local_taxi,
-                              size: 64,
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
+                            child: AppLogo(size: 80),
                           ),
                           const SizedBox(height: 24),
                           Text(

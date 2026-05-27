@@ -1,23 +1,19 @@
 import 'dart:async';
 
-import 'package:equatable/equatable.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:latlong2/latlong.dart';
 import 'package:delivery_app/core/architecture/entities/trip_entity.dart';
 import 'package:delivery_app/core/architecture/repositories/trip_repository.dart';
 import 'package:delivery_app/core/network/fcm_service.dart';
 import 'package:delivery_app/core/utils/constants.dart';
+import 'package:equatable/equatable.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:latlong2/latlong.dart';
 
 part 'map_event.dart';
 
 class RequestRideBloc extends Bloc<RequestRideEvent, RequestRideState> {
-  RequestRideBloc({
-    required TripRepository repository,
-    required FcmService fcmService,
-  })  : _repository = repository,
-        _fcmService = fcmService,
-        super(const RequestRideInitial()) {
+  RequestRideBloc({required this._repository, required this._fcmService})
+    : super(const RequestRideInitial()) {
     on<RequestRideSubmitted>(_onSubmit);
   }
 
@@ -80,25 +76,22 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     }
 
     _positionSub?.cancel();
-    _positionSub = Geolocator.getPositionStream(
-      locationSettings: const LocationSettings(
-        accuracy: LocationAccuracy.high,
-        distanceFilter: 10,
-      ),
-    ).listen((position) {
-      add(
-        MapPositionUpdated(
-          LatLng(position.latitude, position.longitude),
-        ),
-      );
-    });
+    _positionSub =
+        Geolocator.getPositionStream(
+          locationSettings: const LocationSettings(
+            accuracy: LocationAccuracy.high,
+            distanceFilter: 10,
+          ),
+        ).listen((position) {
+          add(
+            MapPositionUpdated(LatLng(position.latitude, position.longitude)),
+          );
+        });
 
     try {
       final position = await Geolocator.getCurrentPosition();
       emit(
-        MapReady(
-          userPosition: LatLng(position.latitude, position.longitude),
-        ),
+        MapReady(userPosition: LatLng(position.latitude, position.longitude)),
       );
     } catch (_) {
       emit(
@@ -113,10 +106,7 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     }
   }
 
-  void _onPositionUpdated(
-    MapPositionUpdated event,
-    Emitter<MapState> emit,
-  ) {
+  void _onPositionUpdated(MapPositionUpdated event, Emitter<MapState> emit) {
     if (state is MapReady) {
       emit((state as MapReady).copyWith(userPosition: event.position));
     }

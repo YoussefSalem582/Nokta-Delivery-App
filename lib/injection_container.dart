@@ -112,7 +112,11 @@ Future<void> initDependencies() async {
     () => TripListBloc(repository: sl(), connectivity: sl()),
   );
   sl.registerFactory(
-    () => TripDetailBloc(repository: sl(), fcmService: sl()),
+    () => TripDetailBloc(
+      repository: sl(),
+      authRepository: sl(),
+      fcmService: sl(),
+    ),
   );
   sl.registerFactory(() => RequestRideBloc(repository: sl(), fcmService: sl()));
   sl.registerFactory(() => MapBloc());

@@ -7,12 +7,14 @@ class MapMarkerData {
     required this.color,
     this.icon = Icons.place,
     this.size = 36,
+    this.animate = false,
   });
 
   final LatLng point;
   final Color color;
   final IconData icon;
   final double size;
+  final bool animate;
 }
 
 class MapConfig {

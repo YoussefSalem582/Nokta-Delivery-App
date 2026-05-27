@@ -87,7 +87,8 @@ class _TrackingPageState extends State<TrackingPage> {
                       point: active.driverPosition,
                       color: scheme.primary,
                       icon: Icons.local_taxi,
-                      size: 40,
+                      size: 36,
+                      animate: true,
                     ),
                     MapMarkerData(
                       point: active.route.last,

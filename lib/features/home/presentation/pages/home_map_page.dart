@@ -51,7 +51,9 @@ class HomeMapPage extends StatelessWidget {
                   right: 16,
                   bottom: 24,
                   child: AnimatedSlide(
-                    offset: state is MapReady ? Offset.zero : const Offset(0, 1),
+                    offset: state is MapReady
+                        ? Offset.zero
+                        : const Offset(0, 1),
                     duration: const Duration(milliseconds: 400),
                     curve: Curves.easeOutCubic,
                     child: FilledButton.icon(
@@ -74,7 +76,10 @@ class HomeMapPage extends StatelessWidget {
     );
   }
 
-  Future<void> _showRequestSheet(BuildContext context, MapReady mapState) async {
+  Future<void> _showRequestSheet(
+    BuildContext context,
+    MapReady mapState,
+  ) async {
     final trip = await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -89,9 +94,9 @@ class HomeMapPage extends StatelessWidget {
     );
 
     if (trip != null && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('trip_requested_success'.tr())),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('trip_requested_success'.tr())));
       context.router.push(TrackingRoute(tripId: trip.id));
     }
   }
