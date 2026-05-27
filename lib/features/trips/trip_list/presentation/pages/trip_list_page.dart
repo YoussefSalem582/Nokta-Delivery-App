@@ -23,8 +23,8 @@ class TripListPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => sl<TripListBloc>()..add(const TripListLoadRequested()),
+    return BlocProvider.value(
+      value: sl<TripListBloc>(),
       child: Scaffold(
         backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
         appBar: AppBar(

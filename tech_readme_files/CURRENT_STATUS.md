@@ -2,7 +2,7 @@
 
 > [INDEX](INDEX.md) > Current Status
 >
-> **Last Updated:** May 27, 2026 — Trips list shows pinned current trip card with Track CTA and trip history section.
+> **Last Updated:** May 27, 2026 — Trip list, home ride request, and live tracking share shell-scoped `TripListBloc` with Hive cache sync.
 
 > **Version:** `1.0.0+1`
 > **Flutter:** 3.16+ (SDK ^3.12.0)
@@ -28,7 +28,7 @@ Nokta is a Flutter ride-hailing / delivery MVP template with Clean Architecture 
 |---------|--------|
 | Auth (splash, onboarding, login, register) | ✅ Demo complete |
 | Home / map / ride request | ✅ Demo complete (payment/promo pickers wired) |
-| Trips (list, detail, tracking) | ✅ Demo complete (current trip card + history sections, driver profile, in-app chat + simulated call) |
+| Trips (list, detail, tracking) | ✅ Demo complete (connected cache sync across home/tracking/history, current trip card, driver profile, chat + call) |
 | Notifications | ✅ Demo complete |
 | Profile / orders | ✅ Demo complete (wallet top-up, edit name, order details) |
 | Settings (theme, locale) | ✅ Complete |

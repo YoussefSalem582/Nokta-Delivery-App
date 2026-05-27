@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:delivery_app/core/error/failures.dart';
@@ -17,11 +18,13 @@ class TripDetailBloc extends Bloc<TripDetailEvent, TripDetailState> {
     required UpdateTripStatusUseCase updateTripStatus,
     required AuthRepository authRepository,
     required FcmService fcmService,
+    VoidCallback? onTripsChanged,
   })  : _getCachedTripDetail = getCachedTripDetail,
         _getTripDetail = getTripDetail,
         _updateTripStatus = updateTripStatus,
         _authRepository = authRepository,
         _fcmService = fcmService,
+        _onTripsChanged = onTripsChanged,
         super(const TripDetailInitial()) {
     on<TripDetailLoadRequested>(_onLoad);
     on<TripDetailStatusUpdateRequested>(_onStatusUpdate);
@@ -33,6 +36,7 @@ class TripDetailBloc extends Bloc<TripDetailEvent, TripDetailState> {
   final UpdateTripStatusUseCase _updateTripStatus;
   final AuthRepository _authRepository;
   final FcmService _fcmService;
+  final VoidCallback? _onTripsChanged;
 
   Future<void> _onLoad(
     TripDetailLoadRequested event,
@@ -75,6 +79,7 @@ class TripDetailBloc extends Bloc<TripDetailEvent, TripDetailState> {
             tripId: trip.id,
           );
         }
+        _onTripsChanged?.call();
       },
     );
   }
@@ -110,6 +115,7 @@ class TripDetailBloc extends Bloc<TripDetailEvent, TripDetailState> {
           body: 'status_completed',
           tripId: trip.id,
         );
+        _onTripsChanged?.call();
         emit(TripDetailLoaded(trip));
       },
     );

@@ -1,6 +1,7 @@
 import 'package:delivery_app/shared/widgets/navigation/app_bottom_nav_bar.dart';
 import 'package:delivery_app/features/home/map_view/presentation/pages/home_map_page.dart';
 import 'package:delivery_app/features/notifications/notification_list/presentation/bloc/notification_bloc.dart';
+import 'package:delivery_app/features/trips/trip_list/presentation/bloc/trip_list_bloc.dart';
 import 'package:delivery_app/features/notifications/notification_list/presentation/pages/notifications_page.dart';
 import 'package:delivery_app/features/profile/profile_view/presentation/pages/profile_page.dart';
 import 'package:delivery_app/features/trips/trip_list/presentation/pages/trip_list_page.dart';
@@ -25,6 +26,9 @@ class _MainShellPageState extends State<MainShellPage> {
       index,
       initialLocation: index == widget.navigationShell.currentIndex,
     );
+    if (index == 1) {
+      sl<TripListBloc>().add(const TripListCacheSyncRequested());
+    }
     if (index == 2) {
       sl<NotificationBloc>().add(const NotificationLoadRequested());
     }

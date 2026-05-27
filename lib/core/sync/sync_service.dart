@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 import 'package:workmanager/workmanager.dart';
 import 'package:delivery_app/features/auth/shared/domain/repositories/auth_repository.dart';
@@ -15,6 +16,7 @@ class SyncService {
     required AuthRepository authRepository,
     required NetworkStatus networkStatus,
     required Talker talker,
+    this.onTripsChanged,
   })  : _tripRepository = tripRepository,
         _orderRepository = orderRepository,
         _authRepository = authRepository,
@@ -26,6 +28,7 @@ class SyncService {
   final AuthRepository _authRepository;
   final NetworkStatus _networkStatus;
   final Talker _talker;
+  VoidCallback? onTripsChanged;
 
   StreamSubscription<bool>? _subscription;
   bool _wasOffline = false;
@@ -57,6 +60,7 @@ class SyncService {
     await _orderRepository.getOrders(forceRefresh: true);
     await _authRepository.getProfile(forceRefresh: true);
     _talker.info('[SyncService] Sync complete');
+    onTripsChanged?.call();
   }
 
   Future<void> dispose() async {

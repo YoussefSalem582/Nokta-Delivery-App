@@ -5,6 +5,7 @@ import 'package:delivery_app/features/trips/shared/domain/usecases/trip_usecases
 import 'package:delivery_app/core/network/fcm_service.dart';
 import 'package:delivery_app/core/utils/constants.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
@@ -15,14 +16,17 @@ class RequestRideBloc extends Bloc<RequestRideEvent, RequestRideState> {
   RequestRideBloc({
     required RequestTripUseCase requestTrip,
     required FcmService fcmService,
+    VoidCallback? onTripsChanged,
   })  : _requestTrip = requestTrip,
         _fcmService = fcmService,
+        _onTripsChanged = onTripsChanged,
         super(const RequestRideInitial()) {
     on<RequestRideSubmitted>(_onSubmit);
   }
 
   final RequestTripUseCase _requestTrip;
   final FcmService _fcmService;
+  final VoidCallback? _onTripsChanged;
 
   Future<void> _onSubmit(
     RequestRideSubmitted event,
@@ -47,6 +51,7 @@ class RequestRideBloc extends Bloc<RequestRideEvent, RequestRideState> {
           body: 'notification_trip_accepted',
           tripId: trip.id,
         );
+        _onTripsChanged?.call();
         emit(RequestRideSuccess(trip));
       },
     );

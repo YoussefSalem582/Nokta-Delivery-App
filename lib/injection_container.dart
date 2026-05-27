@@ -66,6 +66,10 @@ import 'features/trips/tracking/presentation/bloc/tracking_bloc.dart';
 
 final sl = GetIt.instance;
 
+void notifyTripsCacheChanged() {
+  sl<TripListBloc>().add(const TripListCacheSyncRequested());
+}
+
 Future<void> initDependencies() async {
   // ─── External ────────────────────────────────────────────────
   final talker = createTalker();
@@ -221,7 +225,7 @@ Future<void> initDependencies() async {
       forgotPassword: sl(),
     ),
   );
-  sl.registerFactory(
+  sl.registerLazySingleton(
     () => TripListBloc(
       getCachedTrips: sl(),
       getTrips: sl(),
@@ -236,10 +240,15 @@ Future<void> initDependencies() async {
       updateTripStatus: sl(),
       authRepository: sl(),
       fcmService: sl(),
+      onTripsChanged: notifyTripsCacheChanged,
     ),
   );
   sl.registerFactory(
-    () => RequestRideBloc(requestTrip: sl(), fcmService: sl()),
+    () => RequestRideBloc(
+      requestTrip: sl(),
+      fcmService: sl(),
+      onTripsChanged: notifyTripsCacheChanged,
+    ),
   );
   sl.registerFactory(() => MapBloc());
   sl.registerFactory(
@@ -247,6 +256,10 @@ Future<void> initDependencies() async {
       routeService: sl(),
       getTripDetail: sl(),
       getDriverForTrip: sl(),
+      updateTripStatus: sl(),
+      authRepository: sl(),
+      fcmService: sl(),
+      onTripsChanged: notifyTripsCacheChanged,
     ),
   );
   sl.registerFactory(
@@ -293,7 +306,10 @@ Future<void> initDependencies() async {
   final fcm = sl<FcmService>();
   fcm.onNotification = (_) {
     sl<NotificationBloc>().add(const NotificationReceived());
+    notifyTripsCacheChanged();
   };
+
+  sl<SyncService>().onTripsChanged = notifyTripsCacheChanged;
 }
 
 void _registerHiveAdapters() {

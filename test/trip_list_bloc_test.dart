@@ -104,6 +104,23 @@ void main() {
         TripListLoaded(trips: freshTrips, isOffline: false),
       ],
     );
+
+    final syncedTrips = [trips.first.copyWith(id: 'synced-current')];
+
+    blocTest<TripListBloc, TripListState>(
+      'cache sync updates loaded trips from hive without loading state',
+      build: () {
+        when(() => getCachedTrips(any()))
+            .thenAnswer((_) async => Right(syncedTrips));
+        when(() => networkStatus.isOnline).thenAnswer((_) async => true);
+        return buildBloc();
+      },
+      seed: () => TripListLoaded(trips: trips, isOffline: false),
+      act: (bloc) => bloc.add(const TripListCacheSyncRequested()),
+      expect: () => [
+        TripListLoaded(trips: syncedTrips, isOffline: false),
+      ],
+    );
   });
 
   group('RequestRideBloc', () {

@@ -4,6 +4,22 @@
 
 ---
 
+## 2026-05-27 — Connected trip data flow (home, tracking, history)
+
+**What changed:** Home ride request, live tracking, and trips list now share a single shell-scoped `TripListBloc` backed by Hive.
+
+**Data flow:**
+
+- `TripListBloc` registered as lazy singleton + provided in `app.dart`
+- `TripListCacheSyncRequested` re-reads Hive without loading flash or mock force-refresh
+- `notifyTripsCacheChanged()` wired from ride request, tracking completion, trip detail updates, FCM, and `SyncService`
+- Trips tab switch triggers cache sync (mirrors notifications tab pattern)
+- `TrackingBloc` persists `inProgress` on load and `completed` on animation finish (wallet + FCM)
+
+**Files touched:** `app.dart`, `injection_container.dart`, `sync_service.dart`, `trip_list_bloc.dart`, `tracking_bloc.dart`, `map_bloc.dart`, `trip_detail_bloc.dart`, `main_shell_page.dart`, `trip_list_page.dart`
+
+---
+
 ## 2026-05-27 — Trips list current trip card + history sections
 
 **What changed:** Restructured the trips tab into pinned **Current Trip** and **Trip History** sections.

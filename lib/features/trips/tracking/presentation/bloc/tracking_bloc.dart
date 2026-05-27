@@ -1,12 +1,15 @@
 import 'dart:async';
 
+import 'package:delivery_app/core/network/fcm_service.dart';
 import 'package:delivery_app/core/network/route_service.dart';
 import 'package:delivery_app/core/utils/route_geometry.dart';
+import 'package:delivery_app/features/auth/shared/domain/repositories/auth_repository.dart';
 import 'package:delivery_app/features/trips/shared/domain/entities/driver_entity.dart';
 import 'package:delivery_app/features/trips/shared/domain/entities/trip_entity.dart';
 import 'package:delivery_app/features/trips/shared/domain/usecases/get_driver_for_trip_usecase.dart';
 import 'package:delivery_app/features/trips/shared/domain/usecases/trip_usecases.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -18,9 +21,17 @@ class TrackingBloc extends Bloc<TrackingEvent, TrackingState> {
     required RouteService routeService,
     required GetTripDetailUseCase getTripDetail,
     required GetDriverForTripUseCase getDriverForTrip,
+    required UpdateTripStatusUseCase updateTripStatus,
+    required AuthRepository authRepository,
+    required FcmService fcmService,
+    VoidCallback? onTripsChanged,
   })  : _routeService = routeService,
         _getTripDetail = getTripDetail,
         _getDriverForTrip = getDriverForTrip,
+        _updateTripStatus = updateTripStatus,
+        _authRepository = authRepository,
+        _fcmService = fcmService,
+        _onTripsChanged = onTripsChanged,
         super(const TrackingInitial()) {
     on<TrackingLoadRequested>(_onLoadRequested);
     on<TrackingTick>(_onTick);
@@ -31,6 +42,10 @@ class TrackingBloc extends Bloc<TrackingEvent, TrackingState> {
   final RouteService _routeService;
   final GetTripDetailUseCase _getTripDetail;
   final GetDriverForTripUseCase _getDriverForTrip;
+  final UpdateTripStatusUseCase _updateTripStatus;
+  final AuthRepository _authRepository;
+  final FcmService _fcmService;
+  final VoidCallback? _onTripsChanged;
 
   Timer? _animationTimer;
   Timer? _statusPollTimer;
@@ -66,14 +81,16 @@ class TrackingBloc extends Bloc<TrackingEvent, TrackingState> {
       return;
     }
 
+    final activeTrip = await _ensureInProgress(trip);
+
     DriverEntity? driver;
     final driverResult = await _getDriverForTrip(
       GetDriverForTripParams(driverName: trip.driverName),
     );
     driverResult.fold((_) {}, (value) => driver = value);
 
-    final routeOrigin = _routeOrigin(trip, driver);
-    final dropoff = LatLng(trip.dropoffLat, trip.dropoffLng);
+    final routeOrigin = _routeOrigin(activeTrip, driver);
+    final dropoff = LatLng(activeTrip.dropoffLat, activeTrip.dropoffLng);
 
     try {
       final routeResult = await _routeService.getRoute(
@@ -87,13 +104,13 @@ class TrackingBloc extends Bloc<TrackingEvent, TrackingState> {
       _startedAt = DateTime.now();
 
       final split = splitRouteAtProgress(_route, 0);
-      final driverRating = driver?.rating ?? trip.driverRating;
-      final driverVehicle = driver?.vehicle ?? trip.driverVehicle;
-      final driverPhone = driver?.phone ?? trip.driverPhone;
+      final driverRating = driver?.rating ?? activeTrip.driverRating;
+      final driverVehicle = driver?.vehicle ?? activeTrip.driverVehicle;
+      final driverPhone = driver?.phone ?? activeTrip.driverPhone;
 
       emit(
         TrackingActive(
-          trip: trip,
+          trip: activeTrip,
           route: _route,
           driverPosition: _route.first,
           driverBearing: bearingAtProgress(_route, 0),
@@ -155,9 +172,10 @@ class TrackingBloc extends Bloc<TrackingEvent, TrackingState> {
 
     if (progress >= 1.0) {
       _cancelTimers();
+      unawaited(_completeTrip(current.trip));
       emit(
         TrackingCompleted(
-          trip: current.trip,
+          trip: current.trip.copyWith(status: TripStatus.completed),
           route: current.route,
           driverPosition: interpolateAlongRoute(_route, 1.0),
           driverBearing: bearingAtProgress(_route, 1.0),
@@ -228,6 +246,51 @@ class TrackingBloc extends Bloc<TrackingEvent, TrackingState> {
     Emitter<TrackingState> emit,
   ) async {
     _cancelTimers();
+  }
+
+  Future<TripEntity> _ensureInProgress(TripEntity trip) async {
+    if (trip.status == TripStatus.inProgress ||
+        trip.status == TripStatus.completed ||
+        trip.status == TripStatus.cancelled) {
+      return trip;
+    }
+
+    final result = await _updateTripStatus(
+      UpdateTripStatusParams(tripId: trip.id, status: TripStatus.inProgress),
+    );
+    return result.fold(
+      (_) => trip,
+      (updated) {
+        _onTripsChanged?.call();
+        return updated;
+      },
+    );
+  }
+
+  Future<void> _completeTrip(TripEntity trip) async {
+    if (trip.status == TripStatus.completed) {
+      _onTripsChanged?.call();
+      return;
+    }
+
+    final result = await _updateTripStatus(
+      UpdateTripStatusParams(
+        tripId: trip.id,
+        status: TripStatus.completed,
+      ),
+    );
+    await result.fold(
+      (_) async {},
+      (completed) async {
+        await _authRepository.updateWalletBalance(-trip.fare);
+        await _fcmService.simulateTripNotification(
+          title: 'notification_trip_update',
+          body: 'status_completed',
+          tripId: completed.id,
+        );
+        _onTripsChanged?.call();
+      },
+    );
   }
 
   @override

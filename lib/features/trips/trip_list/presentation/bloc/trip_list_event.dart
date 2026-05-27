@@ -13,3 +13,8 @@ class TripListLoadRequested extends TripListEvent {
 class TripListRefreshRequested extends TripListEvent {
   const TripListRefreshRequested();
 }
+
+/// Re-reads trips from Hive without a loading state or remote force-refresh.
+class TripListCacheSyncRequested extends TripListEvent {
+  const TripListCacheSyncRequested();
+}

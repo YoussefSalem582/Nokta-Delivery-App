@@ -24,6 +24,7 @@ class TripListBloc extends Bloc<TripListEvent, TripListState> {
         super(const TripListInitial()) {
     on<TripListLoadRequested>(_onLoad);
     on<TripListRefreshRequested>(_onRefresh);
+    on<TripListCacheSyncRequested>(_onCacheSync);
   }
 
   final GetCachedTripsUseCase _getCachedTrips;
@@ -66,6 +67,36 @@ class TripListBloc extends Bloc<TripListEvent, TripListState> {
     result.fold(
       (Failure failure) => emit(TripListError(failure.message)),
       (trips) => emit(TripListLoaded(trips: trips, isOffline: isOffline)),
+    );
+  }
+
+  Future<void> _onCacheSync(
+    TripListCacheSyncRequested event,
+    Emitter<TripListState> emit,
+  ) async {
+    final current = state;
+    final cachedResult = await _getCachedTrips(const NoParams());
+    final isOffline = !(await _networkStatus.isOnline);
+
+    await cachedResult.fold(
+      (_) async {
+        if (current is! TripListLoaded) {
+          add(const TripListLoadRequested());
+        }
+      },
+      (cached) async {
+        if (current is TripListLoaded) {
+          emit(current.copyWith(trips: cached, isOffline: isOffline));
+          return;
+        }
+        if (cached.isNotEmpty) {
+          emit(TripListLoaded(trips: cached, isOffline: isOffline));
+          return;
+        }
+        if (current is! TripListLoaded && current is! TripListLoading) {
+          add(const TripListLoadRequested());
+        }
+      },
     );
   }
 }

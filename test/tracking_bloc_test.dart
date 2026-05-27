@@ -1,12 +1,16 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:dartz/dartz.dart';
 import 'package:delivery_app/core/error/failures.dart';
+import 'package:delivery_app/core/network/fcm_service.dart';
 import 'package:delivery_app/core/network/route_service.dart';
+import 'package:delivery_app/features/auth/shared/domain/entities/user_entity.dart';
+import 'package:delivery_app/features/auth/shared/domain/repositories/auth_repository.dart';
 import 'package:delivery_app/features/trips/shared/domain/entities/driver_entity.dart';
 import 'package:delivery_app/features/trips/shared/domain/entities/trip_entity.dart';
 import 'package:delivery_app/features/trips/shared/domain/usecases/get_driver_for_trip_usecase.dart';
 import 'package:delivery_app/features/trips/shared/domain/usecases/trip_usecases.dart';
 import 'package:delivery_app/features/trips/tracking/presentation/bloc/tracking_bloc.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:mocktail/mocktail.dart';
@@ -17,6 +21,13 @@ class MockGetTripDetailUseCase extends Mock implements GetTripDetailUseCase {}
 
 class MockGetDriverForTripUseCase extends Mock
     implements GetDriverForTripUseCase {}
+
+class MockUpdateTripStatusUseCase extends Mock
+    implements UpdateTripStatusUseCase {}
+
+class MockAuthRepository extends Mock implements AuthRepository {}
+
+class MockFcmService extends Mock implements FcmService {}
 
 TripEntity _sampleTrip({TripStatus status = TripStatus.inProgress}) {
   return TripEntity(
@@ -49,21 +60,56 @@ void main() {
   late MockRouteService routeService;
   late MockGetTripDetailUseCase getTripDetail;
   late MockGetDriverForTripUseCase getDriverForTrip;
+  late MockUpdateTripStatusUseCase updateTripStatus;
+  late MockAuthRepository authRepository;
+  late MockFcmService fcmService;
 
   setUpAll(() {
     registerFallbackValue(const LatLng(0, 0));
     registerFallbackValue(const GetTripDetailParams(''));
     registerFallbackValue(const GetDriverForTripParams());
+    registerFallbackValue(
+      const UpdateTripStatusParams(
+        tripId: '',
+        status: TripStatus.inProgress,
+      ),
+    );
   });
 
   setUp(() {
     routeService = MockRouteService();
     getTripDetail = MockGetTripDetailUseCase();
     getDriverForTrip = MockGetDriverForTripUseCase();
+    updateTripStatus = MockUpdateTripStatusUseCase();
+    authRepository = MockAuthRepository();
+    fcmService = MockFcmService();
 
     when(() => getDriverForTrip(any())).thenAnswer(
       (_) async => const Right(_driver),
     );
+    when(() => updateTripStatus(any())).thenAnswer(
+      (invocation) async {
+        final params = invocation.positionalArguments.first
+            as UpdateTripStatusParams;
+        return Right(_sampleTrip(status: params.status));
+      },
+    );
+    when(() => authRepository.updateWalletBalance(any())).thenAnswer(
+      (_) async => UserEntity(
+        id: '1',
+        name: 'User',
+        email: 'user@test.com',
+        phone: '+201000000000',
+        walletBalance: 0,
+      ),
+    );
+    when(
+      () => fcmService.simulateTripNotification(
+        title: any(named: 'title'),
+        body: any(named: 'body'),
+        tripId: any(named: 'tripId'),
+      ),
+    ).thenAnswer((_) async {});
     when(
       () => routeService.getRoute(
         pickup: any(named: 'pickup'),
@@ -82,11 +128,15 @@ void main() {
     );
   });
 
-  TrackingBloc buildBloc() {
+  TrackingBloc buildBloc({VoidCallback? onTripsChanged}) {
     return TrackingBloc(
       routeService: routeService,
       getTripDetail: getTripDetail,
       getDriverForTrip: getDriverForTrip,
+      updateTripStatus: updateTripStatus,
+      authRepository: authRepository,
+      fcmService: fcmService,
+      onTripsChanged: onTripsChanged,
     );
   }
 
