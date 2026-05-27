@@ -1,5 +1,5 @@
-import 'package:delivery_app/core/architecture/datasources/route_cache_local_datasource.dart';
-import 'package:delivery_app/core/architecture/entities/route_cache_entity.dart';
+import 'package:delivery_app/core/cache/datasources/route_cache_local_datasource.dart';
+import 'package:delivery_app/features/trips/shared/domain/entities/route_cache_entity.dart';
 import 'package:delivery_app/core/utils/demo_destinations.dart';
 import 'package:delivery_app/core/utils/route_geometry.dart';
 import 'package:dio/dio.dart';

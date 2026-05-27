@@ -1,5 +1,5 @@
 class ApiEndpoints {
-  static const baseUrl = 'https://mock.delivery.app/api';
+  static const baseUrl = 'https://mock.nokta.app/api';
   static const trips = '/trips';
   static const orders = '/orders';
   static const profile = '/profile';

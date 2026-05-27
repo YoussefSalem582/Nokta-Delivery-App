@@ -4,8 +4,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 import 'package:uuid/uuid.dart';
-import 'package:delivery_app/core/architecture/entities/notification_entity.dart';
-import 'package:delivery_app/core/architecture/repositories/notification_repository.dart';
+import 'package:delivery_app/features/notifications/shared/domain/entities/notification_entity.dart';
+import 'package:delivery_app/features/notifications/shared/domain/repositories/notification_repository.dart';
 
 typedef NotificationHandler = void Function(NotificationEntity notification);
 

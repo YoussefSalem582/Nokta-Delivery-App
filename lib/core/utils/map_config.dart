@@ -24,5 +24,5 @@ class MapConfig {
   static const tileUrlTemplate = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
   static const darkTileUrlTemplate =
       'https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png';
-  static const userAgentPackageName = 'com.showcase.delivery.delivery_app';
+  static const userAgentPackageName = 'com.nokta.app';
 }

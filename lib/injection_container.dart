@@ -4,53 +4,70 @@ import 'package:get_it/get_it.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:talker_flutter/talker_flutter.dart';
-import 'package:delivery_app/core/architecture/datasources/auth_local_datasource.dart';
-import 'package:delivery_app/core/architecture/datasources/cache_metadata_local_datasource.dart';
-import 'package:delivery_app/core/architecture/datasources/notification_local_datasource.dart';
-import 'package:delivery_app/core/architecture/datasources/order_local_datasource.dart';
-import 'package:delivery_app/core/architecture/datasources/pending_sync_local_datasource.dart';
-import 'package:delivery_app/core/architecture/datasources/order_remote_datasource.dart';
-import 'package:delivery_app/core/architecture/datasources/route_cache_local_datasource.dart';
-import 'package:delivery_app/core/architecture/datasources/trip_local_datasource.dart';
-import 'package:delivery_app/core/architecture/datasources/trip_remote_datasource.dart';
-import 'package:delivery_app/core/architecture/entities/hive_adapters.dart';
-import 'package:delivery_app/core/architecture/repositories/auth_repository.dart';
-import 'package:delivery_app/core/architecture/repositories/auth_repository_impl.dart';
-import 'package:delivery_app/core/architecture/repositories/notification_repository.dart';
-import 'package:delivery_app/core/architecture/repositories/notification_repository_impl.dart';
-import 'package:delivery_app/core/architecture/repositories/order_repository.dart';
-import 'package:delivery_app/core/architecture/repositories/order_repository_impl.dart';
-import 'package:delivery_app/core/architecture/repositories/trip_repository.dart';
-import 'package:delivery_app/core/architecture/repositories/trip_repository_impl.dart';
-import 'package:delivery_app/core/network/dio_client.dart';
-import 'package:delivery_app/core/network/fcm_service.dart';
-import 'package:delivery_app/core/network/network_status.dart';
-import 'package:delivery_app/core/network/offline_cubit.dart';
-import 'package:delivery_app/core/network/route_service.dart';
-import 'package:delivery_app/core/utils/map_tile_cache.dart';
-import 'package:delivery_app/core/sync/sync_service.dart';
-import 'package:delivery_app/core/theme/theme_cubit.dart';
-import 'package:delivery_app/core/utils/talker_setup.dart';
-import 'package:delivery_app/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:delivery_app/features/home/presentation/bloc/map_bloc.dart';
-import 'package:delivery_app/features/notifications/presentation/bloc/notification_bloc.dart';
-import 'package:delivery_app/features/profile/presentation/bloc/order_bloc.dart';
-import 'package:delivery_app/features/profile/presentation/bloc/profile_bloc.dart';
-import 'package:delivery_app/features/trips/presentation/bloc/trip_detail_bloc.dart';
-import 'package:delivery_app/features/trips/presentation/bloc/trip_list_bloc.dart';
-import 'package:delivery_app/routes/app_router.dart';
+
+import 'core/api/api_client.dart';
+import 'core/cache/datasources/cache_metadata_local_datasource.dart';
+import 'core/cache/datasources/pending_sync_local_datasource.dart';
+import 'core/cache/datasources/route_cache_local_datasource.dart';
+import 'core/cache/entities/hive_adapters.dart';
+import 'core/network/connectivity_cubit.dart';
+import 'core/network/connectivity_service.dart';
+import 'core/network/fcm_service.dart';
+import 'core/network/network_status.dart';
+import 'core/network/route_service.dart';
+import 'core/sync/sync_service.dart';
+import 'core/utils/map_tile_cache.dart';
+import 'core/utils/talker_setup.dart';
+import 'features/auth/shared/data/datasources/auth_local_datasource.dart';
+import 'features/auth/shared/data/repositories/auth_repository_impl.dart';
+import 'features/auth/shared/domain/repositories/auth_repository.dart';
+import 'features/auth/shared/domain/usecases/forgot_password_usecase.dart';
+import 'features/auth/shared/domain/usecases/get_cached_user_usecase.dart';
+import 'features/auth/shared/domain/usecases/login_usecase.dart';
+import 'features/auth/shared/domain/usecases/logout_usecase.dart';
+import 'features/auth/shared/domain/usecases/register_usecase.dart';
+import 'features/auth/shared/presentation/bloc/auth_bloc.dart';
+import 'features/home/map_view/presentation/bloc/map_bloc.dart';
+import 'features/notifications/notification_list/presentation/bloc/notification_bloc.dart';
+import 'features/notifications/shared/data/datasources/notification_local_datasource.dart';
+import 'features/notifications/shared/data/repositories/notification_repository_impl.dart';
+import 'features/notifications/shared/domain/repositories/notification_repository.dart';
+import 'features/profile/orders/presentation/bloc/order_bloc.dart';
+import 'features/profile/profile_view/presentation/bloc/profile_bloc.dart';
+import 'features/profile/shared/data/datasources/order_local_datasource.dart';
+import 'features/profile/shared/data/datasources/order_remote_datasource.dart';
+import 'features/profile/shared/data/repositories/order_repository_impl.dart';
+import 'features/profile/shared/domain/repositories/order_repository.dart';
+import 'features/profile/shared/domain/usecases/get_profile_usecase.dart';
+import 'features/profile/shared/domain/usecases/order_usecases.dart';
+import 'features/notifications/shared/domain/usecases/notification_usecases.dart';
+import 'features/trips/shared/domain/usecases/trip_usecases.dart';
+import 'features/settings/presentation/cubit/settings_cubit.dart';
+import 'features/trips/shared/data/datasources/trip_local_datasource.dart';
+import 'features/trips/shared/data/datasources/trip_remote_datasource.dart';
+import 'features/trips/shared/data/repositories/trip_repository_impl.dart';
+import 'features/trips/shared/domain/repositories/trip_repository.dart';
+import 'features/trips/trip_detail/presentation/bloc/trip_detail_bloc.dart';
+import 'features/trips/trip_list/presentation/bloc/trip_list_bloc.dart';
 
 final sl = GetIt.instance;
 
 Future<void> initDependencies() async {
+  // ─── External ────────────────────────────────────────────────
   final talker = createTalker();
   sl.registerLazySingleton<Talker>(() => talker);
 
   final prefs = await SharedPreferences.getInstance();
   sl.registerLazySingleton<SharedPreferences>(() => prefs);
-  sl.registerLazySingleton(() => ThemeCubit(sl()));
-  sl.registerLazySingleton(() => LocaleCubit(sl()));
 
+  // ─── Logger / API ────────────────────────────────────────────
+  sl.registerLazySingleton<ApiClient>(() => ApiClient(talker: sl()));
+  sl.registerLazySingleton<Dio>(() => sl<ApiClient>().dio);
+
+  // ─── Settings ────────────────────────────────────────────────
+  sl.registerLazySingleton(() => SettingsCubit(sharedPreferences: sl()));
+
+  // ─── Hive ────────────────────────────────────────────────────
   await Hive.initFlutter();
   _registerHiveAdapters();
 
@@ -70,13 +87,23 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => cacheMetaBox);
   sl.registerLazySingleton(() => routeCacheBox);
 
+  // ─── Connectivity ────────────────────────────────────────────
   sl.registerLazySingleton(() => Connectivity());
   sl.registerLazySingleton(() => NetworkStatus(sl()));
-  sl.registerLazySingleton(() => OfflineCubit(sl()));
-  sl.registerLazySingleton<Dio>(() => createDioClient(sl<Talker>()));
-  sl.registerLazySingleton(() => RouteService(sl(), sl(), sl()));
+  sl.registerLazySingleton(() => ConnectivityService(sl()));
+  final connectivityService = sl<ConnectivityService>();
+  await connectivityService.init();
+  sl.registerLazySingleton(
+    () => ConnectivityCubit(service: sl<ConnectivityService>()),
+  );
+
+  // ─── Map / route services ────────────────────────────────────
+  sl.registerLazySingleton(
+    () => RouteService(sl(), sl(), sl()),
+  );
   await MapTileCache.init();
 
+  // ─── Data sources ────────────────────────────────────────────
   sl.registerLazySingleton(() => TripLocalDataSource(sl()));
   sl.registerLazySingleton(() => TripRemoteDataSource(sl()));
   sl.registerLazySingleton(() => OrderLocalDataSource(sl()));
@@ -87,6 +114,7 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => CacheMetadataLocalDataSource(sl()));
   sl.registerLazySingleton(() => RouteCacheLocalDataSource(sl()));
 
+  // ─── Repositories ────────────────────────────────────────────
   sl.registerLazySingleton<TripRepository>(
     () => TripRepositoryImpl(
       local: sl(),
@@ -118,6 +146,29 @@ Future<void> initDependencies() async {
     () => NotificationRepositoryImpl(sl()),
   );
 
+  // ─── Use cases ───────────────────────────────────────────────
+  sl.registerLazySingleton(() => LoginUseCase(sl()));
+  sl.registerLazySingleton(() => RegisterUseCase(sl()));
+  sl.registerLazySingleton(() => LogoutUseCase(sl()));
+  sl.registerLazySingleton(() => ForgotPasswordUseCase(sl()));
+  sl.registerLazySingleton(() => GetCachedUserUseCase(sl()));
+  sl.registerLazySingleton(() => GetProfileUseCase(sl()));
+  sl.registerLazySingleton(() => RefreshProfileUseCase(sl()));
+  sl.registerLazySingleton(() => GetTripsUseCase(sl()));
+  sl.registerLazySingleton(() => RefreshTripsUseCase(sl()));
+  sl.registerLazySingleton(() => GetCachedTripsUseCase(sl()));
+  sl.registerLazySingleton(() => GetTripDetailUseCase(sl()));
+  sl.registerLazySingleton(() => GetCachedTripDetailUseCase(sl()));
+  sl.registerLazySingleton(() => UpdateTripStatusUseCase(sl()));
+  sl.registerLazySingleton(() => RequestTripUseCase(sl()));
+  sl.registerLazySingleton(() => GetOrdersUseCase(sl()));
+  sl.registerLazySingleton(() => RefreshOrdersUseCase(sl()));
+  sl.registerLazySingleton(() => GetCachedOrdersUseCase(sl()));
+  sl.registerLazySingleton(() => GetNotificationsUseCase(sl()));
+  sl.registerLazySingleton(() => MarkNotificationReadUseCase(sl()));
+  sl.registerLazySingleton(() => GetUnreadNotificationCountUseCase(sl()));
+
+  // ─── Services ────────────────────────────────────────────────
   sl.registerLazySingleton(
     () => SyncService(
       tripRepository: sl(),
@@ -127,35 +178,65 @@ Future<void> initDependencies() async {
       talker: sl(),
     ),
   );
-
   sl.registerLazySingleton(
     () => FcmService(notificationRepository: sl(), talker: sl()),
   );
 
-  sl.registerLazySingleton(() => AuthBloc(sl()));
+  // ─── BLoCs ───────────────────────────────────────────────────
+  sl.registerLazySingleton(
+    () => AuthBloc(
+      getCachedUser: sl(),
+      login: sl(),
+      register: sl(),
+      logout: sl(),
+      forgotPassword: sl(),
+    ),
+  );
   sl.registerFactory(
-    () => TripListBloc(repository: sl(), networkStatus: sl()),
+    () => TripListBloc(
+      getCachedTrips: sl(),
+      getTrips: sl(),
+      refreshTrips: sl(),
+      networkStatus: sl(),
+    ),
   );
   sl.registerFactory(
     () => TripDetailBloc(
-      repository: sl(),
+      getCachedTripDetail: sl(),
+      getTripDetail: sl(),
+      updateTripStatus: sl(),
       authRepository: sl(),
       fcmService: sl(),
     ),
   );
-  sl.registerFactory(() => RequestRideBloc(repository: sl(), fcmService: sl()));
+  sl.registerFactory(
+    () => RequestRideBloc(requestTrip: sl(), fcmService: sl()),
+  );
   sl.registerFactory(() => MapBloc());
   sl.registerFactory(() => TrackingBloc(sl()));
-  sl.registerFactory(() => OrderBloc(sl(), sl()));
+  sl.registerFactory(
+    () => OrderBloc(
+      getCachedOrders: sl(),
+      getOrders: sl(),
+      refreshOrders: sl(),
+      networkStatus: sl(),
+    ),
+  );
   sl.registerFactory(
     () => ProfileBloc(
+      getProfile: sl(),
+      refreshProfile: sl(),
       authRepository: sl(),
       networkStatus: sl(),
     ),
   );
-  sl.registerLazySingleton(() => NotificationBloc(sl()));
-
-  sl.registerLazySingleton<AppRouter>(() => AppRouter());
+  sl.registerLazySingleton(
+    () => NotificationBloc(
+      getNotifications: sl(),
+      markNotificationRead: sl(),
+      getUnreadCount: sl(),
+    ),
+  );
 
   final fcm = sl<FcmService>();
   fcm.onNotification = (_) {

@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:talker_flutter/talker_flutter.dart';
 import 'package:workmanager/workmanager.dart';
-import 'package:delivery_app/core/architecture/repositories/auth_repository.dart';
-import 'package:delivery_app/core/architecture/repositories/order_repository.dart';
-import 'package:delivery_app/core/architecture/repositories/trip_repository.dart';
+import 'package:delivery_app/features/auth/shared/domain/repositories/auth_repository.dart';
+import 'package:delivery_app/features/profile/shared/domain/repositories/order_repository.dart';
+import 'package:delivery_app/features/trips/shared/domain/repositories/trip_repository.dart';
 import 'package:delivery_app/core/network/network_status.dart';
 import 'package:delivery_app/core/utils/constants.dart';
 

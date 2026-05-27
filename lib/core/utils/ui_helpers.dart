@@ -1,5 +1,5 @@
-import 'package:delivery_app/core/architecture/entities/trip_entity.dart';
-import 'package:delivery_app/core/widgets/nokta_loading_ring.dart';
+import 'package:delivery_app/features/trips/shared/domain/entities/trip_entity.dart';
+import 'package:delivery_app/shared/widgets/feedback/app_loading_ring.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
@@ -30,7 +30,7 @@ class LoadingView extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const NoktaLoadingRing(),
+          const AppLoadingRing(),
           if (message != null) ...[
             const SizedBox(height: 16),
             Text(message!.tr()),
