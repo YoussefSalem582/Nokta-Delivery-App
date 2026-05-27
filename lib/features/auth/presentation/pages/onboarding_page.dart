@@ -32,13 +32,13 @@ class _OnboardingPageState extends State<OnboardingPage> {
     setState(() => _currentPage = index);
   }
 
-  void _goToLogin() {
-    context.router.replace(const LoginRoute());
+  void _goToAuthChoice() {
+    context.router.replace(const AuthChoiceRoute());
   }
 
   void _goNext() {
     if (_isLastPage) {
-      _goToLogin();
+      _goToAuthChoice();
       return;
     }
     _pageController.nextPage(
@@ -62,7 +62,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
               children: [
                 OnboardingTopBar(
                   showBrand: _currentPage == 0,
-                  onSkip: _goToLogin,
+                  onSkip: _goToAuthChoice,
                 ),
                 Expanded(
                   child: PageView.builder(
@@ -84,8 +84,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                   activeIndex: _currentPage,
                   isLastPage: _isLastPage,
                   onNext: _goNext,
-                  onFinish: _goToLogin,
-                  onSignIn: _isLastPage ? _goToLogin : null,
+                  onFinish: _goToAuthChoice,
                 ),
               ],
             ),

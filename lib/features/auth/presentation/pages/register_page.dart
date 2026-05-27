@@ -14,16 +14,16 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:formz/formz.dart';
 
 @RoutePage()
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+class RegisterPage extends StatefulWidget {
+  const RegisterPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  State<RegisterPage> createState() => _RegisterPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
-  final _emailController = TextEditingController(text: 'demo@delivery.app');
-  final _passwordController = TextEditingController(text: 'password');
+class _RegisterPageState extends State<RegisterPage> {
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
 
   EmailInput _email = const EmailInput.pure();
   PasswordInput _password = const PasswordInput.pure();
@@ -120,23 +120,14 @@ class _LoginPageState extends State<LoginPage> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Center(
-                  child: Hero(
-                    tag: 'app_logo',
-                    child: NoktaBrandIcon(size: 56),
-                  ),
-                ),
-                const SizedBox(height: NoktaSpacing.sm),
-                Text(
-                  'app_name'.tr(),
-                  style: textTheme.headlineSmall,
-                  textAlign: TextAlign.center,
+                  child: NoktaBrandIcon(size: 56),
                 ),
                 const SizedBox(height: NoktaSpacing.md),
                 AuthFormCard(
-                  titleKey: 'login_title',
-                  subtitleKey: 'login_subtitle',
-                  hintKey: 'login_hint',
-                  buttonKey: 'login',
+                  titleKey: 'register_title',
+                  subtitleKey: 'register_subtitle',
+                  hintKey: 'register_hint',
+                  buttonKey: 'register_cta',
                   emailController: _emailController,
                   passwordController: _passwordController,
                   emailErrorText: _emailErrorText(),
@@ -145,10 +136,9 @@ class _LoginPageState extends State<LoginPage> {
                   onSubmit:
                       _isValid && !loading ? () => _submit(context) : null,
                   footer: TextButton(
-                    onPressed: () =>
-                        context.router.replace(const RegisterRoute()),
+                    onPressed: () => context.router.replace(const LoginRoute()),
                     child: Text(
-                      'login_create_account'.tr(),
+                      'register_has_account'.tr(),
                       style: textTheme.labelLarge?.copyWith(
                         color: scheme.primary,
                         fontWeight: FontWeight.w600,

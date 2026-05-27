@@ -11,6 +11,22 @@
 part of 'app_router.dart';
 
 /// generated route for
+/// [AuthChoicePage]
+class AuthChoiceRoute extends PageRouteInfo<void> {
+  const AuthChoiceRoute({List<PageRouteInfo>? children})
+    : super(AuthChoiceRoute.name, initialChildren: children);
+
+  static const String name = 'AuthChoiceRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const AuthChoicePage();
+    },
+  );
+}
+
+/// generated route for
 /// [HomeMapPage]
 class HomeMapRoute extends PageRouteInfo<void> {
   const HomeMapRoute({List<PageRouteInfo>? children})
@@ -102,6 +118,22 @@ class ProfileRoute extends PageRouteInfo<void> {
     name,
     builder: (data) {
       return const ProfilePage();
+    },
+  );
+}
+
+/// generated route for
+/// [RegisterPage]
+class RegisterRoute extends PageRouteInfo<void> {
+  const RegisterRoute({List<PageRouteInfo>? children})
+    : super(RegisterRoute.name, initialChildren: children);
+
+  static const String name = 'RegisterRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const RegisterPage();
     },
   );
 }
