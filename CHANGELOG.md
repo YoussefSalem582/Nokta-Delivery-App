@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **Driver chat and call screens** — In-app `DriverChatPage` (Hive-persisted demo thread with auto-reply) and simulated `DriverCallPage` (connecting → timer → end); routes `/trips/:tripId/chat` and `/trips/:tripId/call`; trip detail and tracking navigate via GoRouter instead of external dialer/SMS.
+- **Driver profile screen** — `DriverProfilePage` at `/trips/:tripId/driver` merges trip + mock driver data; tap driver card (trip detail) or driver row (tracking) to open; chat/call actions included.
 - Chat layer: `ChatMessageEntity`, `ChatLocalDataSource`, `ChatRepository`, `GetChatMessagesUseCase`, `SendChatMessageUseCase`, `DriverChatBloc`, `DriverCallBloc`.
 - **Functional UI controls** — Shell tab AppBars use Nokta logo instead of stub hamburger menus; `ProfileAvatarButton` navigates to profile tab; wallet top-up, profile edit, order details, ride payment/promo pickers wired with demo actions.
 - Shared widgets: `ShellAppBarLogo`, `ProfileAvatarButton`; `launchSms` in `phone_launcher.dart`; `AuthRepository.updateProfile`; Profile BLoC events `ProfileWalletTopUpRequested`, `ProfileUpdateRequested`.

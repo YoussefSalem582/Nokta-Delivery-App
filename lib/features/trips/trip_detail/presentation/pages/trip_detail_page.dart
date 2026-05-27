@@ -184,29 +184,63 @@ class _DriverCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          AvatarImage(
-            imageUrl: avatarUrl,
-            fallback: name,
-            radius: 24,
-          ),
-          const SizedBox(width: AppSpacing.md),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(name, style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      color: scheme.onSurface,
-                    )),
-                Row(
-                  children: [
-                    Icon(Icons.star, size: 16, color: AppColors.tertiaryFixedDim),
-                    const SizedBox(width: 4),
-                    Text('4.9 • 124 rides', style: Theme.of(context).textTheme.bodyMedium),
-                  ],
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () => context.pushNamed(
+                  RouteNames.driverProfile,
+                  pathParameters: {'tripId': tripId},
                 ),
-                if (phone != null && phone!.isNotEmpty)
-                  Text(phone!, style: Theme.of(context).textTheme.bodyMedium),
-              ],
+                borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                child: Semantics(
+                  label: 'view_driver_profile'.tr(),
+                  button: true,
+                  child: Row(
+                    children: [
+                      AvatarImage(
+                        imageUrl: avatarUrl,
+                        fallback: name,
+                        radius: 24,
+                      ),
+                      const SizedBox(width: AppSpacing.md),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              name,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .labelLarge
+                                  ?.copyWith(color: scheme.onSurface),
+                            ),
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.star,
+                                  size: 16,
+                                  color: AppColors.tertiaryFixedDim,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  '4.9 • 124 rides',
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                ),
+                              ],
+                            ),
+                            if (phone != null && phone!.isNotEmpty)
+                              Text(
+                                phone!,
+                                style: Theme.of(context).textTheme.bodyMedium,
+                              ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ),
           ),
           if (phone != null && phone!.isNotEmpty) ...[

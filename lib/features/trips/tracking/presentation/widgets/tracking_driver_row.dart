@@ -35,44 +35,64 @@ class TrackingDriverRow extends StatelessWidget {
 
     return Row(
       children: [
-        AvatarImage(
-          imageUrl: avatarUrl,
-          fallback: driverName,
-          radius: 24,
-        ),
-        const SizedBox(width: AppSpacing.md),
         Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '${'driver'.tr()}: $driverName',
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      color: scheme.onSurface,
-                    ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () => context.pushNamed(
+                RouteNames.driverProfile,
+                pathParameters: {'tripId': tripId},
               ),
-              if (subtitleParts.isNotEmpty)
-                Row(
+              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+              child: Semantics(
+                label: 'view_driver_profile'.tr(),
+                button: true,
+                child: Row(
                   children: [
-                    if (rating != null) ...[
-                      Icon(
-                        Icons.star,
-                        size: 16,
-                        color: AppColors.tertiaryFixedDim,
-                      ),
-                      const SizedBox(width: 4),
-                    ],
-                    Flexible(
-                      child: Text(
-                        subtitleParts.join(' • '),
-                        style: Theme.of(context).textTheme.bodyMedium,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                    AvatarImage(
+                      imageUrl: avatarUrl,
+                      fallback: driverName,
+                      radius: 24,
+                    ),
+                    const SizedBox(width: AppSpacing.md),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '${'driver'.tr()}: $driverName',
+                            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                                  color: scheme.onSurface,
+                                ),
+                          ),
+                          if (subtitleParts.isNotEmpty)
+                            Row(
+                              children: [
+                                if (rating != null) ...[
+                                  Icon(
+                                    Icons.star,
+                                    size: 16,
+                                    color: AppColors.tertiaryFixedDim,
+                                  ),
+                                  const SizedBox(width: 4),
+                                ],
+                                Flexible(
+                                  child: Text(
+                                    subtitleParts.join(' • '),
+                                    style: Theme.of(context).textTheme.bodyMedium,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                        ],
                       ),
                     ),
                   ],
                 ),
-            ],
+              ),
+            ),
           ),
         ),
         if (phone != null && phone!.isNotEmpty) ...[

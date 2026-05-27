@@ -168,5 +168,10 @@
   "call_mute": "كتم",
   "call_speaker": "مكبر الصوت",
   "call_end": "إنهاء المكالمة",
-  "call_no_driver": "لم يُعيَّن سائق لهذه الرحلة بعد"
+  "call_no_driver": "لم يُعيَّن سائق لهذه الرحلة بعد",
+  "driver_profile_title": "ملف السائق",
+  "driver_rating": "تقييم {}",
+  "driver_vehicle": "المركبة",
+  "driver_total_rides": "{} رحلة مكتملة",
+  "view_driver_profile": "عرض ملف السائق"
 }

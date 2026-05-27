@@ -4,6 +4,22 @@
 
 ---
 
+## 2026-05-27 — Driver profile screen
+
+**What changed:** Added trip-scoped driver profile page with merged trip/mock driver data and chat/call actions.
+
+**Screen / route:**
+
+- `DriverProfilePage` at `/trips/:tripId/driver` — avatar, rating, vehicle, demo trip count, message/call buttons
+
+**Navigation:**
+
+- Trip detail driver card and tracking driver row (avatar/name) tap → driver profile
+
+**Files touched:** `driver_profile/` sub-feature, `app_router.dart`, `route_names.dart`, `injection_container.dart`, `trip_detail_page.dart`, `tracking_driver_row.dart`, `en.json`, `ar.json`
+
+---
+
 ## 2026-05-27 — Driver chat and call screens
 
 **What changed:** Added in-app driver messaging and simulated voice call flows under the trips domain.

@@ -57,6 +57,7 @@ import 'features/trips/shared/domain/usecases/chat_usecases.dart';
 import 'features/trips/shared/domain/usecases/get_driver_for_trip_usecase.dart';
 import 'features/trips/driver_chat/presentation/bloc/driver_chat_bloc.dart';
 import 'features/trips/driver_call/presentation/bloc/driver_call_bloc.dart';
+import 'features/trips/driver_profile/presentation/bloc/driver_profile_bloc.dart';
 import 'features/trips/trip_detail/presentation/bloc/trip_detail_bloc.dart';
 import 'features/trips/trip_list/presentation/bloc/trip_list_bloc.dart';
 import 'features/trips/tracking/presentation/bloc/tracking_bloc.dart';
@@ -253,6 +254,12 @@ Future<void> initDependencies() async {
   );
   sl.registerFactory(
     () => DriverCallBloc(getTripDetail: sl()),
+  );
+  sl.registerFactory(
+    () => DriverProfileBloc(
+      getTripDetail: sl(),
+      getDriverForTrip: sl(),
+    ),
   );
   sl.registerFactory(
     () => OrderBloc(

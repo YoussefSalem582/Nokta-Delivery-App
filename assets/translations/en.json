@@ -168,5 +168,10 @@
   "call_mute": "Mute",
   "call_speaker": "Speaker",
   "call_end": "End call",
-  "call_no_driver": "No driver assigned to this trip yet"
+  "call_no_driver": "No driver assigned to this trip yet",
+  "driver_profile_title": "Driver Profile",
+  "driver_rating": "{} rating",
+  "driver_vehicle": "Vehicle",
+  "driver_total_rides": "{} trips completed",
+  "view_driver_profile": "View driver profile"
 }

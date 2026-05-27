@@ -14,4 +14,5 @@ abstract final class RouteNames {
   static const tracking = 'tracking';
   static const driverChat = 'driverChat';
   static const driverCall = 'driverCall';
+  static const driverProfile = 'driverProfile';
 }
