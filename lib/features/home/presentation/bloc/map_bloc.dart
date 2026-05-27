@@ -1,0 +1,207 @@
+import 'dart:async';
+
+import 'package:equatable/equatable.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:delivery_app/core/architecture/entities/trip_entity.dart';
+import 'package:delivery_app/core/architecture/repositories/trip_repository.dart';
+import 'package:delivery_app/core/network/fcm_service.dart';
+import 'package:delivery_app/core/utils/constants.dart';
+
+part 'map_event.dart';
+
+class RequestRideBloc extends Bloc<RequestRideEvent, RequestRideState> {
+  RequestRideBloc({
+    required TripRepository repository,
+    required FcmService fcmService,
+  })  : _repository = repository,
+        _fcmService = fcmService,
+        super(const RequestRideInitial()) {
+    on<RequestRideSubmitted>(_onSubmit);
+  }
+
+  final TripRepository _repository;
+  final FcmService _fcmService;
+
+  Future<void> _onSubmit(
+    RequestRideSubmitted event,
+    Emitter<RequestRideState> emit,
+  ) async {
+    emit(const RequestRideLoading());
+    try {
+      final trip = await _repository.requestTrip(
+        pickupAddress: event.pickupAddress,
+        dropoffAddress: event.dropoffAddress,
+        pickupLat: event.pickupLat,
+        pickupLng: event.pickupLng,
+        dropoffLat: event.dropoffLat,
+        dropoffLng: event.dropoffLng,
+      );
+      await _fcmService.simulateTripNotification(
+        title: 'notification_trip_update',
+        body: 'notification_trip_accepted',
+        tripId: trip.id,
+      );
+      emit(RequestRideSuccess(trip));
+    } catch (e) {
+      emit(RequestRideError(e.toString()));
+    }
+  }
+}
+
+class MapBloc extends Bloc<MapEvent, MapState> {
+  MapBloc() : super(const MapInitial()) {
+    on<MapStarted>(_onStarted);
+    on<MapPositionUpdated>(_onPositionUpdated);
+    on<MapStopped>(_onStopped);
+  }
+
+  StreamSubscription<Position>? _positionSub;
+
+  Future<void> _onStarted(MapStarted event, Emitter<MapState> emit) async {
+    emit(const MapLoading());
+    final permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      final requested = await Geolocator.requestPermission();
+      if (requested == LocationPermission.denied ||
+          requested == LocationPermission.deniedForever) {
+        emit(
+          MapReady(
+            userPosition: const LatLng(
+              AppConstants.defaultPickupLat,
+              AppConstants.defaultPickupLng,
+            ),
+            usingFallback: true,
+          ),
+        );
+        return;
+      }
+    }
+
+    _positionSub?.cancel();
+    _positionSub = Geolocator.getPositionStream(
+      locationSettings: const LocationSettings(
+        accuracy: LocationAccuracy.high,
+        distanceFilter: 10,
+      ),
+    ).listen((position) {
+      add(
+        MapPositionUpdated(
+          LatLng(position.latitude, position.longitude),
+        ),
+      );
+    });
+
+    try {
+      final position = await Geolocator.getCurrentPosition();
+      emit(
+        MapReady(
+          userPosition: LatLng(position.latitude, position.longitude),
+        ),
+      );
+    } catch (_) {
+      emit(
+        const MapReady(
+          userPosition: LatLng(
+            AppConstants.defaultPickupLat,
+            AppConstants.defaultPickupLng,
+          ),
+          usingFallback: true,
+        ),
+      );
+    }
+  }
+
+  void _onPositionUpdated(
+    MapPositionUpdated event,
+    Emitter<MapState> emit,
+  ) {
+    if (state is MapReady) {
+      emit((state as MapReady).copyWith(userPosition: event.position));
+    }
+  }
+
+  Future<void> _onStopped(MapStopped event, Emitter<MapState> emit) async {
+    await _positionSub?.cancel();
+  }
+
+  @override
+  Future<void> close() {
+    _positionSub?.cancel();
+    return super.close();
+  }
+}
+
+class TrackingBloc extends Bloc<TrackingEvent, TrackingState> {
+  TrackingBloc() : super(const TrackingInitial()) {
+    on<TrackingStarted>(_onStarted);
+    on<TrackingTick>(_onTick);
+    on<TrackingStopped>(_onStopped);
+  }
+
+  Timer? _timer;
+  List<LatLng> _route = [];
+
+  Future<void> _onStarted(
+    TrackingStarted event,
+    Emitter<TrackingState> emit,
+  ) async {
+    _route = _interpolateRoute(
+      LatLng(event.trip.pickupLat, event.trip.pickupLng),
+      LatLng(event.trip.dropoffLat, event.trip.dropoffLng),
+      30,
+    );
+    emit(
+      TrackingActive(
+        trip: event.trip,
+        route: _route,
+        driverPosition: _route.first,
+        progress: 0,
+        etaMinutes: 12,
+      ),
+    );
+    _timer?.cancel();
+    var index = 0;
+    _timer = Timer.periodic(const Duration(seconds: 2), (_) {
+      index = (index + 1).clamp(0, _route.length - 1);
+      add(TrackingTick(index));
+    });
+  }
+
+  void _onTick(TrackingTick event, Emitter<TrackingState> emit) {
+    if (state is! TrackingActive) return;
+    final current = state as TrackingActive;
+    final progress = event.index / (_route.length - 1);
+    emit(
+      current.copyWith(
+        driverPosition: _route[event.index],
+        progress: progress,
+        etaMinutes: ((1 - progress) * 12).ceil().clamp(1, 99),
+      ),
+    );
+  }
+
+  Future<void> _onStopped(
+    TrackingStopped event,
+    Emitter<TrackingState> emit,
+  ) async {
+    _timer?.cancel();
+  }
+
+  List<LatLng> _interpolateRoute(LatLng start, LatLng end, int steps) {
+    return List.generate(steps + 1, (i) {
+      final t = i / steps;
+      return LatLng(
+        start.latitude + (end.latitude - start.latitude) * t,
+        start.longitude + (end.longitude - start.longitude) * t,
+      );
+    });
+  }
+
+  @override
+  Future<void> close() {
+    _timer?.cancel();
+    return super.close();
+  }
+}
