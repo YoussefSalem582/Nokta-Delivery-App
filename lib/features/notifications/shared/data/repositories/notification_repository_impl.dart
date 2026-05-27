@@ -1,9 +1,9 @@
 import 'dart:convert';
 
 import 'package:flutter/services.dart';
-import 'package:delivery_app/core/architecture/datasources/notification_local_datasource.dart';
-import 'package:delivery_app/core/architecture/entities/notification_entity.dart';
-import 'package:delivery_app/core/architecture/repositories/notification_repository.dart';
+import 'package:delivery_app/features/notifications/shared/data/datasources/notification_local_datasource.dart';
+import 'package:delivery_app/features/notifications/shared/domain/entities/notification_entity.dart';
+import 'package:delivery_app/features/notifications/shared/domain/repositories/notification_repository.dart';
 
 class NotificationRepositoryImpl implements NotificationRepository {
   NotificationRepositoryImpl(this._local);

@@ -1,16 +1,15 @@
-import 'package:auto_route/auto_route.dart';
-import 'package:delivery_app/core/architecture/entities/notification_entity.dart';
-import 'package:delivery_app/core/theme/nokta_colors.dart';
-import 'package:delivery_app/core/widgets/nokta_trip_widgets.dart';
+import 'package:delivery_app/config/routes/route_names.dart';
+import 'package:delivery_app/features/notifications/shared/domain/entities/notification_entity.dart';
+import 'package:delivery_app/shared/spacing/app_spacing.dart';
+import 'package:delivery_app/features/trips/shared/presentation/widgets/trip_widgets.dart';
 import 'package:delivery_app/core/widgets/skeleton_trip_card.dart';
-import 'package:delivery_app/features/notifications/presentation/bloc/notification_bloc.dart';
-import 'package:delivery_app/routes/app_router.dart';
+import 'package:delivery_app/features/notifications/notification_list/presentation/bloc/notification_bloc.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
-@RoutePage()
 class NotificationsPage extends StatelessWidget {
   const NotificationsPage({super.key});
 
@@ -30,7 +29,7 @@ class NotificationsPage extends StatelessWidget {
               builder: (context, state) {
                 if (state is NotificationLoaded && state.unreadCount > 0) {
                   return Padding(
-                    padding: const EdgeInsets.only(right: NoktaSpacing.md),
+                    padding: const EdgeInsets.only(right: AppSpacing.md),
                     child: Center(
                       child: Container(
                         padding: const EdgeInsets.symmetric(
@@ -52,7 +51,7 @@ class NotificationsPage extends StatelessWidget {
                     ),
                   );
                 }
-                return const SizedBox(width: NoktaSpacing.md);
+                return const SizedBox(width: AppSpacing.md);
               },
             ),
           ],
@@ -63,10 +62,10 @@ class NotificationsPage extends StatelessWidget {
               return Skeletonizer(
                 enabled: true,
                 child: ListView.separated(
-                  padding: const EdgeInsets.all(NoktaSpacing.md),
+                  padding: const EdgeInsets.all(AppSpacing.md),
                   itemCount: 5,
                   separatorBuilder: (_, _) =>
-                      const SizedBox(height: NoktaSpacing.sm),
+                      const SizedBox(height: AppSpacing.sm),
                   itemBuilder: (_, __) => const SkeletonListTile(),
                 ),
               );
@@ -82,7 +81,7 @@ class NotificationsPage extends StatelessWidget {
                         size: 64,
                         color: Theme.of(context).colorScheme.outline,
                       ),
-                      const SizedBox(height: NoktaSpacing.md),
+                      const SizedBox(height: AppSpacing.md),
                       Text(
                         'no_notifications'.tr(),
                         style: Theme.of(context).textTheme.titleLarge,
@@ -92,9 +91,9 @@ class NotificationsPage extends StatelessWidget {
                 );
               }
               return ListView.separated(
-                padding: const EdgeInsets.all(NoktaSpacing.md),
+                padding: const EdgeInsets.all(AppSpacing.md),
                 itemCount: state.notifications.length,
-                separatorBuilder: (_, _) => const SizedBox(height: NoktaSpacing.sm),
+                separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.sm),
                 itemBuilder: (context, index) {
                   final item = state.notifications[index];
                   return _NotificationCard(item: item);
@@ -128,10 +127,10 @@ class _NotificationCard extends StatelessWidget {
       direction: DismissDirection.endToStart,
       background: Container(
         alignment: Alignment.centerRight,
-        padding: const EdgeInsets.only(right: NoktaSpacing.md),
+        padding: const EdgeInsets.only(right: AppSpacing.md),
         decoration: BoxDecoration(
           color: scheme.primaryContainer,
-          borderRadius: BorderRadius.circular(NoktaSpacing.radiusMd),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
         ),
         child: Text(
           'mark_read'.tr(),
@@ -148,22 +147,25 @@ class _NotificationCard extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(NoktaSpacing.radiusMd),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
           onTap: () {
             context.read<NotificationBloc>().add(
                   NotificationMarkReadRequested(item.id),
                 );
             if (item.tripId != null) {
-              context.router.push(TripDetailRoute(tripId: item.tripId!));
+              context.pushNamed(
+                RouteNames.tripDetail,
+                pathParameters: {'tripId': item.tripId!},
+              );
             }
           },
           child: Container(
-            padding: const EdgeInsets.all(NoktaSpacing.md),
+            padding: const EdgeInsets.all(AppSpacing.md),
             decoration: BoxDecoration(
               color: item.isRead
                   ? scheme.surfaceContainerLow
                   : scheme.primaryContainer.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(NoktaSpacing.radiusMd),
+              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
               border: Border.all(
                 color: item.isRead
                     ? scheme.outlineVariant
@@ -188,7 +190,7 @@ class _NotificationCard extends StatelessWidget {
                     color: item.isRead ? scheme.onSurfaceVariant : scheme.primary,
                   ),
                 ),
-                const SizedBox(width: NoktaSpacing.md),
+                const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -221,7 +223,7 @@ class _NotificationCard extends StatelessWidget {
                         item.body.tr(),
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
-                      const SizedBox(height: NoktaSpacing.sm),
+                      const SizedBox(height: AppSpacing.sm),
                       Text(
                         formatTripDate(item.createdAt),
                         style: Theme.of(context).textTheme.labelSmall?.copyWith(
