@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Shared driver/passenger UI** — extracted `ShellTabAppBar`, `ShellTabScaffold`, `EmptyStateView`, `SectionHeader`, `AppBarRefreshIconButton`, `TripAccentCard`, `ActiveTripSection`, `ProfileUserCard`, `StatSummaryCard`, and `LogoutButton`; driver tabs now reuse the same shell, trip, empty-state, and profile widgets as passenger screens; removed duplicate always-visible `OfflineBanner` (app-wide `GlobalOfflineBanner` handles offline).
+
 - **Shell AppBar logo** — tab AppBars use proportional `leadingWidth` so the wordmark is not squashed; size tuned to 40dp (leading) / 44dp (home center).
 - **Profile AppBar** — removed header initial avatar chip (profile info remains in page body).
 

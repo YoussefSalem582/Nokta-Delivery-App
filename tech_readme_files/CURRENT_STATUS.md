@@ -33,7 +33,7 @@ Nokta is a Flutter ride-hailing / delivery MVP template with Clean Architecture 
 | Notifications | ✅ Demo complete (typed inbox, All/Trip/Messages/Calls + Unread filters, live trip status chip, chat/call notifications, swipe delete + undo, mark-all-read, nav badge) |
 | Profile / orders | ✅ Demo complete (wallet top-up, edit name, order details) |
 | Settings (theme, locale, driver mode) | ✅ Complete (Become a driver onboarding + mode toggle) |
-| Driver mode (shell, offers, jobs, active trip) | ✅ Demo complete (mock dispatch, shared trips_box, AppDataCoordinator) |
+| Driver mode (shell, offers, jobs, active trip) | ✅ Demo complete (shared shell/trip/profile widgets with passenger mode) |
 | Real backend integration | 🚧 Mock API only |
 | Production auth (secure storage) | 🚧 Planned |
 | Payments / wallet (real) | 🚧 Demo top-up only (Hive-local) |

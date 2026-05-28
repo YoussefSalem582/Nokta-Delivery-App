@@ -9,11 +9,16 @@ import 'package:delivery_app/features/driver/offers/presentation/bloc/driver_off
 import 'package:delivery_app/features/driver/shared/domain/entities/driver_availability.dart';
 import 'package:delivery_app/features/driver/shared/presentation/cubit/driver_availability_cubit.dart';
 import 'package:delivery_app/features/trips/shared/domain/entities/trip_entity.dart';
+import 'package:delivery_app/features/trips/shared/presentation/widgets/active_trip_section.dart';
 import 'package:delivery_app/features/trips/shared/presentation/widgets/trip_card.dart';
 import 'package:delivery_app/injection_container.dart';
 import 'package:delivery_app/shared/spacing/app_spacing.dart';
 import 'package:delivery_app/shared/widgets/buttons/app_button.dart';
-import 'package:delivery_app/shared/widgets/navigation/shell_app_bar_logo.dart';
+import 'package:delivery_app/shared/widgets/feedback/empty_state_view.dart';
+import 'package:delivery_app/shared/widgets/feedback/section_header.dart';
+import 'package:delivery_app/shared/widgets/navigation/app_bar_refresh_button.dart';
+import 'package:delivery_app/shared/widgets/navigation/shell_tab_app_bar.dart';
+import 'package:delivery_app/shared/widgets/navigation/shell_tab_scaffold.dart';
 import 'package:delivery_app/core/utils/ui_helpers.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -59,18 +64,8 @@ class _DriverHomePageState extends State<DriverHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-
-    return Scaffold(
-      backgroundColor: scheme.surfaceContainer,
-      appBar: AppBar(
-        backgroundColor: scheme.surface,
-        toolbarHeight: ShellAppBarLogo.tabToolbarHeight,
-        leadingWidth: ShellAppBarLogo.leadingWidth,
-        automaticallyImplyLeading: false,
-        leading: const ShellAppBarLogo(),
-        title: Text('driver_home_title'.tr()),
-      ),
+    return ShellTabScaffold(
+      appBar: ShellTabAppBar(title: Text('driver_home_title'.tr())),
       body: MultiBlocListener(
         listeners: [
           BlocListener<DriverOffersBloc, DriverOffersState>(
@@ -92,59 +87,44 @@ class _DriverHomePageState extends State<DriverHomePage> {
             },
           ),
         ],
-        child: Column(
+        child: ListView(
+          padding: const EdgeInsets.all(AppSpacing.md),
           children: [
-            const OfflineBanner(),
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.all(AppSpacing.md),
-                children: [
-                  _AvailabilityCard(
-                    onGoOnline: () =>
-                        context.read<DriverAvailabilityCubit>().goOnline(),
-                    onGoOffline: () =>
-                        context.read<DriverAvailabilityCubit>().goOffline(),
-                  ),
-                  const SizedBox(height: AppSpacing.lg),
-                  BlocBuilder<DriverJobsBloc, DriverJobsState>(
-                    builder: (context, jobsState) {
-                      if (jobsState is DriverJobsLoaded) {
-                        final activeTrip = jobsState.activeTrip;
-                        if (activeTrip != null) {
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Text(
-                                'driver_active_trip'.tr(),
-                                style: Theme.of(context).textTheme.titleMedium,
-                              ),
-                              const SizedBox(height: AppSpacing.sm),
-                              TripHeroCard(trip: activeTrip, highlighted: true),
-                              const SizedBox(height: AppSpacing.sm),
-                              AppButton(
-                                label: 'driver_open_active_trip'.tr(),
-                                onPressed: () =>
-                                    _openActiveTrip(context, activeTrip.id),
-                              ),
-                              const SizedBox(height: AppSpacing.lg),
-                            ],
-                          );
-                        }
-                      }
-                      return const SizedBox.shrink();
-                    },
-                  ),
-                  BlocBuilder<DriverAvailabilityCubit, DriverAvailabilityState>(
-                    builder: (context, availabilityState) {
-                      if (availabilityState.availability !=
-                          DriverAvailability.online) {
-                        return _OfflineHint();
-                      }
-                      return const _OffersSection();
-                    },
-                  ),
-                ],
-              ),
+            _AvailabilityCard(
+              onGoOnline: () =>
+                  context.read<DriverAvailabilityCubit>().goOnline(),
+              onGoOffline: () =>
+                  context.read<DriverAvailabilityCubit>().goOffline(),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            BlocBuilder<DriverJobsBloc, DriverJobsState>(
+              builder: (context, jobsState) {
+                if (jobsState is DriverJobsLoaded) {
+                  final activeTrip = jobsState.activeTrip;
+                  if (activeTrip != null) {
+                    return ActiveTripSection(
+                      title: 'driver_active_trip'.tr(),
+                      trip: activeTrip,
+                      actionLabel: 'driver_open_active_trip'.tr(),
+                      onAction: () => _openActiveTrip(context, activeTrip.id),
+                    );
+                  }
+                }
+                return const SizedBox.shrink();
+              },
+            ),
+            BlocBuilder<DriverAvailabilityCubit, DriverAvailabilityState>(
+              builder: (context, availabilityState) {
+                if (availabilityState.availability !=
+                    DriverAvailability.online) {
+                  return EmptyStateView(
+                    icon: Icons.power_settings_new,
+                    iconSize: 48,
+                    title: 'driver_go_online_hint'.tr(),
+                  );
+                }
+                return const _OffersSection();
+              },
             ),
           ],
         ),
@@ -251,32 +231,6 @@ class _AvailabilityCard extends StatelessWidget {
   }
 }
 
-class _OfflineHint extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl),
-        child: Column(
-          children: [
-            Icon(
-              Icons.power_settings_new,
-              size: 48,
-              color: Theme.of(context).colorScheme.outline,
-            ),
-            const SizedBox(height: AppSpacing.md),
-            Text(
-              'driver_go_online_hint'.tr(),
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyLarge,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 class _OffersSection extends StatelessWidget {
   const _OffersSection();
 
@@ -297,58 +251,27 @@ class _OffersSection extends StatelessWidget {
         }
         if (state is DriverOffersLoaded) {
           if (state.offers.isEmpty) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl),
-                child: Column(
-                  children: [
-                    Text(
-                      'driver_no_offers'.tr(),
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    Text(
-                      'driver_no_offers_hint'.tr(),
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+            return EmptyStateView(
+              icon: Icons.local_offer_outlined,
+              title: 'driver_no_offers'.tr(),
+              subtitle: 'driver_no_offers_hint'.tr(),
             );
           }
 
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      'driver_offers_title'.tr(),
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                  ),
-                  IconButton(
-                    tooltip: 'retry'.tr(),
-                    onPressed: state.isActionInProgress
-                        ? null
-                        : () => context.read<DriverOffersBloc>().add(
-                            const DriverOffersRefreshRequested(),
-                          ),
-                    icon: state.isRefreshing
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(Icons.refresh),
-                  ),
-                ],
+              SectionHeader(
+                title: 'driver_offers_title'.tr(),
+                trailing: AppBarRefreshIconButton(
+                  isRefreshing: state.isRefreshing,
+                  onPressed: state.isActionInProgress
+                      ? null
+                      : () => context.read<DriverOffersBloc>().add(
+                          const DriverOffersRefreshRequested(),
+                        ),
+                ),
               ),
-              const SizedBox(height: AppSpacing.sm),
               ...state.offers.map(
                 (offer) => Padding(
                   padding: const EdgeInsets.only(bottom: AppSpacing.md),

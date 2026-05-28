@@ -4,6 +4,14 @@
 
 ---
 
+## 2026-05-28 — Shared driver/passenger widgets
+
+**What changed:** Consolidated duplicated UI into shared widgets (`ShellTabAppBar`, `ShellTabScaffold`, `EmptyStateView`, `SectionHeader`, `TripAccentCard`, `ActiveTripSection`, `ProfileUserCard`, `StatSummaryCard`, `LogoutButton`); refactored driver home/jobs/profile and passenger trips/notifications/profile to use them.
+
+**Files touched:** `lib/shared/widgets/**`, `lib/features/trips/shared/presentation/widgets/**`, `lib/features/driver/**`, `lib/features/trips/trip_list/**`, `lib/features/profile/**`, `lib/features/notifications/**`
+
+---
+
 ## 2026-05-28 — Driver demo offer seed
 
 **What changed:** Added `trip-demo-offer` to mock trips (requested, rider `user-rider-demo`) so single-account driver mode shows an offer; driver empty-state hint; removed redundant auth refresh after onboarding.

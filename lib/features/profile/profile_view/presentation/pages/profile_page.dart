@@ -14,7 +14,8 @@ import 'package:delivery_app/core/widgets/skeleton_trip_card.dart';
 import 'package:delivery_app/features/auth/shared/presentation/bloc/auth_bloc.dart';
 import 'package:delivery_app/features/profile/orders/presentation/bloc/order_bloc.dart';
 import 'package:delivery_app/features/profile/profile_view/presentation/bloc/profile_bloc.dart';
-import 'package:delivery_app/shared/widgets/navigation/shell_app_bar_logo.dart';
+import 'package:delivery_app/shared/widgets/navigation/shell_tab_app_bar.dart';
+import 'package:delivery_app/shared/widgets/profile/logout_button.dart';
 import 'package:delivery_app/injection_container.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -111,14 +112,7 @@ class _ProfileContent extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: isDark ? scheme.surfaceContainerLow : scheme.surface,
-      appBar: AppBar(
-        backgroundColor: scheme.surface,
-        toolbarHeight: ShellAppBarLogo.tabToolbarHeight,
-        leadingWidth: ShellAppBarLogo.leadingWidth,
-        automaticallyImplyLeading: false,
-        leading: const ShellAppBarLogo(),
-        title: Text('profile_title'.tr()),
-      ),
+      appBar: ShellTabAppBar(title: Text('profile_title'.tr())),
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.md),
         children: [
@@ -538,32 +532,13 @@ class _SettingsTab extends StatelessWidget {
           ),
         ),
         const SizedBox(height: AppSpacing.lg),
-        SizedBox(
-          width: double.infinity,
-          height: AppSpacing.buttonHeight,
-          child: OutlinedButton.icon(
-            onPressed: () async {
-              await context.read<AppModeCubit>().resetToPassenger();
-              if (!context.mounted) return;
-              context.read<AuthBloc>().add(const AuthLogoutRequested());
-              context.goNamed(RouteNames.splash);
-            },
-            icon: Icon(Icons.logout, color: scheme.error),
-            label: Text(
-              'logout'.tr(),
-              style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                color: scheme.error,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: scheme.error,
-              side: BorderSide(color: scheme.error.withValues(alpha: 0.45)),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-              ),
-            ),
-          ),
+        LogoutButton(
+          onPressed: () async {
+            await context.read<AppModeCubit>().resetToPassenger();
+            if (!context.mounted) return;
+            context.read<AuthBloc>().add(const AuthLogoutRequested());
+            context.goNamed(RouteNames.splash);
+          },
         ),
       ],
     );
