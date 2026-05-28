@@ -7,7 +7,13 @@ import 'package:delivery_app/features/auth/shared/presentation/bloc/auth_bloc.da
 import 'package:delivery_app/features/notifications/notification_list/presentation/bloc/notification_bloc.dart';
 import 'package:delivery_app/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:delivery_app/features/settings/presentation/cubit/settings_state.dart';
+import 'package:delivery_app/features/auth/shared/domain/repositories/auth_repository.dart';
+import 'package:delivery_app/features/driver/jobs/presentation/bloc/driver_jobs_bloc.dart';
 import 'package:delivery_app/features/trips/trip_list/presentation/bloc/trip_list_bloc.dart';
+import 'package:delivery_app/features/driver/jobs/presentation/bloc/driver_jobs_bloc.dart';
+import 'package:delivery_app/features/driver/offers/presentation/bloc/driver_offers_bloc.dart';
+import 'package:delivery_app/features/driver/shared/presentation/cubit/app_mode_cubit.dart';
+import 'package:delivery_app/features/driver/shared/presentation/cubit/driver_availability_cubit.dart';
 import 'package:delivery_app/injection_container.dart';
 import 'package:delivery_app/shared/widgets/banners/offline_banner.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -39,8 +45,14 @@ class _NoktaAppState extends State<NoktaApp> {
         BlocProvider<ConnectivityCubit>.value(value: sl<ConnectivityCubit>()),
         BlocProvider<AuthBloc>.value(value: sl<AuthBloc>()),
         BlocProvider<SettingsCubit>.value(value: sl<SettingsCubit>()),
+        BlocProvider<AppModeCubit>.value(value: sl<AppModeCubit>()),
+        BlocProvider<DriverAvailabilityCubit>.value(
+          value: sl<DriverAvailabilityCubit>(),
+        ),
         BlocProvider<NotificationBloc>.value(value: sl<NotificationBloc>()),
         BlocProvider<TripListBloc>.value(value: sl<TripListBloc>()),
+        BlocProvider<DriverJobsBloc>.value(value: sl<DriverJobsBloc>()),
+        BlocProvider<DriverOffersBloc>.value(value: sl<DriverOffersBloc>()),
       ],
       child: BlocListener<SettingsCubit, SettingsState>(
         listenWhen: (prev, curr) => prev.locale != curr.locale,
