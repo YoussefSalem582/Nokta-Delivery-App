@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:delivery_app/config/routes/route_names.dart';
 import 'package:delivery_app/features/auth/onboarding/presentation/models/onboarding_slide_data.dart';
 import 'package:delivery_app/features/auth/onboarding/presentation/widgets/onboarding_background.dart';
@@ -25,8 +27,10 @@ class _OnboardingPageState extends State<OnboardingPage>
   late final AnimationController _logoMoveController;
 
   int _currentPage = 0;
-  bool _isMovingLogo = false;
   bool _logoHandoffToOverlay = false;
+  bool _isMovingLogo = false;
+
+  static const _logoAtCenterThreshold = 0.02;
 
   int get _pageCount => kOnboardingSlides.length;
   bool get _isLastPage => _currentPage >= _pageCount - 1;
@@ -51,8 +55,14 @@ class _OnboardingPageState extends State<OnboardingPage>
 
   void _onPageChanged(int index) {
     setState(() => _currentPage = index);
-    if (index > 0 && _logoMoveController.value < 1) {
-      _logoMoveController.value = 1;
+
+    if (_isMovingLogo) return;
+
+    if (index == 0 && _logoMoveController.value > _logoAtCenterThreshold) {
+      unawaited(_animateLogoToCenter());
+    } else if (index > 0 &&
+        _logoMoveController.value < 1 - _logoAtCenterThreshold) {
+      unawaited(_animateLogoToTop());
     }
   }
 
@@ -61,11 +71,30 @@ class _OnboardingPageState extends State<OnboardingPage>
   }
 
   Future<void> _animateLogoToTop() async {
-    if (_logoMoveController.isAnimating || _logoMoveController.value == 1) {
+    if (_isMovingLogo ||
+        _logoMoveController.isAnimating ||
+        _logoMoveController.value >= 1) {
       return;
     }
+
     _isMovingLogo = true;
+    setState(() => _logoHandoffToOverlay = true);
     await _logoMoveController.forward();
+    _isMovingLogo = false;
+  }
+
+  Future<void> _animateLogoToCenter() async {
+    if (_isMovingLogo ||
+        _logoMoveController.isAnimating ||
+        _logoMoveController.value <= _logoAtCenterThreshold) {
+      return;
+    }
+
+    _isMovingLogo = true;
+    await _logoMoveController.reverse();
+    if (mounted) {
+      setState(() => _logoHandoffToOverlay = false);
+    }
     _isMovingLogo = false;
   }
 
@@ -78,7 +107,6 @@ class _OnboardingPageState extends State<OnboardingPage>
     }
 
     if (_currentPage == 0 && _logoMoveController.value == 0) {
-      setState(() => _logoHandoffToOverlay = true);
       await _animateLogoToTop();
       if (!mounted) return;
     }
@@ -92,11 +120,12 @@ class _OnboardingPageState extends State<OnboardingPage>
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final showCenterHero = _currentPage == 0 &&
-        !_logoHandoffToOverlay &&
-        _logoMoveController.value == 0;
+    final logoAtCenter =
+        _logoMoveController.value <= _logoAtCenterThreshold;
+    final showCenterHero =
+        _currentPage == 0 && logoAtCenter && !_logoHandoffToOverlay;
     final showOverlayLogo =
-        _logoHandoffToOverlay || _logoMoveController.value > 0;
+        _logoHandoffToOverlay || _logoMoveController.value > _logoAtCenterThreshold;
 
     return Scaffold(
       backgroundColor: scheme.surface,
