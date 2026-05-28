@@ -1,14 +1,11 @@
 import 'package:delivery_app/config/theme/app_colors.dart';
+import 'package:delivery_app/core/utils/date_time_format.dart';
 import 'package:delivery_app/features/trips/shared/domain/entities/chat_message_entity.dart';
 import 'package:delivery_app/shared/spacing/app_spacing.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 class ChatMessageBubble extends StatelessWidget {
-  const ChatMessageBubble({
-    super.key,
-    required this.message,
-  });
+  const ChatMessageBubble({super.key, required this.message});
 
   final ChatMessageEntity message;
 
@@ -16,7 +13,7 @@ class ChatMessageBubble extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final isDriver = message.isFromDriver;
-    final time = DateFormat.Hm().format(message.sentAt);
+    final time = formatAppClockTime(message.sentAt);
 
     final bubbleColor = isDriver
         ? scheme.surfaceContainerHigh
@@ -58,16 +55,16 @@ class ChatMessageBubble extends StatelessWidget {
             children: [
               Text(
                 message.text,
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: textColor,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyLarge?.copyWith(color: textColor),
               ),
               const SizedBox(height: 4),
               Text(
                 time,
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: textColor.withValues(alpha: 0.7),
-                    ),
+                  color: textColor.withValues(alpha: 0.7),
+                ),
               ),
             ],
           ),

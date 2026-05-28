@@ -71,11 +71,17 @@ class _NoktaAppState extends State<NoktaApp> {
               builder: (context, child) {
                 return BlocBuilder<ConnectivityCubit, ConnectivityStatus>(
                   builder: (context, status) {
+                    final content = MediaQuery(
+                      data: MediaQuery.of(
+                        context,
+                      ).copyWith(alwaysUse24HourFormat: false),
+                      child: child ?? const SizedBox.shrink(),
+                    );
                     return Column(
                       children: [
                         if (status == ConnectivityStatus.offline)
                           const GlobalOfflineBanner(),
-                        Expanded(child: child ?? const SizedBox.shrink()),
+                        Expanded(child: content),
                       ],
                     );
                   },

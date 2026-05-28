@@ -2,7 +2,7 @@
 
 > [INDEX](INDEX.md) > Current Status
 >
-> **Last Updated:** May 27, 2026 — Trip list, home ride request, and live tracking share shell-scoped `TripListBloc` with Hive cache sync.
+> **Last Updated:** May 27, 2026 — All clock times display in 12-hour AM/PM format app-wide.
 
 > **Version:** `1.0.0+1`
 > **Flutter:** 3.16+ (SDK ^3.12.0)

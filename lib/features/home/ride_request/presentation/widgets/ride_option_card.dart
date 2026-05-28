@@ -1,3 +1,4 @@
+import 'package:delivery_app/core/utils/date_time_format.dart';
 import 'package:delivery_app/shared/spacing/app_spacing.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -42,33 +43,33 @@ class RideOption {
   final int? capacity;
 
   static List<RideOption> defaults() => const [
-        RideOption(
-          tier: RideTier.economy,
-          nameKey: 'ride_economy',
-          subtitleKey: 'ride_economy_subtitle',
-          icon: Icons.directions_car,
-          price: 12.50,
-          etaMinutes: 4,
-          capacity: 4,
-        ),
-        RideOption(
-          tier: RideTier.premium,
-          nameKey: 'ride_premium',
-          subtitleKey: 'ride_premium_subtitle',
-          icon: Icons.local_taxi,
-          price: 24.00,
-          etaMinutes: 7,
-          capacity: 3,
-        ),
-        RideOption(
-          tier: RideTier.delivery,
-          nameKey: 'ride_delivery',
-          subtitleKey: 'ride_delivery_subtitle',
-          icon: Icons.local_shipping,
-          price: 8.00,
-          etaMinutes: 15,
-        ),
-      ];
+    RideOption(
+      tier: RideTier.economy,
+      nameKey: 'ride_economy',
+      subtitleKey: 'ride_economy_subtitle',
+      icon: Icons.directions_car,
+      price: 12.50,
+      etaMinutes: 4,
+      capacity: 4,
+    ),
+    RideOption(
+      tier: RideTier.premium,
+      nameKey: 'ride_premium',
+      subtitleKey: 'ride_premium_subtitle',
+      icon: Icons.local_taxi,
+      price: 24.00,
+      etaMinutes: 7,
+      capacity: 3,
+    ),
+    RideOption(
+      tier: RideTier.delivery,
+      nameKey: 'ride_delivery',
+      subtitleKey: 'ride_delivery_subtitle',
+      icon: Icons.local_shipping,
+      price: 8.00,
+      etaMinutes: 15,
+    ),
+  ];
 }
 
 class RideOptionCard extends StatelessWidget {
@@ -97,7 +98,7 @@ class RideOptionCard extends StatelessWidget {
         ? '${distanceKm!.toStringAsFixed(1)} km • '
         : '';
     final etaLabel =
-        '$distanceLabel$effectiveEta ${'minutes'.tr()} • ${TimeOfDay.fromDateTime(eta).format(context)}';
+        '$distanceLabel$effectiveEta ${'minutes'.tr()} • ${formatAppClockTime(eta)}';
 
     return Material(
       color: Colors.transparent,
@@ -110,8 +111,8 @@ class RideOptionCard extends StatelessWidget {
           decoration: BoxDecoration(
             color: selected
                 ? (isDark
-                    ? scheme.primary.withValues(alpha: 0.2)
-                    : scheme.primaryFixed.withValues(alpha: 0.35))
+                      ? scheme.primary.withValues(alpha: 0.2)
+                      : scheme.primaryFixed.withValues(alpha: 0.35))
                 : (isDark ? scheme.surfaceContainerHigh : scheme.surface),
             borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
             border: Border.all(
@@ -140,9 +141,7 @@ class RideOptionCard extends StatelessWidget {
                         Flexible(
                           child: Text(
                             option.nameKey.tr(),
-                            style: Theme.of(context)
-                                .textTheme
-                                .labelLarge
+                            style: Theme.of(context).textTheme.labelLarge
                                 ?.copyWith(color: scheme.onSurface),
                           ),
                         ),

@@ -3,6 +3,7 @@ import 'package:delivery_app/features/profile/shared/domain/entities/order_entit
 import 'package:delivery_app/features/auth/shared/domain/entities/user_entity.dart';
 import 'package:delivery_app/shared/spacing/app_spacing.dart';
 import 'package:delivery_app/features/settings/presentation/cubit/settings_cubit.dart';
+import 'package:delivery_app/core/utils/date_time_format.dart';
 import 'package:delivery_app/core/utils/ui_helpers.dart';
 import 'package:delivery_app/core/widgets/avatar_image.dart';
 import 'package:delivery_app/shared/widgets/banners/app_toast.dart';
@@ -68,9 +69,9 @@ class _ProfilePageState extends State<ProfilePage> {
               appBar: AppBar(title: Text('profile_title'.tr())),
               body: ErrorView(
                 message: state.message,
-                onRetry: () => context
-                    .read<ProfileBloc>()
-                    .add(const ProfileLoadRequested()),
+                onRetry: () => context.read<ProfileBloc>().add(
+                  const ProfileLoadRequested(),
+                ),
               ),
             );
           }
@@ -136,10 +137,7 @@ class _ProfileContent extends StatelessWidget {
           const SizedBox(height: AppSpacing.lg),
           _WalletCard(balance: user.walletBalance),
           const SizedBox(height: AppSpacing.lg),
-          _TabBar(
-            selectedIndex: tabIndex,
-            onChanged: onTabChanged,
-          ),
+          _TabBar(selectedIndex: tabIndex, onChanged: onTabChanged),
           const SizedBox(height: AppSpacing.md),
           if (tabIndex == 0) _OrdersTab() else _SettingsTab(user: user),
         ],
@@ -201,7 +199,9 @@ class _ProfileHeader extends StatelessWidget {
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.15),
+                        color: Colors.black.withValues(
+                          alpha: isDark ? 0.4 : 0.15,
+                        ),
                         blurRadius: 6,
                         offset: const Offset(0, 2),
                       ),
@@ -275,15 +275,17 @@ class _WalletCard extends StatelessWidget {
                           color: scheme.onSurfaceVariant,
                         ),
                         const SizedBox(width: 4),
-                        Text('balance'.tr(), style: Theme.of(context).textTheme.labelSmall),
+                        Text(
+                          'balance'.tr(),
+                          style: Theme.of(context).textTheme.labelSmall,
+                        ),
                       ],
                     ),
                     const SizedBox(height: AppSpacing.xs),
                     Text(
                       '${balance.toStringAsFixed(2)} EGP',
-                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                            color: scheme.onSurface,
-                          ),
+                      style: Theme.of(context).textTheme.headlineMedium
+                          ?.copyWith(color: scheme.onSurface),
                     ),
                   ],
                 ),
@@ -295,9 +297,14 @@ class _WalletCard extends StatelessWidget {
                 style: FilledButton.styleFrom(
                   minimumSize: const Size(0, AppSpacing.buttonHeight),
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  backgroundColor: isDark ? scheme.primaryContainer : scheme.primary,
+                  backgroundColor: isDark
+                      ? scheme.primaryContainer
+                      : scheme.primary,
                   foregroundColor: scheme.onPrimary,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
                   ),
@@ -370,9 +377,9 @@ class _TabButton extends StatelessWidget {
           label,
           textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w600,
-                color: selected ? scheme.primary : scheme.onSurfaceVariant,
-              ),
+            fontWeight: FontWeight.w600,
+            color: selected ? scheme.primary : scheme.onSurfaceVariant,
+          ),
         ),
       ),
     );
@@ -390,10 +397,7 @@ class _OrdersTab extends StatelessWidget {
             child: Skeletonizer(
               enabled: true,
               child: ListView(
-                children: const [
-                  SkeletonListTile(),
-                  SkeletonListTile(),
-                ],
+                children: const [SkeletonListTile(), SkeletonListTile()],
               ),
             ),
           );
@@ -406,8 +410,8 @@ class _OrdersTab extends StatelessWidget {
                 child: Text(
                   'no_orders'.tr(),
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                 ),
               ),
             );
@@ -443,11 +447,15 @@ class _SettingsTab extends StatelessWidget {
     return Column(
       children: [
         Material(
-          color: isDark ? scheme.surfaceContainerHigh : scheme.surfaceContainerLowest,
+          color: isDark
+              ? scheme.surfaceContainerHigh
+              : scheme.surfaceContainerLowest,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
             side: BorderSide(
-              color: scheme.outlineVariant.withValues(alpha: isDark ? 0.45 : 0.5),
+              color: scheme.outlineVariant.withValues(
+                alpha: isDark ? 0.45 : 0.5,
+              ),
             ),
           ),
           clipBehavior: Clip.antiAlias,
@@ -458,7 +466,8 @@ class _SettingsTab extends StatelessWidget {
                 title: 'dark_mode'.tr(),
                 showDivider: true,
                 trailing: Switch.adaptive(
-                  value: context.watch<SettingsCubit>().state.themeMode ==
+                  value:
+                      context.watch<SettingsCubit>().state.themeMode ==
                       ThemeMode.dark,
                   activeTrackColor: scheme.primary.withValues(alpha: 0.5),
                   activeThumbColor: scheme.primary,
@@ -470,12 +479,16 @@ class _SettingsTab extends StatelessWidget {
                 title: 'language'.tr(),
                 showDivider: true,
                 trailing: DropdownButton<String>(
-                  value: context.watch<SettingsCubit>().state.locale.languageCode,
+                  value: context
+                      .watch<SettingsCubit>()
+                      .state
+                      .locale
+                      .languageCode,
                   underline: const SizedBox.shrink(),
                   dropdownColor: isDark ? scheme.surfaceContainerHighest : null,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: scheme.onSurfaceVariant,
-                      ),
+                    color: scheme.onSurfaceVariant,
+                  ),
                   items: const [
                     DropdownMenuItem(value: 'en', child: Text('English')),
                     DropdownMenuItem(value: 'ar', child: Text('العربية')),
@@ -514,9 +527,9 @@ class _SettingsTab extends StatelessWidget {
             label: Text(
               'logout'.tr(),
               style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: scheme.error,
-                    fontWeight: FontWeight.w600,
-                  ),
+                color: scheme.error,
+                fontWeight: FontWeight.w600,
+              ),
             ),
             style: OutlinedButton.styleFrom(
               foregroundColor: scheme.error,
@@ -558,7 +571,8 @@ class _SettingsTile extends StatelessWidget {
         ListTile(
           leading: Icon(icon, color: scheme.onSurfaceVariant),
           title: Text(title, style: Theme.of(context).textTheme.bodyLarge),
-          trailing: trailing ??
+          trailing:
+              trailing ??
               Icon(Icons.chevron_right, color: scheme.onSurfaceVariant),
           onTap: onTap,
           shape: RoundedRectangleBorder(
@@ -603,9 +617,15 @@ class _OrderTile extends StatelessWidget {
 
   Color _statusBg(OrderStatus status, ColorScheme scheme, bool isDark) {
     return switch (status) {
-      OrderStatus.delivered => scheme.secondary.withValues(alpha: isDark ? 0.15 : 0.1),
-      OrderStatus.inTransit => scheme.secondaryContainer.withValues(alpha: isDark ? 0.2 : 0.35),
-      OrderStatus.pending => scheme.surfaceContainerHighest.withValues(alpha: isDark ? 0.6 : 1),
+      OrderStatus.delivered => scheme.secondary.withValues(
+        alpha: isDark ? 0.15 : 0.1,
+      ),
+      OrderStatus.inTransit => scheme.secondaryContainer.withValues(
+        alpha: isDark ? 0.2 : 0.35,
+      ),
+      OrderStatus.pending => scheme.surfaceContainerHighest.withValues(
+        alpha: isDark ? 0.6 : 1,
+      ),
     };
   }
 
@@ -630,10 +650,14 @@ class _OrderTile extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(AppSpacing.md),
           decoration: BoxDecoration(
-            color: isDark ? scheme.surfaceContainerHigh : scheme.surfaceContainerLowest,
+            color: isDark
+                ? scheme.surfaceContainerHigh
+                : scheme.surfaceContainerLowest,
             borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
             border: Border.all(
-              color: scheme.outlineVariant.withValues(alpha: isDark ? 0.45 : 0.5),
+              color: scheme.outlineVariant.withValues(
+                alpha: isDark ? 0.45 : 0.5,
+              ),
             ),
           ),
           child: Row(
@@ -659,9 +683,9 @@ class _OrderTile extends StatelessWidget {
                     Text(
                       order.title,
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            color: scheme.onSurface,
-                            fontWeight: FontWeight.w600,
-                          ),
+                        color: scheme.onSurface,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     const SizedBox(height: 2),
                     Text(
@@ -674,9 +698,9 @@ class _OrderTile extends StatelessWidget {
               Text(
                 '${order.amount.toStringAsFixed(2)} EGP',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: scheme.onSurface,
-                      fontWeight: FontWeight.w700,
-                    ),
+                  color: scheme.onSurface,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ],
           ),
@@ -718,8 +742,8 @@ void _showTopUpSheet(BuildContext context) {
                   onTap: () {
                     Navigator.of(sheetContext).pop();
                     context.read<ProfileBloc>().add(
-                          ProfileWalletTopUpRequested(amount: amount),
-                        );
+                      ProfileWalletTopUpRequested(amount: amount),
+                    );
                     AppToast.success(context, 'wallet_top_up_success'.tr());
                   },
                 ),
@@ -771,8 +795,8 @@ void _showEditProfileSheet(BuildContext context, UserEntity user) {
                     }
                     Navigator.of(sheetContext).pop();
                     context.read<ProfileBloc>().add(
-                          ProfileUpdateRequested(name: name),
-                        );
+                      ProfileUpdateRequested(name: name),
+                    );
                     AppToast.success(context, 'profile_updated'.tr());
                   },
                   child: Text('save'.tr()),
@@ -787,8 +811,6 @@ void _showEditProfileSheet(BuildContext context, UserEntity user) {
 }
 
 void _showOrderDetailsSheet(BuildContext context, OrderEntity order) {
-  final dateFormat = DateFormat.yMMMd().add_jm();
-
   showModalBottomSheet<void>(
     context: context,
     builder: (sheetContext) => SafeArea(
@@ -807,7 +829,7 @@ void _showOrderDetailsSheet(BuildContext context, OrderEntity order) {
             ListTile(
               contentPadding: EdgeInsets.zero,
               title: Text(order.title),
-              subtitle: Text(dateFormat.format(order.createdAt)),
+              subtitle: Text(formatAppDateTime(order.createdAt)),
             ),
             ListTile(
               contentPadding: EdgeInsets.zero,

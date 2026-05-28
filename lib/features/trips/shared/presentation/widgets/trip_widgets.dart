@@ -1,9 +1,11 @@
 import 'package:delivery_app/core/utils/ui_helpers.dart';
 import 'package:delivery_app/features/trips/shared/domain/entities/trip_entity.dart';
 import 'package:delivery_app/shared/spacing/app_spacing.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+
+export 'package:delivery_app/core/utils/date_time_format.dart'
+    show formatTripDate;
 
 class TripStatusChip extends StatelessWidget {
   const TripStatusChip({
@@ -41,13 +43,10 @@ class TripStatusChip extends StatelessWidget {
         children: [
           if (showPulse) ...[
             Container(
-              width: 8,
-              height: 8,
-              decoration: BoxDecoration(
-                color: fg,
-                shape: BoxShape.circle,
-              ),
-            )
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(color: fg, shape: BoxShape.circle),
+                )
                 .animate(onPlay: (c) => c.repeat(reverse: true))
                 .fade(begin: 1, end: 0.35, duration: 800.ms)
                 .scale(
@@ -63,9 +62,9 @@ class TripStatusChip extends StatelessWidget {
           Text(
             tripStatusLabel(status),
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: fg,
-                  fontWeight: FontWeight.w600,
-                ),
+              color: fg,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ],
       ),
@@ -79,14 +78,26 @@ class TripStatusChip extends StatelessWidget {
     return switch (status) {
       TripStatus.inProgress ||
       TripStatus.accepted ||
-      TripStatus.driverArrived =>
-        (scheme.primaryContainer, scheme.onPrimary, Icons.directions_car),
-      TripStatus.completed =>
-        (scheme.secondaryContainer, scheme.onSecondaryContainer, Icons.check_circle),
-      TripStatus.cancelled =>
-        (scheme.errorContainer, scheme.onErrorContainer, Icons.cancel),
-      TripStatus.requested =>
-        (scheme.surfaceContainer, scheme.onSurfaceVariant, Icons.schedule),
+      TripStatus.driverArrived => (
+        scheme.primaryContainer,
+        scheme.onPrimary,
+        Icons.directions_car,
+      ),
+      TripStatus.completed => (
+        scheme.secondaryContainer,
+        scheme.onSecondaryContainer,
+        Icons.check_circle,
+      ),
+      TripStatus.cancelled => (
+        scheme.errorContainer,
+        scheme.onErrorContainer,
+        Icons.cancel,
+      ),
+      TripStatus.requested => (
+        scheme.surfaceContainer,
+        scheme.onSurfaceVariant,
+        Icons.schedule,
+      ),
     };
   }
 }
@@ -166,17 +177,4 @@ class TripRouteColumn extends StatelessWidget {
       ],
     );
   }
-}
-
-String formatTripDate(DateTime date) {
-  final now = DateTime.now();
-  final today = DateTime(now.year, now.month, now.day);
-  final tripDay = DateTime(date.year, date.month, date.day);
-  final time = DateFormat.jm().format(date);
-
-  if (tripDay == today) return '${'today'.tr()}, $time';
-  if (tripDay == today.subtract(const Duration(days: 1))) {
-    return '${'yesterday'.tr()}, $time';
-  }
-  return DateFormat('MMM d, y • h:mm a').format(date);
 }

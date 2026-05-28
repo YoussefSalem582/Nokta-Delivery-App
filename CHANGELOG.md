@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **12-hour clock (AM/PM) app-wide** — Centralized `formatAppClockTime` / `formatTripDate` / `formatAppDateTime` in `date_time_format.dart`; chat bubbles, ride ETA labels, trip/notification timestamps, and order details use 12-hour format; `MaterialApp` forces `alwaysUse24HourFormat: false`.
+
 ### Added
 
 - **Trips list — current trip + history sections** — `TripListPage` splits active trips into a pinned `CurrentTripCard` (with Track CTA) and a `Trip History` list below; `partitionTrips` helper on `TripEntity`.

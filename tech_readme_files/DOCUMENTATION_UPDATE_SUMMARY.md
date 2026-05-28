@@ -4,6 +4,16 @@
 
 ---
 
+## 2026-05-27 — 12-hour clock (AM/PM) app-wide
+
+**What changed:** All user-visible clock times now use 12-hour AM/PM format regardless of device 24-hour setting.
+
+**Implementation:** `lib/core/utils/date_time_format.dart` with `formatAppClockTime`, `formatTripDate`, `formatAppDateTime`; chat message timestamps fixed from 24h `Hm()`; ride ETA uses shared formatter; `MaterialApp.builder` sets `alwaysUse24HourFormat: false`.
+
+**Files touched:** `date_time_format.dart`, `app.dart`, `chat_message_bubble.dart`, `ride_option_card.dart`, `trip_widgets.dart`, `profile_page.dart`
+
+---
+
 ## 2026-05-27 — Unified trip quote data (fare, km, driver, payment)
 
 **What changed:** Ride selection quote fields now persist on `TripEntity` and display consistently across home, tracking, list, and detail.
