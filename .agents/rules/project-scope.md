@@ -21,7 +21,7 @@ alwaysApply: true
 - **Maps**: flutter_map + OSRM + tile cache; two-phase live tracking
 - **Pricing**: Per-km fares by tier via `EstimateFareUseCase`
 - **Offline**: ConnectivityCubit + SyncService + pending sync queue
-- **Branding**: Native icons/splash from `assets/app_icon.png` / `assets/logo.png`; in-app `assets/logo.svg`
+- **Branding**: Native icons/splash from `assets/app_icon.png` / `assets/logo.png` (light) / `assets/logo_light.png` (dark); in-app theme-aware PNG via `AppBrandIcon`
 
 ## Entry Points
 

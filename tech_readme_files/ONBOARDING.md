@@ -20,7 +20,7 @@
 | Geocoding | `lib/features/home/shared/` (Nominatim), `location_search_cubit.dart` |
 | Routing / tracking | `lib/core/network/route_service.dart`, `lib/core/utils/driver_placement.dart` |
 | Pricing | `lib/features/trips/shared/domain/usecases/estimate_fare_usecase.dart` |
-| Branding assets | `assets/logo.svg`, `assets/logo.png`, `assets/app_icon.png`; regen via `pubspec.yaml` icon/splash config |
+| Branding assets | `assets/logo.png`, `assets/logo_light.png`, `assets/app_icon.png`; regen via `pubspec.yaml` icon/splash config |
 | Translations | `assets/translations/en.json`, `ar.json` |
 | Mock API | `assets/mock/`, `lib/core/network/mock_api_interceptor.dart` |
 | Hive boxes | `lib/core/cache/` |

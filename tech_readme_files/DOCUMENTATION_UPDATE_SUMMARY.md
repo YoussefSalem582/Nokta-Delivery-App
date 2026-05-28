@@ -4,6 +4,14 @@
 
 ---
 
+## 2026-05-27 — Theme-aware wordmark (PNG light/dark)
+
+**What changed:** Replaced in-app SVG wordmark with theme-aware PNG assets — `assets/logo.png` in light mode, `assets/logo_light.png` in dark mode. Updated `AppBrandIcon`, `AppAssets`, logo precache, `pubspec.yaml` assets, and `flutter_native_splash` dark-mode config. Removed unused `flutter_svg` dependency.
+
+**Files touched:** `lib/shared/widgets/branding/app_brand_icon.dart`, `lib/shared/assets/app_assets.dart`, `lib/core/utils/app_logo_cache.dart`, `pubspec.yaml`, native splash `res/` assets, `CHANGELOG.md`, `CURRENT_STATUS.md`, `AGENTS.md`
+
+---
+
 ## 2026-05-27 — AI agent docs sync
 
 **What changed:** Updated canonical `AGENTS.md` and all agent shims/rules (Cursor, Claude, Codex, Copilot, `.agents/rules/`) with latest features: Nominatim geocoding, per-km pricing, two-phase tracking, native branding assets, new key entry points. Updated `ONBOARDING.md` and `COMMON_PITFALLS.md` agent references.

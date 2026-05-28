@@ -161,7 +161,8 @@ dart run flutter_native_splash:create
 |-------|---------|
 | `assets/app_icon.png` | Square launcher icon (Android adaptive + iOS) |
 | `assets/logo.png` | Horizontal wordmark for native splash screen |
-| `assets/logo.svg` | In-app branding (`AppBrandIcon`, splash page) |
+| `assets/logo.png` | In-app branding + native splash — light theme (`AppBrandIcon`) |
+| `assets/logo_light.png` | In-app branding + native splash — dark theme |
 
 ## Demo flow
 

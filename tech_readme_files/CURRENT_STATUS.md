@@ -2,7 +2,7 @@
 
 > [INDEX](INDEX.md) > Current Status
 >
-> **Last Updated:** May 27, 2026 — AI agent docs synced with latest features (Nominatim, pricing, tracking, branding).
+> **Last Updated:** May 27, 2026 — Theme-aware PNG wordmark (light/dark) across in-app UI and native splash.
 
 > **Version:** `1.0.0+1`
 > **Flutter:** 3.16+ (SDK ^3.12.0)
@@ -21,7 +21,7 @@ Nokta is a Flutter ride-hailing / delivery MVP template with Clean Architecture 
 - ✅ **i18n** — easy_localization JSON (EN + AR, RTL)
 - ✅ **Observability** — Talker (Dio, BLoC, in-app console)
 - ✅ **Agent docs** — AGENTS.md, 22 skills, Cursor/Claude/Codex/Copilot shims
-- ✅ **Native branding** — Android/iOS launcher icons + native splash from `assets/logo.png` / `assets/app_icon.png`
+- ✅ **Native branding** — Android/iOS launcher icons from `assets/app_icon.png`; native splash + in-app wordmark use `assets/logo.png` (light) / `assets/logo_light.png` (dark)
 
 ## Feature Status
 

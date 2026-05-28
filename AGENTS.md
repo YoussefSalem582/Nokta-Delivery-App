@@ -59,7 +59,7 @@ Flutter ride-hailing / delivery MVP template (**Nokta**). Current version: **`1.
 - **Maps**: `flutter_map` (OpenStreetMap tiles), OSRM routing via `RouteService`, tile disk cache
 - **Pricing**: Per-km fares by tier (Economy / Premium / Delivery) via `EstimateFareUseCase` + OSRM route distance
 - **Tracking**: Two-phase simulation (driver → pickup → dropoff), randomized driver placement near pickup (≤8 min approach)
-- **Branding**: Native launcher icons + splash from `assets/app_icon.png` / `assets/logo.png`; in-app wordmark via `assets/logo.svg`
+- **Branding**: Native launcher icons + splash from `assets/app_icon.png` / `assets/logo.png` (light) / `assets/logo_light.png` (dark); in-app wordmark via theme-aware `AppBrandIcon`
 - **Platform**: Windows 11 development environment (PowerShell-first scripts)
 
 ## Key Entry Points
@@ -195,8 +195,10 @@ class FeatureBloc extends Bloc<FeatureEvent, FeatureState> {
 
 | Asset | Use |
 |-------|-----|
-| `assets/logo.svg` | In-app wordmark — `AppBrandIcon`, `AppAssets.logo` |
-| `assets/logo.png` | Horizontal wordmark — native splash screen |
+| Asset | Use |
+|-------|-----|
+| `assets/logo.png` | In-app + native splash wordmark — light theme |
+| `assets/logo_light.png` | In-app + native splash wordmark — dark theme |
 | `assets/app_icon.png` | Square icon — Android adaptive + iOS launcher |
 
 Regenerate native assets after changing logos (full app restart required to see splash):
@@ -256,7 +258,7 @@ Check `lib/shared/widgets/` and `lib/core/widgets/` before building new UI:
 
 **Inputs**: `AppTextField`
 **Buttons**: `AppButton`, `NoktaPrimaryButton`
-**Branding**: `AppBrandIcon` (`assets/logo.svg`), `AppAssets`
+**Branding**: `AppBrandIcon` (theme-aware PNG wordmark), `AppAssets`
 **Navigation**: bottom nav in `main_shell`
 **Maps**: `DeliveryMap`
 **Feedback**: Talker console (long-press profile avatar), toastification

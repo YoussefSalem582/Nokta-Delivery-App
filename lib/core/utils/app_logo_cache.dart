@@ -1,11 +1,30 @@
-import 'package:delivery_app/shared/widgets/branding/app_brand_icon.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'dart:async';
 
-/// Parses [AppBrandIcon.assetPath] once at startup for smoother first paint.
+import 'package:delivery_app/shared/assets/app_assets.dart';
+import 'package:flutter/painting.dart';
+
+/// Decodes both theme wordmarks once at startup for smoother first paint.
 Future<void> precacheAppLogo() async {
-  final loader = SvgAssetLoader(AppBrandIcon.assetPath);
-  await svg.cache.putIfAbsent(
-    loader.cacheKey(null),
-    () => loader.loadBytes(null),
+  await Future.wait([
+    _precacheAssetImage(AppAssets.logoLightTheme),
+    _precacheAssetImage(AppAssets.logoDarkTheme),
+  ]);
+}
+
+Future<void> _precacheAssetImage(String assetPath) async {
+  final stream = AssetImage(assetPath).resolve(const ImageConfiguration());
+  final completer = Completer<void>();
+  late ImageStreamListener listener;
+  listener = ImageStreamListener(
+    (_, _) {
+      stream.removeListener(listener);
+      completer.complete();
+    },
+    onError: (Object error, StackTrace? stackTrace) {
+      stream.removeListener(listener);
+      completer.completeError(error, stackTrace);
+    },
   );
+  stream.addListener(listener);
+  return completer.future;
 }

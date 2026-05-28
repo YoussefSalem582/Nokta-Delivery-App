@@ -1,9 +1,10 @@
 import 'package:delivery_app/core/constants/app_constants.dart';
 import 'package:delivery_app/config/theme/app_colors.dart';
+import 'package:delivery_app/shared/assets/app_assets.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
-/// App wordmark from [assetPath] (wide SVG, ~3.28:1).
+/// App wordmark — [AppAssets.logoLightTheme] in light mode,
+/// [AppAssets.logoDarkTheme] in dark mode.
 class AppBrandIcon extends StatelessWidget {
   const AppBrandIcon({
     super.key,
@@ -11,10 +12,8 @@ class AppBrandIcon extends StatelessWidget {
     this.filled = true,
   });
 
-  static const assetPath = 'assets/logo.svg';
-
-  /// Matches `viewBox` in assets/logo.svg (888.75 × 270.75).
-  static const aspectRatio = 888.75 / 270.75;
+  static String assetPathFor(Brightness brightness) =>
+      AppAssets.logoFor(brightness);
 
   final double size;
   final bool filled;
@@ -23,7 +22,7 @@ class AppBrandIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final logoHeight = filled ? size * 0.38 : size;
-    final logo = _LogoSvg(height: logoHeight);
+    final logo = _LogoImage(height: logoHeight);
 
     if (filled) {
       return Container(
@@ -52,37 +51,22 @@ class AppBrandIcon extends StatelessWidget {
   }
 }
 
-class _LogoSvg extends StatelessWidget {
-  const _LogoSvg({required this.height});
+class _LogoImage extends StatelessWidget {
+  const _LogoImage({required this.height});
 
   final double height;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final width = height * AppBrandIcon.aspectRatio;
+    final assetPath = AppBrandIcon.assetPathFor(scheme.brightness);
 
     return RepaintBoundary(
-      child: SvgPicture.asset(
-        AppBrandIcon.assetPath,
-        width: width,
+      child: Image.asset(
+        assetPath,
         height: height,
         fit: BoxFit.contain,
-        semanticsLabel: AppConstants.appName,
-        placeholderBuilder: (_) => SizedBox(
-          width: width,
-          height: height,
-          child: Center(
-            child: SizedBox(
-              width: height * 0.4,
-              height: height * 0.4,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: scheme.primary.withValues(alpha: 0.35),
-              ),
-            ),
-          ),
-        ),
+        semanticLabel: AppConstants.appName,
         errorBuilder: (_, _, _) => Icon(
           Icons.directions_car,
           size: height * 0.6,

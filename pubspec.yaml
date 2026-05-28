@@ -45,8 +45,6 @@ dependencies:
   formz: ^0.8.0
   cached_network_image: ^3.4.1
   path_provider: ^2.1.5
-  flutter_svg: ^2.3.0
-
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -63,8 +61,8 @@ flutter:
     - assets/mock/
     - assets/translations/
     - assets/lottie/
-    - assets/logo.svg
     - assets/logo.png
+    - assets/logo_light.png
     - assets/app_icon.png
 
 flutter_launcher_icons:
@@ -78,8 +76,12 @@ flutter_launcher_icons:
 flutter_native_splash:
   color: "#F7F9FC"
   image: assets/logo.png
+  color_dark: "#0F172A"
+  image_dark: assets/logo_light.png
   android_12:
     color: "#F7F9FC"
     image: assets/logo.png
+    color_dark: "#0F172A"
+    image_dark: assets/logo_light.png
   ios: true
   android: true
