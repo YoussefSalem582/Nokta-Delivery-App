@@ -2,6 +2,7 @@ import 'package:delivery_app/config/routes/route_names.dart';
 import 'package:delivery_app/features/profile/shared/domain/entities/order_entity.dart';
 import 'package:delivery_app/features/auth/shared/domain/entities/user_entity.dart';
 import 'package:delivery_app/shared/spacing/app_spacing.dart';
+import 'package:delivery_app/features/driver/shared/presentation/cubit/app_mode_cubit.dart';
 import 'package:delivery_app/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:delivery_app/core/utils/date_time_format.dart';
 import 'package:delivery_app/core/utils/ui_helpers.dart';
@@ -450,6 +451,39 @@ class _SettingsTab extends StatelessWidget {
           clipBehavior: Clip.antiAlias,
           child: Column(
             children: [
+              if (!user.isDriverRegistered)
+                _SettingsTile(
+                  icon: Icons.local_taxi_outlined,
+                  title: 'become_driver'.tr(),
+                  showDivider: true,
+                  trailing: Icon(
+                    Icons.chevron_right,
+                    color: scheme.onSurfaceVariant,
+                  ),
+                  onTap: () => context.pushNamed(RouteNames.driverOnboarding),
+                )
+              else
+                _SettingsTile(
+                  icon: Icons.swap_horiz,
+                  title: 'driver_mode'.tr(),
+                  showDivider: true,
+                  trailing: Switch.adaptive(
+                    value: context.watch<AppModeCubit>().state.isDriver,
+                    activeTrackColor: scheme.primary.withValues(alpha: 0.5),
+                    activeThumbColor: scheme.primary,
+                    onChanged: (enabled) async {
+                      await context.read<AppModeCubit>().toggleDriverMode(
+                            enabled,
+                          );
+                      if (!context.mounted) return;
+                      if (enabled) {
+                        context.goNamed(RouteNames.driverHome);
+                      } else {
+                        context.goNamed(RouteNames.home);
+                      }
+                    },
+                  ),
+                ),
               _SettingsTile(
                 icon: Icons.dark_mode_outlined,
                 title: 'dark_mode'.tr(),
@@ -508,7 +542,9 @@ class _SettingsTab extends StatelessWidget {
           width: double.infinity,
           height: AppSpacing.buttonHeight,
           child: OutlinedButton.icon(
-            onPressed: () {
+            onPressed: () async {
+              await context.read<AppModeCubit>().resetToPassenger();
+              if (!context.mounted) return;
               context.read<AuthBloc>().add(const AuthLogoutRequested());
               context.goNamed(RouteNames.splash);
             },
