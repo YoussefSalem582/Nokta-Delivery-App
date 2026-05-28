@@ -13,6 +13,8 @@ class NotificationTypeIcon extends StatelessWidget {
   final bool isRead;
 
   IconData get _iconData => switch (type) {
+        NotificationType.message => Icons.chat_bubble_outline,
+        NotificationType.call => Icons.phone_in_talk_outlined,
         NotificationType.driverOnTheWay ||
         NotificationType.driverArrived =>
           Icons.local_taxi,

@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:delivery_app/core/error/failures.dart';
+import 'package:delivery_app/core/network/fcm_service.dart';
+import 'package:delivery_app/features/notifications/shared/domain/entities/notification_type.dart';
 import 'package:delivery_app/features/trips/shared/domain/entities/trip_entity.dart';
 import 'package:delivery_app/features/trips/shared/domain/usecases/trip_usecases.dart';
 import 'package:equatable/equatable.dart';
@@ -12,7 +14,9 @@ part 'driver_call_state.dart';
 class DriverCallBloc extends Bloc<DriverCallEvent, DriverCallState> {
   DriverCallBloc({
     required GetTripDetailUseCase getTripDetail,
-  }) : _getTripDetail = getTripDetail,
+    required FcmService fcmService,
+  })  : _getTripDetail = getTripDetail,
+        _fcmService = fcmService,
        super(const DriverCallInitial()) {
     on<DriverCallStarted>(_onStarted);
     on<DriverCallConnected>(_onConnected);
@@ -23,6 +27,7 @@ class DriverCallBloc extends Bloc<DriverCallEvent, DriverCallState> {
   }
 
   final GetTripDetailUseCase _getTripDetail;
+  final FcmService _fcmService;
   Timer? _connectTimer;
   Timer? _durationTimer;
 
@@ -109,7 +114,10 @@ class DriverCallBloc extends Bloc<DriverCallEvent, DriverCallState> {
     }
   }
 
-  void _onEnded(DriverCallEnded event, Emitter<DriverCallState> emit) {
+  Future<void> _onEnded(
+    DriverCallEnded event,
+    Emitter<DriverCallState> emit,
+  ) async {
     _connectTimer?.cancel();
     _durationTimer?.cancel();
 
@@ -117,8 +125,23 @@ class DriverCallBloc extends Bloc<DriverCallEvent, DriverCallState> {
     if (current is DriverCallConnecting) {
       emit(DriverCallEndedState(trip: current.trip));
     } else if (current is DriverCallActive) {
-      emit(DriverCallEndedState(trip: current.trip));
+      final trip = current.trip;
+      final driverName = trip.driverName ?? '';
+      final duration = _formatCallDuration(current.elapsedSeconds);
+      await _fcmService.simulateTripNotification(
+        title: 'notification_call_ended',
+        body: 'notification_call_ended_body|$driverName|$duration',
+        tripId: trip.id,
+        type: NotificationType.call,
+      );
+      emit(DriverCallEndedState(trip: trip));
     }
+  }
+
+  String _formatCallDuration(int totalSeconds) {
+    final minutes = totalSeconds ~/ 60;
+    final seconds = totalSeconds % 60;
+    return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
   }
 
   @override

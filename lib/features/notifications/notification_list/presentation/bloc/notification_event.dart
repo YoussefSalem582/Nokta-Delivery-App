@@ -39,18 +39,23 @@ class NotificationRestoreRequested extends NotificationEvent {
   List<Object?> get props => [notification];
 }
 
-class NotificationFilterChanged extends NotificationEvent {
-  const NotificationFilterChanged(this.filter);
-  final NotificationFilter filter;
+class NotificationCategoryChanged extends NotificationEvent {
+  const NotificationCategoryChanged(this.category);
+  final NotificationCategoryFilter category;
   @override
-  List<Object?> get props => [filter];
+  List<Object?> get props => [category];
+}
+
+class NotificationUnreadOnlyToggled extends NotificationEvent {
+  const NotificationUnreadOnlyToggled(this.unreadOnly);
+  final bool unreadOnly;
+  @override
+  List<Object?> get props => [unreadOnly];
 }
 
 class NotificationReceived extends NotificationEvent {
   const NotificationReceived();
 }
-
-enum NotificationFilter { all, unread }
 
 abstract class NotificationState extends Equatable {
   const NotificationState();
@@ -69,39 +74,63 @@ class NotificationLoading extends NotificationState {
 class NotificationLoaded extends NotificationState {
   const NotificationLoaded({
     required this.notifications,
+    required this.tripsById,
     required this.unreadCount,
-    this.filter = NotificationFilter.all,
+    this.categoryFilter = NotificationCategoryFilter.all,
+    this.unreadOnly = false,
     this.isRefreshing = false,
   });
 
   final List<NotificationEntity> notifications;
+  final Map<String, TripEntity> tripsById;
   final int unreadCount;
-  final NotificationFilter filter;
+  final NotificationCategoryFilter categoryFilter;
+  final bool unreadOnly;
   final bool isRefreshing;
 
   List<NotificationEntity> get filteredNotifications {
-    if (filter == NotificationFilter.unread) {
-      return notifications.where((n) => !n.isRead).toList();
+    var items = notifications.where(
+      (n) => n.type.matchesCategory(categoryFilter),
+    );
+    if (unreadOnly) {
+      items = items.where((n) => !n.isRead);
     }
-    return notifications;
+    return items.toList();
+  }
+
+  TripEntity? tripFor(NotificationEntity notification) {
+    final tripId = notification.tripId;
+    if (tripId == null) return null;
+    return tripsById[tripId];
   }
 
   NotificationLoaded copyWith({
     List<NotificationEntity>? notifications,
+    Map<String, TripEntity>? tripsById,
     int? unreadCount,
-    NotificationFilter? filter,
+    NotificationCategoryFilter? categoryFilter,
+    bool? unreadOnly,
     bool? isRefreshing,
   }) {
     return NotificationLoaded(
       notifications: notifications ?? this.notifications,
+      tripsById: tripsById ?? this.tripsById,
       unreadCount: unreadCount ?? this.unreadCount,
-      filter: filter ?? this.filter,
+      categoryFilter: categoryFilter ?? this.categoryFilter,
+      unreadOnly: unreadOnly ?? this.unreadOnly,
       isRefreshing: isRefreshing ?? this.isRefreshing,
     );
   }
 
   @override
-  List<Object?> get props => [notifications, unreadCount, filter, isRefreshing];
+  List<Object?> get props => [
+        notifications,
+        tripsById,
+        unreadCount,
+        categoryFilter,
+        unreadOnly,
+        isRefreshing,
+      ];
 }
 
 class NotificationError extends NotificationState {

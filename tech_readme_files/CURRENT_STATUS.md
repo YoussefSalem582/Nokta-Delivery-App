@@ -2,7 +2,7 @@
 
 > [INDEX](INDEX.md) > Current Status
 >
-> **Last Updated:** May 27, 2026 — Notifications inbox UX + dark-mode polish (typed alerts, filters, grouping, swipe delete).
+> **Last Updated:** May 27, 2026 — Notifications inbox with trip-joined status, category filters (Trip/Messages/Calls), and chat/call producers.
 
 > **Version:** `1.0.0+1`
 > **Flutter:** 3.16+ (SDK ^3.12.0)
@@ -30,7 +30,7 @@ Nokta is a Flutter ride-hailing / delivery MVP template with Clean Architecture 
 | Auth (splash, onboarding, login, register) | ✅ Demo complete |
 | Home / map / ride request | ✅ Demo complete (Nominatim geocoding for pickup + dropoff, saved home/work chips, OSRM routing, per-km fare, payment/promo pickers) |
 | Trips (list, detail, tracking) | ✅ Demo complete (randomized driver near pickup ≤8 min approach, two-phase tracking, connected cache sync, current trip card, driver profile, chat + call) |
-| Notifications | ✅ Demo complete (typed inbox UI, All/Unread filter, date sections, swipe delete + undo, mark-all-read, nav badge, dark-mode-aware tiles) |
+| Notifications | ✅ Demo complete (typed inbox, All/Trip/Messages/Calls + Unread filters, live trip status chip, chat/call notifications, swipe delete + undo, mark-all-read, nav badge) |
 | Profile / orders | ✅ Demo complete (wallet top-up, edit name, order details) |
 | Settings (theme, locale) | ✅ Complete |
 | Real backend integration | 🚧 Mock API only |

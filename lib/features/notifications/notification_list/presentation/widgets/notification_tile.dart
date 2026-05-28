@@ -4,6 +4,9 @@ import 'package:delivery_app/features/notifications/notification_list/presentati
 import 'package:delivery_app/features/notifications/notification_list/presentation/utils/notification_theme.dart';
 import 'package:delivery_app/features/notifications/notification_list/presentation/widgets/notification_type_icon.dart';
 import 'package:delivery_app/features/notifications/shared/domain/entities/notification_entity.dart';
+import 'package:delivery_app/features/notifications/shared/domain/entities/notification_type.dart';
+import 'package:delivery_app/features/trips/shared/domain/entities/trip_entity.dart';
+import 'package:delivery_app/features/trips/shared/domain/entities/trip_extensions.dart';
 import 'package:delivery_app/features/trips/shared/presentation/widgets/trip_widgets.dart';
 import 'package:delivery_app/shared/spacing/app_spacing.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -16,11 +19,17 @@ class NotificationTile extends StatelessWidget {
   const NotificationTile({
     super.key,
     required this.item,
+    this.trip,
     this.animationIndex = 0,
   });
 
   final NotificationEntity item;
+  final TripEntity? trip;
   final int animationIndex;
+
+  bool get _showsTripDetails =>
+      trip != null &&
+      item.type.categoryFilter == NotificationCategoryFilter.trips;
 
   @override
   Widget build(BuildContext context) {
@@ -69,19 +78,7 @@ class NotificationTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
           splashColor: theme.inkSplash,
           highlightColor: theme.inkSplash,
-          onTap: () {
-            if (!item.isRead) {
-              context.read<NotificationBloc>().add(
-                    NotificationMarkReadRequested(item.id),
-                  );
-            }
-            if (item.tripId != null) {
-              context.pushNamed(
-                RouteNames.tripDetail,
-                pathParameters: {'tripId': item.tripId!},
-              );
-            }
-          },
+          onTap: () => _onTap(context),
           child: Container(
             decoration: BoxDecoration(
               color: theme.cardBackground(isRead: item.isRead),
@@ -106,86 +103,112 @@ class NotificationTile extends StatelessWidget {
                       ),
                     ),
                   Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(AppSpacing.md),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        NotificationTypeIcon(
-                          type: item.type,
-                          isRead: item.isRead,
-                        ),
-                        const SizedBox(width: AppSpacing.md),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      localizeNotificationText(item.title),
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .titleSmall
-                                          ?.copyWith(
-                                            color: theme.titleColor(
-                                              isRead: item.isRead,
+                    child: Padding(
+                      padding: const EdgeInsets.all(AppSpacing.md),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          NotificationTypeIcon(
+                            type: item.type,
+                            isRead: item.isRead,
+                          ),
+                          const SizedBox(width: AppSpacing.md),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        localizeNotificationText(item.title),
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .titleSmall
+                                            ?.copyWith(
+                                              color: theme.titleColor(
+                                                isRead: item.isRead,
+                                              ),
+                                              fontWeight: item.isRead
+                                                  ? FontWeight.w600
+                                                  : FontWeight.w700,
                                             ),
-                                            fontWeight: item.isRead
-                                                ? FontWeight.w600
-                                                : FontWeight.w700,
-                                          ),
+                                      ),
                                     ),
+                                    if (!item.isRead)
+                                      Container(
+                                        width: 8,
+                                        height: 8,
+                                        margin: const EdgeInsets.only(
+                                          left: AppSpacing.sm,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: theme.unreadIndicator,
+                                          shape: BoxShape.circle,
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                                if (_showsTripDetails) ...[
+                                  const SizedBox(height: AppSpacing.xs),
+                                  TripStatusChip(
+                                    status: trip!.status,
+                                    compact: true,
+                                    live: trip!.isCurrentTrip,
                                   ),
-                                  if (!item.isRead)
-                                    Container(
-                                      width: 8,
-                                      height: 8,
-                                      margin: const EdgeInsets.only(
-                                        left: AppSpacing.sm,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: theme.unreadIndicator,
-                                        shape: BoxShape.circle,
-                                      ),
+                                  const SizedBox(height: AppSpacing.xs),
+                                  Text(
+                                    'notification_route_summary'.tr(
+                                      namedArgs: {
+                                        'pickup': trip!.pickupAddress,
+                                        'dropoff': trip!.dropoffAddress,
+                                      },
                                     ),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodySmall
+                                        ?.copyWith(
+                                          color: theme.bodyColor,
+                                        ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ] else ...[
+                                  const SizedBox(height: AppSpacing.xs),
+                                  Text(
+                                    localizeNotificationText(item.body),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(
+                                          color: theme.bodyColor,
+                                        ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ],
-                              ),
-                              const SizedBox(height: AppSpacing.xs),
-                              Text(
-                                localizeNotificationText(item.body),
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodyMedium
-                                    ?.copyWith(
-                                      color: theme.bodyColor,
-                                    ),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const SizedBox(height: AppSpacing.sm),
-                              Text(
-                                formatTripDate(item.createdAt),
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .labelSmall
-                                    ?.copyWith(color: theme.timestampColor),
-                              ),
-                            ],
+                                const SizedBox(height: AppSpacing.sm),
+                                Text(
+                                  formatTripDate(item.createdAt),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .labelSmall
+                                      ?.copyWith(color: theme.timestampColor),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                        if (item.tripId != null) ...[
-                          const SizedBox(width: AppSpacing.sm),
-                          Icon(
-                            Icons.chevron_right,
-                            color: theme.chevronColor,
-                            size: 20,
-                          ),
+                          if (_hasNavigationTarget) ...[
+                            const SizedBox(width: AppSpacing.sm),
+                            Icon(
+                              Icons.chevron_right,
+                              color: theme.chevronColor,
+                              size: 20,
+                            ),
+                          ],
                         ],
-                      ],
+                      ),
                     ),
-                  ),
                   ),
                 ],
               ),
@@ -200,5 +223,43 @@ class NotificationTile extends StatelessWidget {
           delay: (animationIndex * 40).ms,
         )
         .slideY(begin: 0.04, end: 0, duration: 220.ms);
+  }
+
+  bool get _hasNavigationTarget {
+    if (item.tripId == null) return false;
+    return item.type == NotificationType.message ||
+        item.type.categoryFilter == NotificationCategoryFilter.trips ||
+        item.type == NotificationType.call;
+  }
+
+  void _onTap(BuildContext context) {
+    if (!item.isRead) {
+      context.read<NotificationBloc>().add(
+            NotificationMarkReadRequested(item.id),
+          );
+    }
+    final tripId = item.tripId;
+    if (tripId == null) return;
+
+    switch (item.type) {
+      case NotificationType.message:
+        context.pushNamed(
+          RouteNames.driverChat,
+          pathParameters: {'tripId': tripId},
+        );
+      case NotificationType.call:
+      case NotificationType.tripUpdate:
+      case NotificationType.driverOnTheWay:
+      case NotificationType.driverArrived:
+      case NotificationType.tripAccepted:
+      case NotificationType.tripCompleted:
+        context.pushNamed(
+          RouteNames.tripDetail,
+          pathParameters: {'tripId': tripId},
+        );
+      case NotificationType.promo:
+      case NotificationType.general:
+        break;
+    }
   }
 }

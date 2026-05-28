@@ -29,6 +29,8 @@ class TripListPage extends StatelessWidget {
         backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
         appBar: AppBar(
           backgroundColor: Theme.of(context).colorScheme.surface,
+          toolbarHeight: ShellAppBarLogo.tabToolbarHeight,
+          leadingWidth: ShellAppBarLogo.leadingWidth,
           automaticallyImplyLeading: false,
           leading: const ShellAppBarLogo(),
           title: Text('trips_title'.tr()),

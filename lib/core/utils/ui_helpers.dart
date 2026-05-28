@@ -10,6 +10,16 @@ String tripStatusLabel(TripStatus status) {
 /// Translates notification title/body when stored as i18n keys; returns
 /// legacy plain-text entries unchanged (avoids Easy Localization warnings).
 String localizeNotificationText(String value) {
+  if (value.contains('|')) {
+    final parts = value.split('|');
+    final key = parts.first;
+    if (RegExp(r'^[a-z][a-z0-9_]*$').hasMatch(key) && parts.length >= 3) {
+      return key.tr(namedArgs: {
+        'driver': parts[1],
+        'duration': parts[2],
+      });
+    }
+  }
   if (RegExp(r'^[a-z][a-z0-9_]*$').hasMatch(value)) {
     return value.tr();
   }

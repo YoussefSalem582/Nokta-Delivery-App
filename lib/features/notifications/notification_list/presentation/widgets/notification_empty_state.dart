@@ -1,12 +1,45 @@
 import 'package:delivery_app/features/notifications/notification_list/presentation/utils/notification_theme.dart';
+import 'package:delivery_app/features/notifications/shared/domain/entities/notification_type.dart';
 import 'package:delivery_app/shared/spacing/app_spacing.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 class NotificationEmptyState extends StatelessWidget {
-  const NotificationEmptyState({super.key, this.filteredUnread = false});
+  const NotificationEmptyState({
+    super.key,
+    required this.categoryFilter,
+    this.unreadOnly = false,
+  });
 
-  final bool filteredUnread;
+  final NotificationCategoryFilter categoryFilter;
+  final bool unreadOnly;
+
+  String get _titleKey {
+    if (unreadOnly) return 'notifications_empty_unread';
+    return switch (categoryFilter) {
+      NotificationCategoryFilter.trips => 'notifications_empty_trips',
+      NotificationCategoryFilter.messages => 'notifications_empty_messages',
+      NotificationCategoryFilter.calls => 'notifications_empty_calls',
+      NotificationCategoryFilter.all => 'no_notifications',
+    };
+  }
+
+  String? get _subtitleKey {
+    if (unreadOnly || categoryFilter != NotificationCategoryFilter.all) {
+      return null;
+    }
+    return 'notifications_empty_subtitle';
+  }
+
+  IconData get _icon {
+    if (unreadOnly) return Icons.mark_email_read_outlined;
+    return switch (categoryFilter) {
+      NotificationCategoryFilter.trips => Icons.directions_car_outlined,
+      NotificationCategoryFilter.messages => Icons.chat_bubble_outline,
+      NotificationCategoryFilter.calls => Icons.phone_in_talk_outlined,
+      NotificationCategoryFilter.all => Icons.notifications_none_outlined,
+    };
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,27 +59,23 @@ class NotificationEmptyState extends StatelessWidget {
                 shape: BoxShape.circle,
               ),
               child: Icon(
-                filteredUnread
-                    ? Icons.mark_email_read_outlined
-                    : Icons.notifications_none_outlined,
+                _icon,
                 size: 64,
                 color: theme.emptyIconTint,
               ),
             ),
             const SizedBox(height: AppSpacing.md),
             Text(
-              filteredUnread
-                  ? 'notifications_empty_unread'.tr()
-                  : 'no_notifications'.tr(),
+              _titleKey.tr(),
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     color: theme.titleColor(isRead: false),
                   ),
               textAlign: TextAlign.center,
             ),
-            if (!filteredUnread) ...[
+            if (_subtitleKey != null) ...[
               const SizedBox(height: AppSpacing.sm),
               Text(
-                'notifications_empty_subtitle'.tr(),
+                _subtitleKey!.tr(),
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: scheme.onSurfaceVariant,
                     ),

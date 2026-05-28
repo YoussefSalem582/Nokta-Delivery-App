@@ -82,6 +82,9 @@ void notifyTripsCacheChanged() {
   _tripsCacheSyncDebounce?.cancel();
   _tripsCacheSyncDebounce = Timer(const Duration(milliseconds: 250), () {
     sl<TripListBloc>().add(const TripListCacheSyncRequested());
+    if (sl.isRegistered<NotificationBloc>()) {
+      sl<NotificationBloc>().add(const NotificationReceived());
+    }
   });
 }
 
@@ -301,10 +304,14 @@ Future<void> initDependencies() async {
       getTripDetail: sl(),
       getChatMessages: sl(),
       sendChatMessage: sl(),
+      fcmService: sl(),
     ),
   );
   sl.registerFactory(
-    () => DriverCallBloc(getTripDetail: sl()),
+    () => DriverCallBloc(
+      getTripDetail: sl(),
+      fcmService: sl(),
+    ),
   );
   sl.registerFactory(
     () => DriverProfileBloc(
@@ -332,6 +339,7 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(
     () => NotificationBloc(
       getNotifications: sl(),
+      getTrips: sl(),
       markNotificationRead: sl(),
       markAllRead: sl(),
       deleteNotification: sl(),

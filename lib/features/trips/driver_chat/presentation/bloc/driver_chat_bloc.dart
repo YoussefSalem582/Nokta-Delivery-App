@@ -1,4 +1,6 @@
 import 'package:delivery_app/core/error/failures.dart';
+import 'package:delivery_app/core/network/fcm_service.dart';
+import 'package:delivery_app/features/notifications/shared/domain/entities/notification_type.dart';
 import 'package:delivery_app/features/trips/shared/domain/entities/chat_message_entity.dart';
 import 'package:delivery_app/features/trips/shared/domain/entities/trip_entity.dart';
 import 'package:delivery_app/features/trips/shared/domain/usecases/chat_usecases.dart';
@@ -15,9 +17,11 @@ class DriverChatBloc extends Bloc<DriverChatEvent, DriverChatState> {
     required GetTripDetailUseCase getTripDetail,
     required GetChatMessagesUseCase getChatMessages,
     required SendChatMessageUseCase sendChatMessage,
+    required FcmService fcmService,
   })  : _getTripDetail = getTripDetail,
         _getChatMessages = getChatMessages,
         _sendChatMessage = sendChatMessage,
+        _fcmService = fcmService,
         super(const DriverChatInitial()) {
     on<DriverChatLoadRequested>(_onLoad);
     on<DriverChatMessageSent>(_onSend);
@@ -26,6 +30,7 @@ class DriverChatBloc extends Bloc<DriverChatEvent, DriverChatState> {
   final GetTripDetailUseCase _getTripDetail;
   final GetChatMessagesUseCase _getChatMessages;
   final SendChatMessageUseCase _sendChatMessage;
+  final FcmService _fcmService;
 
   Future<void> _onLoad(
     DriverChatLoadRequested event,
@@ -77,15 +82,23 @@ class DriverChatBloc extends Bloc<DriverChatEvent, DriverChatState> {
       ),
     );
 
-    result.fold(
-      (Failure failure) => emit(DriverChatError(failure.message)),
-      (List<ChatMessageEntity> messages) => emit(
-        DriverChatLoaded(
-          trip: current.trip,
-          messages: messages,
-          isSending: false,
-        ),
-      ),
+    await result.fold(
+      (Failure failure) async => emit(DriverChatError(failure.message)),
+      (List<ChatMessageEntity> messages) async {
+        await _fcmService.simulateTripNotification(
+          title: 'notification_new_message',
+          body: 'notification_message_sent_body',
+          tripId: current.trip.id,
+          type: NotificationType.message,
+        );
+        emit(
+          DriverChatLoaded(
+            trip: current.trip,
+            messages: messages,
+            isSending: false,
+          ),
+        );
+      },
     );
   }
 }

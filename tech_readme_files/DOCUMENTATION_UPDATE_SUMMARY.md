@@ -4,6 +4,14 @@
 
 ---
 
+## 2026-05-27 — Notifications real trip data + category filters
+
+**What changed:** Replaced All/Unread-only filters with All/Trip/Messages/Calls chips plus Unread toggle; `NotificationBloc` joins trips for live status chips and routes; added `message`/`call` notification types; aligned mock seed; chat/call flows emit notifications via `FcmService`.
+
+**Files touched:** `lib/features/notifications/**`, `lib/features/trips/driver_chat/**`, `lib/features/trips/driver_call/**`, `lib/core/utils/ui_helpers.dart`, `lib/injection_container.dart`, `assets/mock/notifications.json`, `assets/translations/en.json`, `assets/translations/ar.json`, `CHANGELOG.md`, `CURRENT_STATUS.md`
+
+---
+
 ## 2026-05-27 — Notifications dark mode contrast fix
 
 **What changed:** Fixed near-invisible notification titles in dark mode by assigning `titleSmall`/`titleMedium` colors in `AppTextStyles` and explicit `NotificationTheme` text colors (`onSurface` titles, brighter section headers, app bar title/action). Prior dark polish (card elevation, accents) retained.

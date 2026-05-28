@@ -19,6 +19,8 @@ class NotificationsPage extends StatelessWidget {
       backgroundColor: theme.scaffoldBackground,
       appBar: AppBar(
         backgroundColor: scheme.surface,
+        toolbarHeight: ShellAppBarLogo.tabToolbarHeight,
+        leadingWidth: ShellAppBarLogo.leadingWidth,
         surfaceTintColor: Colors.transparent,
         foregroundColor: theme.appBarTitle,
         automaticallyImplyLeading: false,
@@ -26,9 +28,9 @@ class NotificationsPage extends StatelessWidget {
         title: Text(
           'notifications_title'.tr(),
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: theme.appBarTitle,
-                fontWeight: FontWeight.w700,
-              ),
+            color: theme.appBarTitle,
+            fontWeight: FontWeight.w700,
+          ),
         ),
         actions: [
           BlocBuilder<NotificationBloc, NotificationState>(
@@ -36,8 +38,8 @@ class NotificationsPage extends StatelessWidget {
               if (state is NotificationLoaded && state.unreadCount > 0) {
                 return TextButton(
                   onPressed: () => context.read<NotificationBloc>().add(
-                        const NotificationMarkAllReadRequested(),
-                      ),
+                    const NotificationMarkAllReadRequested(),
+                  ),
                   style: TextButton.styleFrom(
                     foregroundColor: theme.appBarAction,
                   ),

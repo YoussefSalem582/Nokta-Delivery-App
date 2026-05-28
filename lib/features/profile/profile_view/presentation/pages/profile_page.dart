@@ -112,22 +112,11 @@ class _ProfileContent extends StatelessWidget {
       backgroundColor: isDark ? scheme.surfaceContainerLow : scheme.surface,
       appBar: AppBar(
         backgroundColor: scheme.surface,
+        toolbarHeight: ShellAppBarLogo.tabToolbarHeight,
+        leadingWidth: ShellAppBarLogo.leadingWidth,
         automaticallyImplyLeading: false,
         leading: const ShellAppBarLogo(),
         title: Text('profile_title'.tr()),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: AppSpacing.sm),
-            child: CircleAvatar(
-              radius: 16,
-              backgroundColor: scheme.surfaceContainerHigh,
-              child: Text(
-                user.name[0].toUpperCase(),
-                style: TextStyle(color: scheme.primary, fontSize: 14),
-              ),
-            ),
-          ),
-        ],
       ),
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.md),

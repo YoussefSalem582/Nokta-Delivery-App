@@ -17,7 +17,6 @@ import 'package:delivery_app/features/home/ride_request/presentation/widgets/req
 import 'package:delivery_app/features/home/ride_request/presentation/widgets/ride_selection_sheet.dart';
 import 'package:delivery_app/features/home/shared/data/datasources/saved_places_local_datasource.dart';
 import 'package:delivery_app/features/home/shared/domain/entities/place_suggestion.dart';
-import 'package:delivery_app/shared/widgets/navigation/profile_avatar_button.dart';
 import 'package:delivery_app/shared/widgets/navigation/shell_app_bar_logo.dart';
 import 'package:delivery_app/injection_container.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -161,15 +160,10 @@ class _HomeMapPageState extends State<HomeMapPage> {
             extendBodyBehindAppBar: true,
             appBar: AppBar(
               backgroundColor: scheme.surface.withValues(alpha: isDark ? 0.92 : 1),
+              toolbarHeight: ShellAppBarLogo.tabToolbarHeight,
               automaticallyImplyLeading: false,
-              leading: const ShellAppBarLogo(),
-              title: Text(
-                'app_name'.tr(),
-                style: TextStyle(color: scheme.primary),
-              ),
-              actions: const [
-                ProfileAvatarButton(radius: 20),
-              ],
+              centerTitle: true,
+              title: const ShellAppBarLogo.centered(),
             ),
             body: Stack(
               children: [

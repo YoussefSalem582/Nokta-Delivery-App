@@ -41,16 +41,20 @@ class NotificationListBody extends StatelessWidget {
         }
         if (state is NotificationLoaded) {
           final items = state.filteredNotifications;
+          final filterBar = NotificationFilterBar(
+            categoryFilter: state.categoryFilter,
+            unreadOnly: state.unreadOnly,
+            unreadCount: state.unreadCount,
+          );
+
           if (items.isEmpty) {
             return Column(
               children: [
-                NotificationFilterBar(
-                  filter: state.filter,
-                  unreadCount: state.unreadCount,
-                ),
+                filterBar,
                 Expanded(
                   child: NotificationEmptyState(
-                    filteredUnread: state.filter == NotificationFilter.unread,
+                    categoryFilter: state.categoryFilter,
+                    unreadOnly: state.unreadOnly,
                   ),
                 ),
               ],
@@ -62,10 +66,7 @@ class NotificationListBody extends StatelessWidget {
 
           return Column(
             children: [
-              NotificationFilterBar(
-                filter: state.filter,
-                unreadCount: state.unreadCount,
-              ),
+              filterBar,
               Expanded(
                 child: RefreshIndicator(
                   onRefresh: () async {
@@ -109,8 +110,10 @@ class NotificationListBody extends StatelessWidget {
                           ),
                         );
                       }
+                      final notification = resolved.item!;
                       final tile = NotificationTile(
-                        item: resolved.item!,
+                        item: notification,
+                        trip: state.tripFor(notification),
                         animationIndex: tileIndex,
                       );
                       tileIndex++;

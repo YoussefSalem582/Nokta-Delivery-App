@@ -3,19 +3,24 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:delivery_app/core/usecase/usecase.dart';
 import 'package:delivery_app/features/notifications/shared/domain/entities/notification_entity.dart';
+import 'package:delivery_app/features/notifications/shared/domain/entities/notification_type.dart';
 import 'package:delivery_app/features/notifications/shared/domain/usecases/notification_usecases.dart';
+import 'package:delivery_app/features/trips/shared/domain/entities/trip_entity.dart';
+import 'package:delivery_app/features/trips/shared/domain/usecases/trip_usecases.dart';
 
 part 'notification_event.dart';
 
 class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
   NotificationBloc({
     required GetNotificationsUseCase getNotifications,
+    required GetTripsUseCase getTrips,
     required MarkNotificationReadUseCase markNotificationRead,
     required MarkAllNotificationsReadUseCase markAllRead,
     required DeleteNotificationUseCase deleteNotification,
     required AddNotificationUseCase addNotification,
     required GetUnreadNotificationCountUseCase getUnreadCount,
   })  : _getNotifications = getNotifications,
+        _getTrips = getTrips,
         _markNotificationRead = markNotificationRead,
         _markAllRead = markAllRead,
         _deleteNotification = deleteNotification,
@@ -28,31 +33,44 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
     on<NotificationMarkAllReadRequested>(_onMarkAllRead);
     on<NotificationDeleteRequested>(_onDelete);
     on<NotificationRestoreRequested>(_onRestore);
-    on<NotificationFilterChanged>(_onFilterChanged);
+    on<NotificationCategoryChanged>(_onCategoryChanged);
+    on<NotificationUnreadOnlyToggled>(_onUnreadOnlyToggled);
     on<NotificationReceived>(_onReceived);
   }
 
   final GetNotificationsUseCase _getNotifications;
+  final GetTripsUseCase _getTrips;
   final MarkNotificationReadUseCase _markNotificationRead;
   final MarkAllNotificationsReadUseCase _markAllRead;
   final DeleteNotificationUseCase _deleteNotification;
   final AddNotificationUseCase _addNotification;
   final GetUnreadNotificationCountUseCase _getUnreadCount;
 
-  NotificationFilter _currentFilter = NotificationFilter.all;
+  NotificationCategoryFilter _categoryFilter = NotificationCategoryFilter.all;
+  bool _unreadOnly = false;
 
   Future<void> _emitLoaded(Emitter<NotificationState> emit) async {
-    final result = await _getNotifications(const NoParams());
+    final notifResult = await _getNotifications(const NoParams());
+    final tripsResult = await _getTrips(const NoParams());
     final countResult = await _getUnreadCount(const NoParams());
-    result.fold(
+
+    notifResult.fold(
       (Failure failure) => emit(NotificationError(failure.message)),
       (items) {
+        final tripsById = <String, TripEntity>{};
+        tripsResult.fold((_) {}, (trips) {
+          for (final trip in trips) {
+            tripsById[trip.id] = trip;
+          }
+        });
         final unreadCount = countResult.getOrElse(() => 0);
         emit(
           NotificationLoaded(
             notifications: items,
+            tripsById: tripsById,
             unreadCount: unreadCount,
-            filter: _currentFilter,
+            categoryFilter: _categoryFilter,
+            unreadOnly: _unreadOnly,
           ),
         );
       },
@@ -110,14 +128,25 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
     await _emitLoaded(emit);
   }
 
-  void _onFilterChanged(
-    NotificationFilterChanged event,
+  void _onCategoryChanged(
+    NotificationCategoryChanged event,
     Emitter<NotificationState> emit,
   ) {
-    _currentFilter = event.filter;
+    _categoryFilter = event.category;
     final current = state;
     if (current is NotificationLoaded) {
-      emit(current.copyWith(filter: event.filter));
+      emit(current.copyWith(categoryFilter: event.category));
+    }
+  }
+
+  void _onUnreadOnlyToggled(
+    NotificationUnreadOnlyToggled event,
+    Emitter<NotificationState> emit,
+  ) {
+    _unreadOnly = event.unreadOnly;
+    final current = state;
+    if (current is NotificationLoaded) {
+      emit(current.copyWith(unreadOnly: event.unreadOnly));
     }
   }
 
