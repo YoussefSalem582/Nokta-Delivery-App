@@ -4,9 +4,9 @@
     SHA-256 hash recorded in skills-lock.json.
 
 .DESCRIPTION
-    For each entry in skills-lock.json, computes the SHA-256 hash of the
-    on-disk SKILL.md content (normalized to LF line endings) and compares to
-    `computedHash`. Reports missing skills + locally-modified skills.
+    For each entry in skills-lock.json, computes the SHA-256 folder hash of
+    on-disk skill files (CRLF normalized to LF so Windows checkout matches
+    Linux CI / git blob bytes) and compares to `computedHash`.
 
     Project-tuned skills (add-feature, add-api, add-language) are NOT in
     the lockfile and are skipped.
@@ -58,7 +58,11 @@ function Get-SkillFolderHash {
 
     foreach ($f in $files) {
         $pathBytes = [System.Text.Encoding]::UTF8.GetBytes($f.Rel)
-        $contentBytes = [System.IO.File]::ReadAllBytes($f.FullName)
+        # Match git/CI bytes: repo stores LF; Windows may checkout CRLF via autocrlf.
+        $raw = [System.IO.File]::ReadAllBytes($f.FullName)
+        $contentBytes = [System.Text.Encoding]::UTF8.GetBytes(
+            ([System.Text.Encoding]::UTF8.GetString($raw) -replace "`r`n", "`n")
+        )
         [void]$sha.TransformBlock($pathBytes, 0, $pathBytes.Length, $null, 0)
         [void]$sha.TransformBlock($contentBytes, 0, $contentBytes.Length, $null, 0)
     }

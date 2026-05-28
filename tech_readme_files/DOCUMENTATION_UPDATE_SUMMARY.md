@@ -4,6 +4,14 @@
 
 ---
 
+## 2026-05-28 — Skills lock LF alignment (CI)
+
+**What changed:** Fixed cross-platform skills drift: lock hashes now match LF git blobs (Linux CI). Added `.agents/skills/**` + `skills-lock.json` to `.gitattributes` (`eol=lf`); regenerated all 19 `computedHash` entries; drift scripts normalize CRLF→LF on read.
+
+**Files touched:** `.gitattributes`, `skills-lock.json`, `scripts/docs/check_skills_drift.sh`, `scripts/docs/check_skills_drift.ps1`
+
+---
+
 ## 2026-05-28 — Skills lock resync (CI)
 
 **What changed:** Ran `npx skills update` to refresh `dart-migrate-to-checks-package` from upstream and updated `skills-lock.json` `computedHash` so `scripts/docs/check_skills_drift.sh` passes in docs workflow.

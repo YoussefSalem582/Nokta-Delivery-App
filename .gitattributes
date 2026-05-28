@@ -1,4 +1,7 @@
 # AI ignore files are generated on Windows and checked on Linux CI — force LF.
+# Official skills: lock hashes are computed from LF bytes (Linux CI); force LF on checkout.
+.agents/skills/** text eol=lf
+skills-lock.json text eol=lf
 .agentignore text eol=lf
 .aiderignore text eol=lf
 .claudeignore text eol=lf

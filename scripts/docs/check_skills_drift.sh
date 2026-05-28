@@ -54,22 +54,19 @@ compute_skill_hash() {
     tmp="$( mktemp )"
     trap 'rm -f "${tmp}"' RETURN
 
-    (
+    while IFS= read -r rel; do
+        # rel is like "./SKILL.md" — strip the leading "./"
+        rel="${rel#./}"
+        # Path bytes first, then file content (LF-normalized for CRLF checkouts)
+        printf '%s' "${rel}" >> "${tmp}"
+        sed 's/\r$//' "${skill_dir}/${rel}" >> "${tmp}"
+    done < <(
         cd "${skill_dir}"
-        # Find all files except .git and node_modules. Print rel paths with
-        # forward slashes, sorted lexically.
         find . -type f \
             -not -path '*/.git/*' \
             -not -path '*/node_modules/*' \
             -print | sort
-    ) | while IFS= read -r rel; do
-        # rel is like "./SKILL.md" — strip the leading "./"
-        rel="${rel#./}"
-        # Path bytes first
-        printf '%s' "${rel}" >> "${tmp}"
-        # Then file content bytes
-        cat "${skill_dir}/${rel}" >> "${tmp}"
-    done
+    )
 
     openssl dgst -sha256 < "${tmp}" | awk '{ print $NF }'
 }

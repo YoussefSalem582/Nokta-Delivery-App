@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- **Skills lock drift (CI)** — resynced `dart-migrate-to-checks-package` from upstream via `npx skills update` and updated `skills-lock.json` so `check_skills_drift` passes.
+- **Skills lock drift (CI)** — root cause was Windows `autocrlf` checkout (CRLF working tree) vs LF git blobs hashed on Linux CI; regenerated all 19 `computedHash` values from LF bytes, force `eol=lf` on `.agents/skills/**`, and normalize CRLF→LF in both drift-check scripts.
 
 ### Added
 
