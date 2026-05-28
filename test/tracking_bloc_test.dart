@@ -5,6 +5,7 @@ import 'package:delivery_app/core/network/fcm_service.dart';
 import 'package:delivery_app/core/network/route_service.dart';
 import 'package:delivery_app/features/auth/shared/domain/entities/user_entity.dart';
 import 'package:delivery_app/features/auth/shared/domain/repositories/auth_repository.dart';
+import 'package:delivery_app/features/notifications/shared/domain/entities/notification_type.dart';
 import 'package:delivery_app/features/trips/shared/domain/entities/driver_entity.dart';
 import 'package:delivery_app/features/trips/shared/domain/entities/trip_entity.dart';
 import 'package:delivery_app/features/trips/shared/domain/usecases/get_driver_for_trip_usecase.dart';
@@ -105,7 +106,8 @@ void main() {
   setUpAll(() {
     registerFallbackValue(const LatLng(0, 0));
     registerFallbackValue(const GetTripDetailParams(''));
-    registerFallbackValue(const GetDriverForTripParams());
+    registerFallbackValue(NotificationType.tripAccepted);
+    registerFallbackValue(const GetDriverForTripParams(driverName: 'x'));
     registerFallbackValue(
       const UpdateTripStatusParams(
         tripId: '',
@@ -146,6 +148,7 @@ void main() {
         title: any(named: 'title'),
         body: any(named: 'body'),
         tripId: any(named: 'tripId'),
+        type: any(named: 'type'),
       ),
     ).thenAnswer((_) async {});
     when(
