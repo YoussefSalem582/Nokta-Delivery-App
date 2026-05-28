@@ -156,7 +156,22 @@ class RouteService {
     required LatLng pickup,
     required LatLng dropoff,
   }) async {
-    final approachLeg = await getRoute(pickup: driver, dropoff: pickup);
+    final effectiveDriver = DemoDestinations.normalizeDriverForTracking(
+      driver: driver,
+      pickup: pickup,
+    );
+
+    const distance = Distance();
+    if (distance(driver, effectiveDriver) > 1) {
+      _talker.info(
+        '[RouteService] Driver GPS too far from pickup; using demo approach start',
+      );
+    }
+
+    final approachLeg = await getRoute(
+      pickup: effectiveDriver,
+      dropoff: pickup,
+    );
     final tripLeg = await getRoute(pickup: pickup, dropoff: dropoff);
 
     final fullRoute = concatenateRoutes(approachLeg.points, tripLeg.points);

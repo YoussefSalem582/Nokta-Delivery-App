@@ -41,8 +41,8 @@ TripEntity _sampleTrip({TripStatus status = TripStatus.inProgress}) {
     status: status,
     driverName: 'Sara Mohamed',
     fare: 50,
-    createdAt: DateTime(2026),
-    updatedAt: DateTime(2026),
+    createdAt: DateTime.now(),
+    updatedAt: DateTime.now(),
   );
 }
 

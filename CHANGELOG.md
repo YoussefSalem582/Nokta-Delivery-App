@@ -9,11 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Tracking page dispose crash** — `TrackingPage` holds bloc reference directly instead of `context.read` in `dispose()`.
+- **Absurd approach distance** — when mock driver GPS is >5 km from pickup (e.g. catalog Cairo coords vs device GPS), snap driver to a demo offset near pickup before building the two-leg route.
+
 ### Changed
 
+- **Per-km pricing** — Fares computed as base + (distance × rate/km) per ride tier via `EstimateFareUseCase`; `RideSelectionSheet` shows dynamic prices and fare breakdown from OSRM route distance.
+- **Two-phase live tracking** — `TrackingBloc` simulates driver → pickup → dropoff with distance-based progress/ETA, phase labels, remaining km, and `getTripRoutePlan()` two-leg routing.
 - **12-hour clock (AM/PM) app-wide** — Centralized `formatAppClockTime` / `formatTripDate` / `formatAppDateTime` in `date_time_format.dart`; chat bubbles, ride ETA labels, trip/notification timestamps, and order details use 12-hour format; `MaterialApp` forces `alwaysUse24HourFormat: false`.
 
 ### Added
+
+- **Pricing domain** — `PricingConfig`, `TierPricing`, `FareEstimate`, `EstimateFareUseCase` (Economy/Premium/Delivery base + per-km rates with minimum fare).
+- **Route geometry helpers** — `concatenateRoutes`, `totalRouteDistance`, `progressAtDistance`, `remainingDistanceMeters`, `projectPointOntoRoute` for accurate tracking simulation.
+- **Tracking phase UI** — `tracking_phase_approach`, `tracking_phase_on_trip`, `tracking_remaining_km`, `fare_base_plus_distance` localization keys (EN + AR).
 
 - **Trips list — current trip + history sections** — `TripListPage` splits active trips into a pinned `CurrentTripCard` (with Track CTA) and a `Trip History` list below; `partitionTrips` helper on `TripEntity`.
 - **Connected trip data flow** — shell-scoped `TripListBloc` syncs from Hive after ride request, tracking completion, trip detail status changes, FCM notifications, and reconnect sync; tracking persists `inProgress`/`completed` to repository.

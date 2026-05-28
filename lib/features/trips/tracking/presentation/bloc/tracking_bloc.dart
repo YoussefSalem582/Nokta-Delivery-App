@@ -95,13 +95,13 @@ class TrackingBloc extends Bloc<TrackingEvent, TrackingState> {
 
     final pickup = LatLng(activeTrip.pickupLat, activeTrip.pickupLng);
     final dropoff = LatLng(activeTrip.dropoffLat, activeTrip.dropoffLng);
-    final driverLocation = driver != null
+    final catalogDriver = driver != null
         ? LatLng(driver!.lat, driver!.lng)
         : pickup;
 
     try {
       final routePlan = await _routeService.getTripRoutePlan(
-        driver: driverLocation,
+        driver: catalogDriver,
         pickup: pickup,
         dropoff: dropoff,
       );
@@ -114,9 +114,10 @@ class TrackingBloc extends Bloc<TrackingEvent, TrackingState> {
           activeTrip.status == TripStatus.driverArrived ||
           activeTrip.status == TripStatus.inProgress;
 
+      final approachStart = routePlan.approachLeg.points.first;
       final projection = projectPointOntoRoute(
         routePlan.approachLeg.points,
-        driverLocation,
+        approachStart,
       );
       _distanceTraveledMeters = _resolveInitialDistanceTraveled(
         trip: activeTrip,

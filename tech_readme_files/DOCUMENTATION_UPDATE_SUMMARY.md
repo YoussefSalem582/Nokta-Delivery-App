@@ -4,6 +4,20 @@
 
 ---
 
+## 2026-05-27 — Per-km pricing + two-phase live tracking
+
+**What changed:** Ride fares are now distance-based (base + rate/km per tier). Live tracking uses a two-leg route (driver → pickup → dropoff) with distance-weighted progress and ETA.
+
+**Pricing:** `PricingConfig` tier rates → `EstimateFareUseCase` → dynamic prices in `RideSelectionSheet` after OSRM quote.
+
+**Tracking:** `RouteService.getTripRoutePlan()` concatenates approach + trip legs; `TrackingBloc` advances by distance at OSRM-derived speed; phase UI shows approach vs on-trip and remaining km.
+
+**Tests:** `estimate_fare_usecase_test.dart`, extended `route_geometry_test.dart`, updated `tracking_bloc_test.dart`.
+
+**Files touched:** `pricing_config.dart`, `estimate_fare_usecase.dart`, `route_service.dart`, `route_geometry.dart`, `tracking_bloc.dart`, `tracking_state.dart`, `tracking_bottom_sheet.dart`, `tracking_page.dart`, `ride_selection_sheet.dart`, `injection_container.dart`, translations
+
+---
+
 ## 2026-05-27 — 12-hour clock (AM/PM) app-wide
 
 **What changed:** All user-visible clock times now use 12-hour AM/PM format regardless of device 24-hour setting.

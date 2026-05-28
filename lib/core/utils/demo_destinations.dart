@@ -6,6 +6,32 @@ class DemoDestinations {
 
   static const maxOsrmDistanceMeters = 500000;
 
+  /// Max straight-line distance before snapping mock driver GPS to near pickup.
+  static const maxDriverPickupDistanceMeters = 5000;
+
+  /// Demo driver start ~1.5 km from pickup for the approach leg.
+  static LatLng driverNearPickup({
+    required double pickupLat,
+    required double pickupLng,
+  }) {
+    return LatLng(pickupLat + 0.012, pickupLng + 0.008);
+  }
+
+  /// Keeps mock catalog driver coords when close; otherwise snaps near pickup.
+  static LatLng normalizeDriverForTracking({
+    required LatLng driver,
+    required LatLng pickup,
+  }) {
+    const distance = Distance();
+    if (distance(driver, pickup) <= maxDriverPickupDistanceMeters) {
+      return driver;
+    }
+    return driverNearPickup(
+      pickupLat: pickup.latitude,
+      pickupLng: pickup.longitude,
+    );
+  }
+
   static LatLng nearPickup({
     required double pickupLat,
     required double pickupLng,

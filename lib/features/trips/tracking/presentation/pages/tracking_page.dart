@@ -24,14 +24,26 @@ class TrackingPage extends StatefulWidget {
 
 class _TrackingPageState extends State<TrackingPage> {
   final _mapKey = GlobalKey<DeliveryMapState>();
+  late final TrackingBloc _bloc;
+
+  @override
+  void initState() {
+    super.initState();
+    _bloc = sl<TrackingBloc>()..add(TrackingLoadRequested(widget.tripId));
+  }
+
+  @override
+  void dispose() {
+    _bloc.add(const TrackingStopped());
+    _bloc.close();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) =>
-          sl<TrackingBloc>()..add(TrackingLoadRequested(widget.tripId)),
-      child: _TrackingLifecycle(
-        child: BlocListener<TrackingBloc, TrackingState>(
+    return BlocProvider.value(
+      value: _bloc,
+      child: BlocListener<TrackingBloc, TrackingState>(
         listenWhen: (previous, current) => current is TrackingError,
         listener: (context, state) {
           if (state is TrackingError) {
@@ -80,9 +92,9 @@ class _TrackingPageState extends State<TrackingPage> {
               if (state is TrackingError) {
                 return ErrorView(
                   message: state.message,
-                  onRetry: () => context.read<TrackingBloc>().add(
-                        TrackingLoadRequested(widget.tripId),
-                      ),
+                  onRetry: () => _bloc.add(
+                    TrackingLoadRequested(widget.tripId),
+                  ),
                 );
               }
 
@@ -162,30 +174,9 @@ class _TrackingPageState extends State<TrackingPage> {
             },
           ),
         ),
-        ),
       ),
     );
   }
-}
-
-class _TrackingLifecycle extends StatefulWidget {
-  const _TrackingLifecycle({required this.child});
-
-  final Widget child;
-
-  @override
-  State<_TrackingLifecycle> createState() => _TrackingLifecycleState();
-}
-
-class _TrackingLifecycleState extends State<_TrackingLifecycle> {
-  @override
-  void dispose() {
-    context.read<TrackingBloc>().add(const TrackingStopped());
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) => widget.child;
 }
 
 class _MapTrackingData {
