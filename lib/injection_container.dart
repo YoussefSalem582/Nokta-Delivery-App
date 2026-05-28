@@ -21,7 +21,6 @@ import 'core/sync/app_data_coordinator.dart';
 import 'core/sync/driver_pending_sync_handler.dart';
 import 'core/sync/sync_service.dart';
 import 'package:delivery_app/features/auth/shared/domain/repositories/auth_repository.dart';
-import 'package:delivery_app/features/driver/active_trip/presentation/bloc/driver_active_trip_bloc.dart';
 import 'package:delivery_app/features/driver/jobs/presentation/bloc/driver_jobs_bloc.dart';
 import 'package:delivery_app/features/driver/offers/presentation/bloc/driver_offers_bloc.dart';
 import 'package:delivery_app/features/driver/onboarding/presentation/cubit/driver_onboarding_cubit.dart';
@@ -391,6 +390,7 @@ Future<void> initDependencies() async {
       getTripDetail: sl(),
       getDriverForTrip: sl(),
       updateTripStatus: sl(),
+      driverTripRepository: sl(),
       authRepository: sl(),
       fcmService: sl(),
       onTripsChanged: notifyTripsCacheChanged,
@@ -423,14 +423,6 @@ Future<void> initDependencies() async {
       getOrders: sl(),
       refreshOrders: sl(),
       networkStatus: sl(),
-    ),
-  );
-  sl.registerFactory(
-    () => DriverActiveTripBloc(
-      driverTripRepository: sl(),
-      tripRepository: sl(),
-      fcmService: sl(),
-      authRepository: sl(),
     ),
   );
   sl.registerFactory(

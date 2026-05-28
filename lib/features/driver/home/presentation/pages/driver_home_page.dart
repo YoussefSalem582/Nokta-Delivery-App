@@ -2,7 +2,6 @@ import 'package:delivery_app/config/theme/app_colors.dart';
 import 'package:delivery_app/core/network/connectivity_cubit.dart';
 import 'package:delivery_app/core/network/connectivity_state.dart';
 import 'package:delivery_app/features/auth/shared/presentation/bloc/auth_bloc.dart';
-import 'package:delivery_app/features/driver/active_trip/presentation/bloc/driver_active_trip_bloc.dart';
 import 'package:delivery_app/features/driver/active_trip/presentation/pages/driver_active_trip_page.dart';
 import 'package:delivery_app/features/driver/jobs/presentation/bloc/driver_jobs_bloc.dart';
 import 'package:delivery_app/features/driver/offers/presentation/bloc/driver_offers_bloc.dart';
@@ -11,7 +10,6 @@ import 'package:delivery_app/features/driver/shared/presentation/cubit/driver_av
 import 'package:delivery_app/features/trips/shared/domain/entities/trip_entity.dart';
 import 'package:delivery_app/features/trips/shared/presentation/widgets/active_trip_section.dart';
 import 'package:delivery_app/features/trips/shared/presentation/widgets/trip_card.dart';
-import 'package:delivery_app/injection_container.dart';
 import 'package:delivery_app/shared/spacing/app_spacing.dart';
 import 'package:delivery_app/shared/widgets/buttons/app_button.dart';
 import 'package:delivery_app/shared/widgets/feedback/empty_state_view.dart';
@@ -53,12 +51,7 @@ class _DriverHomePageState extends State<DriverHomePage> {
     Navigator.of(context)
         .push<bool>(
           MaterialPageRoute<bool>(
-            builder: (_) => BlocProvider(
-              create: (_) =>
-                  sl<DriverActiveTripBloc>()
-                    ..add(DriverActiveTripLoadRequested(tripId: tripId)),
-              child: DriverActiveTripPage(tripId: tripId),
-            ),
+            builder: (_) => DriverActiveTripPage(tripId: tripId),
           ),
         )
         .then((completed) {

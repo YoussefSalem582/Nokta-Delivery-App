@@ -5,6 +5,7 @@ import 'package:delivery_app/core/network/fcm_service.dart';
 import 'package:delivery_app/core/network/route_service.dart';
 import 'package:delivery_app/features/auth/shared/domain/entities/user_entity.dart';
 import 'package:delivery_app/features/auth/shared/domain/repositories/auth_repository.dart';
+import 'package:delivery_app/features/driver/shared/domain/repositories/driver_trip_repository.dart';
 import 'package:delivery_app/features/notifications/shared/domain/entities/notification_type.dart';
 import 'package:delivery_app/features/trips/shared/domain/entities/driver_entity.dart';
 import 'package:delivery_app/features/trips/shared/domain/entities/trip_entity.dart';
@@ -29,6 +30,8 @@ class MockUpdateTripStatusUseCase extends Mock
 class MockAuthRepository extends Mock implements AuthRepository {}
 
 class MockFcmService extends Mock implements FcmService {}
+
+class MockDriverTripRepository extends Mock implements DriverTripRepository {}
 
 TripEntity _sampleTrip({TripStatus status = TripStatus.inProgress}) {
   return TripEntity(
@@ -102,6 +105,7 @@ void main() {
   late MockUpdateTripStatusUseCase updateTripStatus;
   late MockAuthRepository authRepository;
   late MockFcmService fcmService;
+  late MockDriverTripRepository driverTripRepository;
 
   setUpAll(() {
     registerFallbackValue(const LatLng(0, 0));
@@ -114,6 +118,7 @@ void main() {
         status: TripStatus.inProgress,
       ),
     );
+    registerFallbackValue(TripStatus.accepted);
   });
 
   setUp(() {
@@ -123,6 +128,22 @@ void main() {
     updateTripStatus = MockUpdateTripStatusUseCase();
     authRepository = MockAuthRepository();
     fcmService = MockFcmService();
+    driverTripRepository = MockDriverTripRepository();
+
+    when(() => driverTripRepository.updateDriverLocation(
+          any(),
+          lat: any(named: 'lat'),
+          lng: any(named: 'lng'),
+        )).thenAnswer(
+      (_) async => _sampleTrip(status: TripStatus.accepted),
+    );
+    when(() => driverTripRepository.updateDriverTripStatus(any(), any()))
+        .thenAnswer(
+      (invocation) async {
+        final status = invocation.positionalArguments[1] as TripStatus;
+        return _sampleTrip(status: status);
+      },
+    );
 
     when(() => getDriverForTrip(any())).thenAnswer(
       (_) async => const Right(_driver),
@@ -166,6 +187,7 @@ void main() {
       getTripDetail: getTripDetail,
       getDriverForTrip: getDriverForTrip,
       updateTripStatus: updateTripStatus,
+      driverTripRepository: driverTripRepository,
       authRepository: authRepository,
       fcmService: fcmService,
       onTripsChanged: onTripsChanged,
@@ -342,5 +364,55 @@ void main() {
       isA<TrackingLoading>(),
       isA<TrackingError>(),
     ],
+  );
+
+  blocTest<TrackingBloc, TrackingState>(
+    'driver mode advances progress and publishes location',
+    build: () {
+      when(() => getTripDetail(any())).thenAnswer(
+        (_) async => Right(
+          _sampleTrip(status: TripStatus.accepted).copyWith(
+            driverId: 'driver-002',
+          ),
+        ),
+      );
+      when(
+        () => routeService.getTripRoutePlan(
+          pickup: any(named: 'pickup'),
+          dropoff: any(named: 'dropoff'),
+          placementSeed: any(named: 'placementSeed'),
+        ),
+      ).thenAnswer(
+        (_) async => _sampleRoutePlan(
+          approachMeters: 1000,
+          tripMeters: 1000,
+          approachSeconds: 10,
+          tripSeconds: 10,
+        ),
+      );
+      return buildBloc();
+    },
+    act: (bloc) async {
+      bloc.add(
+        const TrackingLoadRequested(
+          '1',
+          role: TrackingRole.driver,
+        ),
+      );
+      await Future<void>.delayed(Duration.zero);
+      bloc.add(TrackingTick(DateTime.now().add(const Duration(seconds: 5))));
+    },
+    verify: (bloc) {
+      final active = bloc.state as TrackingActive;
+      expect(active.role, TrackingRole.driver);
+      expect(active.progress, greaterThan(0));
+      verify(
+        () => driverTripRepository.updateDriverLocation(
+          '1',
+          lat: any(named: 'lat'),
+          lng: any(named: 'lng'),
+        ),
+      ).called(greaterThan(0));
+    },
   );
 }

@@ -4,6 +4,14 @@
 
 ---
 
+## 2026-05-28 — Driver active trip unified with live tracking
+
+**What changed:** Driver active trip uses shared `LiveTrackingPage` + `TrackingBloc` driver mode (OSRM route, animated marker, bottom sheet ETA/phase, driver status buttons, location publish); `DriverActiveTripPage` is a thin wrapper; `DriverActiveTripBloc` removed from DI.
+
+**Files touched:** `lib/features/trips/tracking/**`, `lib/features/driver/active_trip/presentation/pages/driver_active_trip_page.dart`, `lib/features/driver/home/presentation/pages/driver_home_page.dart`, `lib/injection_container.dart`, `test/tracking_bloc_test.dart`
+
+---
+
 ## 2026-05-28 — Driver home on-trip state fix
 
 **What changed:** Driver home no longer shows "Go online" while `onTrip`; stale on-trip lock clears when jobs have no active assignment; completing a trip returns driver to online.

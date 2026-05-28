@@ -37,6 +37,8 @@ class TrackingActive extends TrackingState {
     this.driverRating,
     this.driverVehicle,
     this.driverPhone,
+    this.role = TrackingRole.rider,
+    this.isUpdating = false,
   });
 
   final TripEntity trip;
@@ -52,6 +54,17 @@ class TrackingActive extends TrackingState {
   final double? driverRating;
   final String? driverVehicle;
   final String? driverPhone;
+  final TrackingRole role;
+  final bool isUpdating;
+
+  bool get canDriverMarkArrived =>
+      role == TrackingRole.driver && trip.status == TripStatus.accepted;
+
+  bool get canDriverStartTrip =>
+      role == TrackingRole.driver && trip.status == TripStatus.driverArrived;
+
+  bool get canDriverCompleteTrip =>
+      role == TrackingRole.driver && trip.status == TripStatus.inProgress;
 
   TrackingActive copyWith({
     TripEntity? trip,
@@ -67,6 +80,8 @@ class TrackingActive extends TrackingState {
     double? driverRating,
     String? driverVehicle,
     String? driverPhone,
+    TrackingRole? role,
+    bool? isUpdating,
   }) {
     return TrackingActive(
       trip: trip ?? this.trip,
@@ -82,6 +97,8 @@ class TrackingActive extends TrackingState {
       driverRating: driverRating ?? this.driverRating,
       driverVehicle: driverVehicle ?? this.driverVehicle,
       driverPhone: driverPhone ?? this.driverPhone,
+      role: role ?? this.role,
+      isUpdating: isUpdating ?? this.isUpdating,
     );
   }
 
@@ -98,6 +115,8 @@ class TrackingActive extends TrackingState {
         driverRating,
         driverVehicle,
         driverPhone,
+        role,
+        isUpdating,
       ];
 
   @override
@@ -118,6 +137,7 @@ class TrackingCompleted extends TrackingState {
     this.driverRating,
     this.driverVehicle,
     this.driverPhone,
+    this.role = TrackingRole.rider,
   });
 
   final TripEntity trip;
@@ -129,6 +149,7 @@ class TrackingCompleted extends TrackingState {
   final double? driverRating;
   final String? driverVehicle;
   final String? driverPhone;
+  final TrackingRole role;
 
   @override
   List<Object?> get props => [
@@ -138,6 +159,7 @@ class TrackingCompleted extends TrackingState {
         driverRating,
         driverVehicle,
         driverPhone,
+        role,
       ];
 
   @override
