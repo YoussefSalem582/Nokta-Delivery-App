@@ -1,5 +1,6 @@
 import 'package:delivery_app/core/cache/datasources/route_cache_local_datasource.dart';
 import 'package:delivery_app/features/trips/shared/domain/entities/route_cache_entity.dart';
+import 'package:delivery_app/core/utils/driver_placement.dart';
 import 'package:delivery_app/core/utils/demo_destinations.dart';
 import 'package:delivery_app/core/utils/route_geometry.dart';
 import 'package:dio/dio.dart';
@@ -24,6 +25,7 @@ class RouteResult {
 
 class TripRoutePlan {
   const TripRoutePlan({
+    required this.driverStart,
     required this.approachLeg,
     required this.tripLeg,
     required this.fullRoute,
@@ -32,6 +34,7 @@ class TripRoutePlan {
     required this.totalDurationSeconds,
   });
 
+  final LatLng driverStart;
   final RouteResult approachLeg;
   final RouteResult tripLeg;
   final List<LatLng> fullRoute;
@@ -192,28 +195,43 @@ class RouteService {
     }
   }
 
-  /// Two-leg plan: driver → pickup (approach), then pickup → dropoff (trip).
+  /// Two-leg plan: randomized driver → pickup (approach), then pickup → dropoff.
   Future<TripRoutePlan> getTripRoutePlan({
-    required LatLng driver,
     required LatLng pickup,
     required LatLng dropoff,
+    required String placementSeed,
   }) async {
-    final effectiveDriver = DemoDestinations.normalizeDriverForTracking(
-      driver: driver,
-      pickup: pickup,
+    RouteResult approachLeg = const RouteResult(
+      points: [],
+      distanceMeters: 0,
+      durationSeconds: 0,
     );
+    LatLng driverStart = pickup;
 
-    const distance = Distance();
-    if (distance(driver, effectiveDriver) > 1) {
+    for (var attempt = 0; attempt < 4; attempt++) {
+      final scale = 1.0 - (attempt * 0.18);
+      driverStart = DriverPlacement.randomStartNearPickup(
+        pickup: pickup,
+        dropoff: dropoff,
+        seed: '$placementSeed-$attempt',
+        maxDistanceScale: scale,
+      );
+
+      approachLeg = await getRoute(
+        pickup: driverStart,
+        dropoff: pickup,
+      );
+
+      if (approachLeg.durationSeconds <= DriverPlacement.maxApproachSeconds) {
+        break;
+      }
+
       _talker.info(
-        '[RouteService] Driver GPS too far from pickup; using demo approach start',
+        '[RouteService] Approach ETA ${approachLeg.etaMinutes} min exceeds '
+        '${DriverPlacement.maxApproachMinutes} min; retrying closer driver start',
       );
     }
 
-    final approachLeg = await getRoute(
-      pickup: effectiveDriver,
-      dropoff: pickup,
-    );
     final tripLeg = await getRoute(pickup: pickup, dropoff: dropoff);
 
     final fullRoute = concatenateRoutes(approachLeg.points, tripLeg.points);
@@ -226,11 +244,14 @@ class RouteService {
         : 0.5;
 
     _talker.info(
-      '[RouteService] Trip route plan: approach ${approachLeg.distanceMeters.toStringAsFixed(0)}m, '
-      'trip ${tripLeg.distanceMeters.toStringAsFixed(0)}m',
+      '[RouteService] Trip route plan: driver start '
+      '(${driverStart.latitude.toStringAsFixed(5)}, ${driverStart.longitude.toStringAsFixed(5)}), '
+      'approach ${approachLeg.distanceMeters.toStringAsFixed(0)}m / '
+      '${approachLeg.etaMinutes} min, trip ${tripLeg.distanceMeters.toStringAsFixed(0)}m',
     );
 
     return TripRoutePlan(
+      driverStart: driverStart,
       approachLeg: approachLeg,
       tripLeg: tripLeg,
       fullRoute: fullRoute,

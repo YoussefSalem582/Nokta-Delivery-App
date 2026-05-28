@@ -4,6 +4,24 @@
 
 ---
 
+## 2026-05-27 — Randomized driver placement for live tracking
+
+**What changed:** Driver GPS at tracking start is no longer taken from static catalog coords. Each trip gets a deterministic random start near pickup (seeded by trip id), kept away from the dropoff, with max ~8 min approach ETA. OSRM retries up to 4 times with closer placement if road ETA exceeds 8 min.
+
+**Files touched:** `driver_placement.dart`, `route_service.dart`, `tracking_bloc.dart`, `demo_destinations.dart` (removed catalog GPS snap), `driver_placement_test.dart`, `tracking_bloc_test.dart`
+
+---
+
+## 2026-05-27 — Destination autocomplete on ride request sheet
+
+**What changed:** The "Where to?" bottom sheet now shows searchable destination suggestions while typing. Continue is disabled until the user selects a place; coordinates come from the selected catalog entry.
+
+**Catalog:** `DemoPlace` + 8 demo places in `DemoDestinations.places` with `searchPlaces()` filter.
+
+**Files touched:** `demo_place.dart`, `demo_destinations.dart`, `request_ride_sheet.dart`, `en.json`, `ar.json`, `demo_destinations_test.dart`
+
+---
+
 ## 2026-05-27 — Per-km pricing + two-phase live tracking
 
 **What changed:** Ride fares are now distance-based (base + rate/km per tier). Live tracking uses a two-leg route (driver → pickup → dropoff) with distance-weighted progress and ETA.

@@ -95,15 +95,12 @@ class TrackingBloc extends Bloc<TrackingEvent, TrackingState> {
 
     final pickup = LatLng(activeTrip.pickupLat, activeTrip.pickupLng);
     final dropoff = LatLng(activeTrip.dropoffLat, activeTrip.dropoffLng);
-    final catalogDriver = driver != null
-        ? LatLng(driver!.lat, driver!.lng)
-        : pickup;
 
     try {
       final routePlan = await _routeService.getTripRoutePlan(
-        driver: catalogDriver,
         pickup: pickup,
         dropoff: dropoff,
+        placementSeed: activeTrip.id,
       );
 
       _route = routePlan.fullRoute;

@@ -12,19 +12,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - **Tracking page dispose crash** — `TrackingPage` holds bloc reference directly instead of `context.read` in `dispose()`.
-- **Absurd approach distance** — when mock driver GPS is >5 km from pickup (e.g. catalog Cairo coords vs device GPS), snap driver to a demo offset near pickup before building the two-leg route.
 - **OSRM route timeouts** — deduplicate concurrent `getRoute` calls, cache straight-line fallbacks, use 5s OSRM timeout, and skip OSRM for 5 min after failure on the same route key.
 
 ### Changed
 
+- **Randomized driver placement** — `DriverPlacement` seeds a driver start near pickup (≤8 min approach), away from dropoff, per trip id; `getTripRoutePlan()` retries closer if OSRM approach ETA exceeds 8 min. Catalog driver GPS is UI-only (name/rating/vehicle).
 - **Per-km pricing** — Fares computed as base + (distance × rate/km) per ride tier via `EstimateFareUseCase`; `RideSelectionSheet` shows dynamic prices and fare breakdown from OSRM route distance.
 - **Two-phase live tracking** — `TrackingBloc` simulates driver → pickup → dropoff with distance-based progress/ETA, phase labels, remaining km, and `getTripRoutePlan()` two-leg routing.
 - **12-hour clock (AM/PM) app-wide** — Centralized `formatAppClockTime` / `formatTripDate` / `formatAppDateTime` in `date_time_format.dart`; chat bubbles, ride ETA labels, trip/notification timestamps, and order details use 12-hour format; `MaterialApp` forces `alwaysUse24HourFormat: false`.
 
 ### Added
 
+- **Destination autocomplete** — "Where to?" sheet filters a local demo place catalog while typing; user must pick a suggestion before Continue; selected place drives dropoff coordinates for pricing and routing.
 - **Pricing domain** — `PricingConfig`, `TierPricing`, `FareEstimate`, `EstimateFareUseCase` (Economy/Premium/Delivery base + per-km rates with minimum fare).
 - **Route geometry helpers** — `concatenateRoutes`, `totalRouteDistance`, `progressAtDistance`, `remainingDistanceMeters`, `projectPointOntoRoute` for accurate tracking simulation.
+- **Driver placement** — `DriverPlacement.randomStartNearPickup()` for deterministic per-trip driver GPS near pickup, separated from dropoff, capped at ~8 min straight-line approach.
 - **Tracking phase UI** — `tracking_phase_approach`, `tracking_phase_on_trip`, `tracking_remaining_km`, `fare_base_plus_distance` localization keys (EN + AR).
 
 - **Trips list — current trip + history sections** — `TripListPage` splits active trips into a pinned `CurrentTripCard` (with Track CTA) and a `Trip History` list below; `partitionTrips` helper on `TripEntity`.

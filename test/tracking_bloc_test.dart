@@ -84,6 +84,7 @@ TripRoutePlan _sampleRoutePlan({
   );
   final totalDistance = approachMeters + tripMeters;
   return TripRoutePlan(
+    driverStart: approachPoints.first,
     approachLeg: approachLeg,
     tripLeg: tripLeg,
     fullRoute: [...approachPoints, ...tripPoints.skip(1)],
@@ -149,9 +150,9 @@ void main() {
     ).thenAnswer((_) async {});
     when(
       () => routeService.getTripRoutePlan(
-        driver: any(named: 'driver'),
         pickup: any(named: 'pickup'),
         dropoff: any(named: 'dropoff'),
+        placementSeed: any(named: 'placementSeed'),
       ),
     ).thenAnswer((_) async => _sampleRoutePlan());
   });
@@ -188,16 +189,16 @@ void main() {
       expect(active.remainingDistanceKm, greaterThan(0));
       verify(
         () => routeService.getTripRoutePlan(
-          driver: const LatLng(30.055, 31.245),
           pickup: const LatLng(30, 31),
           dropoff: const LatLng(30.1, 31.1),
+          placementSeed: '1',
         ),
       ).called(1);
     },
   );
 
   blocTest<TrackingBloc, TrackingState>(
-    'falls back to pickup when driver lookup returns null',
+    'loads tracking when driver lookup returns null',
     build: () {
       when(() => getTripDetail(any())).thenAnswer(
         (_) async => Right(_sampleTrip()),
@@ -215,9 +216,9 @@ void main() {
     verify: (_) {
       verify(
         () => routeService.getTripRoutePlan(
-          driver: const LatLng(30, 31),
           pickup: const LatLng(30, 31),
           dropoff: const LatLng(30.1, 31.1),
+          placementSeed: '1',
         ),
       ).called(1);
     },
@@ -231,9 +232,9 @@ void main() {
       );
       when(
         () => routeService.getTripRoutePlan(
-          driver: any(named: 'driver'),
           pickup: any(named: 'pickup'),
           dropoff: any(named: 'dropoff'),
+          placementSeed: any(named: 'placementSeed'),
         ),
       ).thenAnswer(
         (_) async => _sampleRoutePlan(
@@ -266,9 +267,9 @@ void main() {
       );
       when(
         () => routeService.getTripRoutePlan(
-          driver: any(named: 'driver'),
           pickup: any(named: 'pickup'),
           dropoff: any(named: 'dropoff'),
+          placementSeed: any(named: 'placementSeed'),
         ),
       ).thenAnswer(
         (_) async => _sampleRoutePlan(
@@ -299,9 +300,9 @@ void main() {
       );
       when(
         () => routeService.getTripRoutePlan(
-          driver: any(named: 'driver'),
           pickup: any(named: 'pickup'),
           dropoff: any(named: 'dropoff'),
+          placementSeed: any(named: 'placementSeed'),
         ),
       ).thenAnswer(
         (_) async => _sampleRoutePlan(
