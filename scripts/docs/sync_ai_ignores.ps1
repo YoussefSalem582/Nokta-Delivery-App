@@ -80,16 +80,15 @@ $Agents = @(
 
 function Build-Content {
     param([string]$AgentFile, [string]$AgentName)
-    $banner = @"
-# ============================================================
-# $AgentFile - Exclude from $AgentName context
-# AUTO-GENERATED from scripts/docs/ai_ignore_template.txt
-# DO NOT EDIT BY HAND. To change exclusions, edit the template and re-run the sync.
-# Paths are relative to this file's location (repo root).
-# ============================================================
-
-"@
-    return Normalize-Text (($banner -replace "`r`n", "`n") + $rulesBody)
+    $header = @(
+        '# ============================================================'
+        "# $AgentFile - Exclude from $AgentName context"
+        '# AUTO-GENERATED from scripts/docs/ai_ignore_template.txt'
+        '# DO NOT EDIT BY HAND. To change exclusions, edit the template and re-run the sync.'
+        "# Paths are relative to this file's location (repo root)."
+        '# ============================================================'
+    ) -join "`n"
+    return Normalize-Text ($header + "`n" + $rulesBody)
 }
 
 $drift = @()

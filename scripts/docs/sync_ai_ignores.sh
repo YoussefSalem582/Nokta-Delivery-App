@@ -54,20 +54,18 @@ normalize_text() {
     printf '%s\n' "${text}"
 }
 
-# Build per-agent content. Layout: banner + blank line + rules body.
+# Build per-agent content. Layout: header + rules body.
 build_content() {
     local agent_file="$1"
     local agent_name="$2"
-    cat <<EOF
-# ============================================================
+    local header="# ============================================================
 # ${agent_file} - Exclude from ${agent_name} context
 # AUTO-GENERATED from scripts/docs/ai_ignore_template.txt
 # DO NOT EDIT BY HAND. To change exclusions, edit the template and re-run the sync.
 # Paths are relative to this file's location (repo root).
 # ============================================================
-
-${RULES_BODY}
-EOF
+"
+    normalize_text "${header}${RULES_BODY}"
 }
 
 # Tuple list: "filename|display name"
