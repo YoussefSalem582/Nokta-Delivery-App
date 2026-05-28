@@ -1,0 +1,10 @@
+# AI ignore files are generated on Windows and checked on Linux CI — force LF.
+.agentignore text eol=lf
+.aiderignore text eol=lf
+.claudeignore text eol=lf
+.codexignore text eol=lf
+.copilotignore text eol=lf
+.cursorignore text eol=lf
+.cursorindexingignore text eol=lf
+.geminiignore text eol=lf
+.windsurfignore text eol=lf

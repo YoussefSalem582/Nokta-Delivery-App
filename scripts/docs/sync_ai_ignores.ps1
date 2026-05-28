@@ -57,6 +57,13 @@ if ($bodyMatch.Success) {
     $rulesBody = $rawTemplate
 }
 $rulesBody = $rulesBody -replace "`r`n", "`n"
+$rulesBody = $rulesBody -replace '^\s+', ''
+
+function Normalize-Text {
+    param([string]$Text)
+    $Text = $Text -replace "`r`n", "`n"
+    return $Text.TrimEnd() + "`n"
+}
 
 # Per-agent target files + display name for the header banner.
 $Agents = @(
@@ -82,7 +89,7 @@ function Build-Content {
 # ============================================================
 
 "@
-    return ($banner -replace "`r`n", "`n") + $rulesBody
+    return Normalize-Text (($banner -replace "`r`n", "`n") + $rulesBody)
 }
 
 $drift = @()
@@ -95,12 +102,13 @@ foreach ($a in $Agents) {
             $drift += "MISSING: $($a.File)"
             continue
         }
-        $current = [System.IO.File]::ReadAllText($targetPath, $Utf8) -replace "`r`n", "`n"
+        $current = Normalize-Text ([System.IO.File]::ReadAllText($targetPath, $Utf8))
+        $desired = Normalize-Text $desired
         if ($current -ne $desired) {
             $drift += "DRIFT:   $($a.File)"
         }
     } else {
-        [System.IO.File]::WriteAllText($targetPath, $desired, $Utf8)
+        [System.IO.File]::WriteAllText($targetPath, (Normalize-Text $desired), $Utf8)
         Write-Host "Wrote: $($a.File)"
     }
 }

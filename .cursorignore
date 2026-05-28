@@ -4,7 +4,6 @@
 # DO NOT EDIT BY HAND. To change exclusions, edit the template and re-run the sync.
 # Paths are relative to this file's location (repo root).
 # ============================================================
-
 # Flutter build artifacts
 build/
 .dart_tool/

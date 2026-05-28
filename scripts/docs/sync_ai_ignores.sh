@@ -41,6 +41,18 @@ RULES_BODY=$(awk '
     }
     started == 1 { print }
 ' "${TEMPLATE}")
+# Drop leading blank lines so banner supplies the single spacer line.
+RULES_BODY="${RULES_BODY#"${RULES_BODY%%[![:space:]]*}"}"
+# Normalize to LF-only and a single trailing newline.
+RULES_BODY="$(printf '%s' "${RULES_BODY}" | tr -d '\r')"
+[[ -n "${RULES_BODY}" ]] && RULES_BODY="${RULES_BODY}"$'\n'
+
+normalize_text() {
+    local text="$1"
+    text="$(printf '%s' "${text}" | tr -d '\r')"
+    text="${text%"${text##*[![:space:]]}"}"
+    printf '%s\n' "${text}"
+}
 
 # Build per-agent content. Layout: banner + blank line + rules body.
 build_content() {
@@ -84,12 +96,13 @@ for entry in "${AGENTS[@]}"; do
             drift_list+=("MISSING: ${agent_file}")
             continue
         fi
-        current=$(cat "${target_path}")
+        current="$(normalize_text "$(cat "${target_path}")")"
+        desired="$(normalize_text "${desired}")"
         if [[ "${current}" != "${desired}" ]]; then
             drift_list+=("DRIFT:   ${agent_file}")
         fi
     else
-        printf '%s\n' "${desired}" > "${target_path}"
+        normalize_text "${desired}" > "${target_path}"
         echo "Wrote: ${agent_file}"
     fi
 done
