@@ -17,6 +17,7 @@ import 'core/network/connectivity_service.dart';
 import 'core/network/fcm_service.dart';
 import 'core/network/network_status.dart';
 import 'core/network/route_service.dart';
+import 'core/realtime/realtime_location_service.dart';
 import 'core/sync/app_data_coordinator.dart';
 import 'core/sync/driver_pending_sync_handler.dart';
 import 'core/sync/sync_batch_handler.dart';
@@ -365,6 +366,12 @@ Future<void> initDependencies() async {
       tokenStore: sl(),
     ),
   );
+  sl.registerLazySingleton(
+    () => RealtimeLocationService(
+      tokenStore: sl(),
+      talker: sl(),
+    ),
+  );
 
   // ─── BLoCs ───────────────────────────────────────────────────
   sl.registerLazySingleton(
@@ -433,6 +440,7 @@ Future<void> initDependencies() async {
       driverTripRepository: sl(),
       authRepository: sl(),
       fcmService: sl(),
+      realtimeLocationService: sl(),
       onTripsChanged: notifyTripsCacheChanged,
     ),
   );

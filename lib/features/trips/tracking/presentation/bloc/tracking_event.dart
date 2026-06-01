@@ -49,3 +49,12 @@ class TrackingDriverStatusRequested extends TrackingEvent {
   @override
   List<Object?> get props => [tripId, status];
 }
+
+class TrackingLiveLocationReceived extends TrackingEvent {
+  const TrackingLiveLocationReceived(this.update);
+
+  final RideLocationUpdate update;
+
+  @override
+  List<Object?> get props => [update];
+}
