@@ -70,6 +70,13 @@ class RequestRideSuccess extends RequestRideState {
   List<Object?> get props => [trip];
 }
 
+class RequestDeliverySuccess extends RequestRideState {
+  const RequestDeliverySuccess(this.order);
+  final OrderEntity order;
+  @override
+  List<Object?> get props => [order];
+}
+
 class RequestRideError extends RequestRideState {
   const RequestRideError(this.message);
   final String message;

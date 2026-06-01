@@ -63,6 +63,7 @@ import 'features/notifications/shared/data/repositories/notification_repository_
 import 'features/notifications/shared/domain/repositories/notification_repository.dart';
 import 'features/profile/orders/presentation/bloc/order_bloc.dart';
 import 'features/profile/profile_view/presentation/bloc/profile_bloc.dart';
+import 'features/profile/shared/data/datasources/delivery_remote_datasource.dart';
 import 'features/profile/shared/data/datasources/order_local_datasource.dart';
 import 'features/profile/shared/data/datasources/order_remote_datasource.dart';
 import 'features/profile/shared/data/repositories/order_repository_impl.dart';
@@ -209,6 +210,7 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => ChatLocalDataSource(sl()));
   sl.registerLazySingleton(() => OrderLocalDataSource(sl()));
   sl.registerLazySingleton(() => OrderRemoteDataSource(sl()));
+  sl.registerLazySingleton(() => DeliveryRemoteDataSource(sl()));
   sl.registerLazySingleton(() => AuthLocalDataSource(sl()));
   sl.registerLazySingleton(() => DriverProfileRemoteDataSource(sl()));
   sl.registerLazySingleton(() => DriverTripRemoteDataSource(sl()));
@@ -270,6 +272,8 @@ Future<void> initDependencies() async {
     () => OrderRepositoryImpl(
       local: sl(),
       remote: sl(),
+      deliveryRemote: sl(),
+      pendingSync: sl(),
       cacheMetadata: sl(),
       networkStatus: sl(),
       talker: sl(),
@@ -312,6 +316,7 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => EstimateFareUseCase(remote: sl()));
   sl.registerLazySingleton(() => GetChatMessagesUseCase(sl()));
   sl.registerLazySingleton(() => SendChatMessageUseCase(sl()));
+  sl.registerLazySingleton(() => CreateDeliveryUseCase(sl()));
   sl.registerLazySingleton(() => GetOrdersUseCase(sl()));
   sl.registerLazySingleton(() => RefreshOrdersUseCase(sl()));
   sl.registerLazySingleton(() => GetCachedOrdersUseCase(sl()));
@@ -342,6 +347,7 @@ Future<void> initDependencies() async {
       pendingSync: sl(),
       syncRemote: sl(),
       tripLocal: sl(),
+      orderLocal: sl(),
       coordinator: sl(),
       talker: sl(),
     ),
@@ -411,6 +417,7 @@ Future<void> initDependencies() async {
   sl.registerFactory(
     () => RequestRideBloc(
       requestTrip: sl(),
+      createDelivery: sl(),
       fcmService: sl(),
       onTripsChanged: notifyTripsCacheChanged,
     ),

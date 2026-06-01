@@ -17,6 +17,8 @@ import 'package:delivery_app/features/home/ride_request/presentation/widgets/req
 import 'package:delivery_app/features/home/ride_request/presentation/widgets/ride_selection_sheet.dart';
 import 'package:delivery_app/features/home/shared/data/datasources/saved_places_local_datasource.dart';
 import 'package:delivery_app/features/home/shared/domain/entities/place_suggestion.dart';
+import 'package:delivery_app/features/profile/shared/domain/entities/order_entity.dart';
+import 'package:delivery_app/features/trips/shared/domain/entities/trip_entity.dart';
 import 'package:delivery_app/shared/widgets/navigation/shell_app_bar_logo.dart';
 import 'package:delivery_app/injection_container.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -103,7 +105,7 @@ class _HomeMapPageState extends State<HomeMapPage> {
     });
     unawaited(_loadPreviewRoute(draft));
 
-    final trip = await showModalBottomSheet(
+    final result = await showModalBottomSheet<Object?>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -120,12 +122,14 @@ class _HomeMapPageState extends State<HomeMapPage> {
       });
     }
 
-    if (trip != null && context.mounted) {
+    if (result is TripEntity && context.mounted) {
       AppToast.success(context, 'trip_requested_success'.tr());
       context.pushNamed(
         RouteNames.tracking,
-        pathParameters: {'tripId': trip.id},
+        pathParameters: {'tripId': result.id},
       );
+    } else if (result is OrderEntity && context.mounted) {
+      AppToast.success(context, 'trip_requested_success'.tr());
     }
   }
 
