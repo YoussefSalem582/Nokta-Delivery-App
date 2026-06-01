@@ -20,12 +20,14 @@ class AuthRepositoryImpl implements AuthRepository {
     required NetworkStatus networkStatus,
     required AuthRemoteDataSource remote,
     required AuthTokenStore tokenStore,
+    Future<void> Function()? onDeviceTokenSync,
   })  : _local = local,
         _dio = dio,
         _cacheMetadata = cacheMetadata,
         _networkStatus = networkStatus,
         _remote = remote,
-        _tokenStore = tokenStore;
+        _tokenStore = tokenStore,
+        _onDeviceTokenSync = onDeviceTokenSync;
 
   final AuthLocalDataSource _local;
   final Dio _dio;
@@ -33,6 +35,7 @@ class AuthRepositoryImpl implements AuthRepository {
   final NetworkStatus _networkStatus;
   final AuthRemoteDataSource _remote;
   final AuthTokenStore _tokenStore;
+  final Future<void> Function()? _onDeviceTokenSync;
 
   @override
   Future<UserEntity> login({
@@ -49,6 +52,7 @@ class AuthRepositoryImpl implements AuthRepository {
         await _local.saveUser(session.user);
         MockSessionContext.setUserId(session.user.id);
         await _cacheMetadata.markFetched(CacheKeys.profile);
+        await _onDeviceTokenSync?.call();
         return session.user;
       } on DioException {
         rethrow;
@@ -78,6 +82,7 @@ class AuthRepositoryImpl implements AuthRepository {
       await _local.saveUser(session.user);
       MockSessionContext.setUserId(session.user.id);
       await _cacheMetadata.markFetched(CacheKeys.profile);
+      await _onDeviceTokenSync?.call();
       return session.user;
     }
 

@@ -2,8 +2,12 @@ import 'dart:async';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 import 'package:uuid/uuid.dart';
+import 'package:delivery_app/config/environment/env_config.dart';
+import 'package:delivery_app/features/auth/shared/data/datasources/auth_remote_datasource.dart';
+import 'package:delivery_app/features/auth/shared/data/datasources/auth_token_store.dart';
 import 'package:delivery_app/features/notifications/shared/domain/entities/notification_entity.dart';
 import 'package:delivery_app/features/notifications/shared/domain/entities/notification_type.dart';
 import 'package:delivery_app/features/notifications/shared/domain/repositories/notification_repository.dart';
@@ -19,11 +23,17 @@ class FcmService {
   FcmService({
     required NotificationRepository notificationRepository,
     required Talker talker,
+    AuthRemoteDataSource? authRemote,
+    AuthTokenStore? tokenStore,
   })  : _notificationRepository = notificationRepository,
-        _talker = talker;
+        _talker = talker,
+        _authRemote = authRemote,
+        _tokenStore = tokenStore;
 
   final NotificationRepository _notificationRepository;
   final Talker _talker;
+  final AuthRemoteDataSource? _authRemote;
+  final AuthTokenStore? _tokenStore;
   final _uuid = const Uuid();
 
   NotificationHandler? onNotification;
@@ -41,6 +51,7 @@ class FcmService {
       FirebaseMessaging.onMessageOpenedApp.listen(_handleOpenedApp);
       await messaging.subscribeToTopic('trip_updates');
       _talker.info('[FCM] Initialized and subscribed to trip_updates');
+      await syncDeviceTokenWithBackend();
     } catch (e, st) {
       _talker.handle(e, st, '[FCM] Init failed — using simulated notifications');
     }
@@ -61,6 +72,42 @@ class FcmService {
 
   Future<void> _handleOpenedApp(RemoteMessage message) async {
     await _handleForegroundMessage(message);
+  }
+
+  Future<void> syncDeviceTokenWithBackend() async {
+    if (!EnvConfig.usesRealBackend ||
+        _authRemote == null ||
+        _tokenStore == null ||
+        !_tokenStore!.hasAccessToken ||
+        Firebase.apps.isEmpty) {
+      return;
+    }
+
+    try {
+      final messaging = FirebaseMessaging.instance;
+      final token = await messaging.getToken();
+      if (token == null || token.isEmpty) return;
+
+      await _authRemote!.registerDeviceToken(
+        token: token,
+        platform: _devicePlatform(),
+      );
+      _talker.info('[FCM] Registered device token with Nokta backend');
+    } catch (e, st) {
+      _talker.handle(e, st, '[FCM] Device token registration failed');
+    }
+  }
+
+  String _devicePlatform() {
+    if (kIsWeb) return 'web';
+    switch (defaultTargetPlatform) {
+      case TargetPlatform.android:
+        return 'android';
+      case TargetPlatform.iOS:
+        return 'ios';
+      default:
+        return 'unknown';
+    }
   }
 
   Future<void> simulateTripNotification({
