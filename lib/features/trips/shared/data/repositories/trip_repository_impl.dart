@@ -1,8 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 import 'package:uuid/uuid.dart';
+import 'package:delivery_app/config/environment/env_config.dart';
 import 'package:delivery_app/core/cache/datasources/cache_metadata_local_datasource.dart';
 import 'package:delivery_app/core/cache/datasources/pending_sync_local_datasource.dart';
+import 'package:delivery_app/core/sync/sync_remote_datasource.dart';
 import 'package:delivery_app/features/trips/shared/data/datasources/trip_local_datasource.dart';
 import 'package:delivery_app/features/trips/shared/data/datasources/trip_remote_datasource.dart';
 import 'package:delivery_app/core/cache/entities/pending_sync_entity.dart';
@@ -22,13 +24,15 @@ class TripRepositoryImpl implements TripRepository {
     required NetworkStatus networkStatus,
     required Talker talker,
     required AppDataCoordinator coordinator,
+    SyncRemoteDataSource? syncRemote,
   })  : _local = local,
         _remote = remote,
         _pendingSync = pendingSync,
         _cacheMetadata = cacheMetadata,
         _networkStatus = networkStatus,
         _talker = talker,
-        _coordinator = coordinator;
+        _coordinator = coordinator,
+        _syncRemote = syncRemote;
 
   final TripLocalDataSource _local;
   final TripRemoteDataSource _remote;
@@ -37,6 +41,7 @@ class TripRepositoryImpl implements TripRepository {
   final NetworkStatus _networkStatus;
   final Talker _talker;
   final AppDataCoordinator _coordinator;
+  final SyncRemoteDataSource? _syncRemote;
   final _uuid = const Uuid();
 
   @override
@@ -156,7 +161,10 @@ class TripRepositoryImpl implements TripRepository {
     if (await _networkStatus.isOnline) {
       try {
         final payload = optimisticTrip.toJson()..['riderId'] = riderId;
-        final remote = await _remote.requestTrip(payload);
+        final remote = await _remote.requestTrip(
+          payload,
+          idempotencyKey: optimisticId,
+        );
         final synced = remote.copyWith(isPendingSync: false);
         await _local.delete(optimisticId);
         await _saveTrip(synced);
@@ -196,8 +204,8 @@ class TripRepositoryImpl implements TripRepository {
 
     if (await _networkStatus.isOnline) {
       try {
-        await _remote.updateStatus(id, status);
-        final synced = updated.copyWith(isPendingSync: false);
+        final remote = await _remote.updateStatus(id, status);
+        final synced = remote.copyWith(isPendingSync: false);
         await _saveTrip(synced);
         await _pendingSync.remove(queueId);
         return synced;
@@ -230,6 +238,26 @@ class TripRepositoryImpl implements TripRepository {
   }
 
   @override
+  Future<void> reconcileWithServer() async {
+    if (!EnvConfig.usesRealBackend ||
+        _syncRemote == null ||
+        !await _networkStatus.isOnline) {
+      return;
+    }
+
+    try {
+      final data = await _syncRemote.reconcile();
+      final activeRide = data['activeRide'];
+      if (activeRide is Map<String, dynamic>) {
+        await _saveTrip(TripEntity.fromJson(activeRide));
+        _talker.info('[TripRepo] Reconciled active ride from server');
+      }
+    } on DioException catch (e, st) {
+      _talker.handle(e, st, '[TripRepo] Server reconcile failed');
+    }
+  }
+
+  @override
   Future<void> syncPendingChanges() async {
     if (!await _networkStatus.isOnline) return;
 
@@ -244,7 +272,10 @@ class TripRepositoryImpl implements TripRepository {
         switch (item.action) {
           case SyncAction.createTrip:
             final optimisticId = item.id;
-            final remote = await _remote.requestTrip(item.payload);
+            final remote = await _remote.requestTrip(
+              item.payload,
+              idempotencyKey: optimisticId,
+            );
             await _local.delete(optimisticId);
             await _local.save(remote.copyWith(isPendingSync: false));
           case SyncAction.updateTripStatus:
@@ -253,17 +284,8 @@ class TripRepositoryImpl implements TripRepository {
             final status = TripStatus.values.firstWhere(
               (e) => e.name == statusName,
             );
-            await _remote.updateStatus(tripId, status);
-            final existing = _local.getById(tripId);
-            if (existing != null) {
-              await _saveTrip(
-                existing.copyWith(
-                  status: status,
-                  isPendingSync: false,
-                  updatedAt: DateTime.now(),
-                ),
-              );
-            }
+            final remote = await _remote.updateStatus(tripId, status);
+            await _saveTrip(remote.copyWith(isPendingSync: false));
           case SyncAction.registerDriver:
           case SyncAction.acceptTripOffer:
           case SyncAction.updateDriverAvailability:

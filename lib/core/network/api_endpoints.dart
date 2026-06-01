@@ -5,11 +5,16 @@ class ApiEndpoints {
       EnvConfig.useMockApi ? 'https://mock.nokta.app/api' : EnvConfig.apiBaseUrl;
 
   static const trips = '/trips';
+  static const tripsActive = '/trips/active';
   static const orders = '/orders';
   static const profile = '/profile';
   static const drivers = '/drivers';
   static const riders = '/riders';
   static const requestTrip = '/trips/request';
+  static const estimateFare = '/rides/estimate-fare';
+
+  static const syncActions = '/v1/sync/actions';
+  static const syncReconcile = '/v1/sync/reconcile';
 
   static const authRegister = '/v1/auth/register';
   static const authLogin = '/v1/auth/login';
