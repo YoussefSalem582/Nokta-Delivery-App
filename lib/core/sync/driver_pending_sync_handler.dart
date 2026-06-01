@@ -80,6 +80,7 @@ class DriverPendingSyncHandler {
             await _tripLocal.save(trip.copyWith(isPendingSync: false));
             _coordinator.notifyTripDataChanged();
           case SyncAction.createTrip:
+          case SyncAction.createDelivery:
           case SyncAction.updateTripStatus:
             break;
         }

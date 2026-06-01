@@ -264,6 +264,7 @@ class TripRepositoryImpl implements TripRepository {
     final pending = _pendingSync.getAll();
     for (final item in pending) {
       if (DriverPendingSyncHandler.isDriverAction(item.action)) continue;
+      if (item.action == SyncAction.createDelivery) continue;
       if (item.action == SyncAction.updateTripStatus &&
           item.payload['driverOwned'] == true) {
         continue;
@@ -290,6 +291,7 @@ class TripRepositoryImpl implements TripRepository {
           case SyncAction.acceptTripOffer:
           case SyncAction.updateDriverAvailability:
           case SyncAction.updateDriverLocation:
+          case SyncAction.createDelivery:
             break;
         }
         await _pendingSync.remove(item.id);

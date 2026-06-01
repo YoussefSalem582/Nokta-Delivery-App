@@ -5,6 +5,8 @@ import 'package:delivery_app/core/cache/entities/pending_sync_entity.dart';
 import 'package:delivery_app/core/sync/app_data_coordinator.dart';
 import 'package:delivery_app/core/sync/sync_action_mapper.dart';
 import 'package:delivery_app/core/sync/sync_remote_datasource.dart';
+import 'package:delivery_app/features/profile/shared/data/datasources/order_local_datasource.dart';
+import 'package:delivery_app/features/profile/shared/data/mappers/delivery_order_mapper.dart';
 import 'package:delivery_app/features/trips/shared/data/datasources/trip_local_datasource.dart';
 import 'package:delivery_app/features/trips/shared/domain/entities/trip_entity.dart';
 
@@ -14,17 +16,20 @@ class SyncBatchHandler {
     required PendingSyncLocalDataSource pendingSync,
     required SyncRemoteDataSource syncRemote,
     required TripLocalDataSource tripLocal,
+    required OrderLocalDataSource orderLocal,
     required AppDataCoordinator coordinator,
     required Talker talker,
   })  : _pendingSync = pendingSync,
         _syncRemote = syncRemote,
         _tripLocal = tripLocal,
+        _orderLocal = orderLocal,
         _coordinator = coordinator,
         _talker = talker;
 
   final PendingSyncLocalDataSource _pendingSync;
   final SyncRemoteDataSource _syncRemote;
   final TripLocalDataSource _tripLocal;
+  final OrderLocalDataSource _orderLocal;
   final AppDataCoordinator _coordinator;
   final Talker _talker;
 
@@ -47,7 +52,7 @@ class SyncBatchHandler {
       }
 
       _coordinator.notifyTripDataChanged();
-      _talker.info('[SyncBatch] Processed ${results.length} queued ride requests');
+      _talker.info('[SyncBatch] Processed ${results.length} queued sync actions');
     } catch (e, st) {
       _talker.handle(e, st, '[SyncBatch] Batch sync failed');
     }
@@ -59,26 +64,30 @@ class SyncBatchHandler {
 
     if (clientActionId == null || status == null) return;
 
+    final item = _findPendingItem(clientActionId);
+
     if (status == 'processed' || status == 'duplicate') {
       final response = result['response'];
       if (response is Map<String, dynamic>) {
-        await _tripLocal.delete(clientActionId);
-        await _tripLocal.save(
-          TripEntity.fromJson(response).copyWith(isPendingSync: false),
-        );
+        if (item?.action == SyncAction.createDelivery) {
+          await _orderLocal.delete(clientActionId);
+          await _orderLocal.save(DeliveryOrderMapper.fromDeliveryJson(response));
+        } else {
+          await _tripLocal.delete(clientActionId);
+          await _tripLocal.save(
+            TripEntity.fromJson(response).copyWith(isPendingSync: false),
+          );
+        }
       }
       await _pendingSync.remove(clientActionId);
       _talker.info('[SyncBatch] Applied $clientActionId ($status)');
       return;
     }
 
-    if (status == 'failed') {
-      final item = _findPendingItem(clientActionId);
-      if (item != null) {
-        await _pendingSync.enqueueOrReplace(
-          item.copyWith(retryCount: item.retryCount + 1),
-        );
-      }
+    if (status == 'failed' && item != null) {
+      await _pendingSync.enqueueOrReplace(
+        item.copyWith(retryCount: item.retryCount + 1),
+      );
     }
   }
 

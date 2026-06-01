@@ -38,12 +38,48 @@ void main() {
       });
     });
 
-    test('supports batch sync only for createTrip', () {
+    test('supports batch sync for createTrip and createDelivery', () {
       expect(SyncActionMapper.supportsBatchSync(SyncAction.createTrip), isTrue);
+      expect(
+        SyncActionMapper.supportsBatchSync(SyncAction.createDelivery),
+        isTrue,
+      );
       expect(
         SyncActionMapper.supportsBatchSync(SyncAction.updateTripStatus),
         isFalse,
       );
+    });
+
+    test('maps createDelivery pending item to delivery.create batch action', () {
+      final item = PendingSyncEntity(
+        id: 'delivery-action-1',
+        action: SyncAction.createDelivery,
+        payload: {
+          'pickupAddress': 'Maadi',
+          'dropoffAddress': 'Zamalek',
+          'pickupLat': 29.96,
+          'pickupLng': 31.25,
+          'dropoffLat': 30.06,
+          'dropoffLng': 31.22,
+          'fee': 35,
+        },
+        createdAt: DateTime.parse('2026-06-01T10:00:00.000Z'),
+      );
+
+      final action = SyncActionMapper.toBackendAction(item);
+
+      expect(action['clientActionId'], 'delivery-action-1');
+      expect(action['actionType'], SyncActionMapper.deliveryCreate);
+      expect(action['payload'], {
+        'pickupAddress': 'Maadi',
+        'dropoffAddress': 'Zamalek',
+        'pickupLat': 29.96,
+        'pickupLng': 31.25,
+        'dropoffLat': 30.06,
+        'dropoffLng': 31.22,
+        'fee': 35,
+        'idempotencyKey': 'delivery-action-1',
+      });
     });
   });
 }
