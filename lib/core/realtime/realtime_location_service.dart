@@ -1,12 +1,13 @@
 import 'dart:async';
 
 import 'package:delivery_app/config/environment/env_config.dart';
+import 'package:delivery_app/core/realtime/delivery_location_update.dart';
 import 'package:delivery_app/core/realtime/ride_location_update.dart';
 import 'package:delivery_app/features/auth/shared/data/datasources/auth_token_store.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 import 'package:talker_flutter/talker_flutter.dart';
 
-/// Subscribes to NestJS `/realtime` ride location broadcasts.
+/// Socket.io client for NestJS `/realtime` ride and delivery location events.
 class RealtimeLocationService {
   RealtimeLocationService({
     required AuthTokenStore tokenStore,
@@ -18,54 +19,143 @@ class RealtimeLocationService {
   final Talker _talker;
 
   io.Socket? _socket;
-  StreamController<RideLocationUpdate>? _controller;
+  bool _manualDisconnect = false;
+
+  StreamController<RideLocationUpdate>? _rideController;
+  StreamController<DeliveryLocationUpdate>? _deliveryController;
+
   String? _activeRideId;
+  String? _activeDeliveryId;
 
   Stream<RideLocationUpdate> watchRide(String rideId) {
     if (!EnvConfig.usesRealBackend || !_tokenStore.hasAccessToken) {
       return const Stream.empty();
     }
 
-    _controller?.close();
-    _controller = StreamController<RideLocationUpdate>.broadcast();
+    _rideController?.close();
+    _rideController = StreamController<RideLocationUpdate>.broadcast();
     _activeRideId = rideId;
 
-    unawaited(_connectAndJoin(rideId));
+    unawaited(_ensureConnected(joinRideId: rideId));
 
-    return _controller!.stream;
+    return _rideController!.stream;
   }
 
-  Future<void> _connectAndJoin(String rideId) async {
-    try {
-      await disconnect();
+  Stream<DeliveryLocationUpdate> watchDelivery(String deliveryId) {
+    if (!EnvConfig.usesRealBackend || !_tokenStore.hasAccessToken) {
+      return const Stream.empty();
+    }
 
-      final token = _tokenStore.accessToken;
-      if (token == null || token.isEmpty) return;
+    _deliveryController?.close();
+    _deliveryController =
+        StreamController<DeliveryLocationUpdate>.broadcast();
+    _activeDeliveryId = deliveryId;
 
+    unawaited(_ensureConnected(joinDeliveryId: deliveryId));
+
+    return _deliveryController!.stream;
+  }
+
+  Future<void> joinRideRoom(String rideId) async {
+    if (!EnvConfig.usesRealBackend || !_tokenStore.hasAccessToken) return;
+
+    _activeRideId = rideId;
+    await _ensureConnected(joinRideId: rideId);
+  }
+
+  void publishRideLocation({
+    required String rideId,
+    required double lat,
+    required double lng,
+    double? heading,
+  }) {
+    if (!EnvConfig.usesRealBackend || _socket?.connected != true) return;
+
+    _socket!.emit('publishRideLocation', {
+      'rideId': rideId,
+      'lat': lat,
+      'lng': lng,
+      if (heading != null) 'heading': heading,
+    });
+  }
+
+  void publishDeliveryLocation({
+    required String deliveryId,
+    required double lat,
+    required double lng,
+    double? heading,
+  }) {
+    if (!EnvConfig.usesRealBackend || _socket?.connected != true) return;
+
+    _socket!.emit('publishDeliveryLocation', {
+      'deliveryId': deliveryId,
+      'lat': lat,
+      'lng': lng,
+      if (heading != null) 'heading': heading,
+    });
+  }
+
+  Future<void> _ensureConnected({
+    String? joinRideId,
+    String? joinDeliveryId,
+  }) async {
+    if (joinRideId != null) _activeRideId = joinRideId;
+    if (joinDeliveryId != null) _activeDeliveryId = joinDeliveryId;
+
+    final token = _tokenStore.accessToken;
+    if (token == null || token.isEmpty) return;
+
+    if (_socket?.connected == true) {
+      _rejoinRooms();
+      return;
+    }
+
+    _manualDisconnect = false;
+
+    if (_socket == null) {
       _socket = io.io(
         '${EnvConfig.realtimeBaseUrl}/realtime',
         io.OptionBuilder()
             .setTransports(['websocket'])
             .disableAutoConnect()
+            .enableReconnection()
+            .setReconnectionAttempts(12)
+            .setReconnectionDelay(1000)
+            .setReconnectionDelayMax(10000)
             .setAuth({'token': token})
             .build(),
       );
 
       _socket!
         ..onConnect((_) {
-          _talker.info('[Realtime] Connected — joining ride $rideId');
-          _socket!.emit('joinRide', {'rideId': rideId});
+          _talker.info('[Realtime] Connected');
+          _rejoinRooms();
         })
         ..on('rideLocation', _handleRideLocation)
+        ..on('deliveryLocation', _handleDeliveryLocation)
         ..onDisconnect((_) {
-          _talker.info('[Realtime] Disconnected');
+          if (!_manualDisconnect) {
+            _talker.info('[Realtime] Disconnected — retrying with backoff');
+          }
         })
         ..onConnectError((error) {
           _talker.warning('[Realtime] Connect error: $error');
         })
-        ..connect();
-    } catch (e, st) {
-      _talker.handle(e, st, '[Realtime] Failed to connect');
+        ..onReconnect((attempt) {
+          _talker.info('[Realtime] Reconnected after $attempt attempt(s)');
+          _rejoinRooms();
+        });
+    }
+
+    _socket!.connect();
+  }
+
+  void _rejoinRooms() {
+    if (_activeRideId != null) {
+      _socket?.emit('joinRide', {'rideId': _activeRideId});
+    }
+    if (_activeDeliveryId != null) {
+      _socket?.emit('joinDelivery', {'deliveryId': _activeDeliveryId});
     }
   }
 
@@ -78,19 +168,42 @@ class RealtimeLocationService {
       );
 
       if (_activeRideId != null && update.rideId != _activeRideId) return;
-      _controller?.add(update);
+      _rideController?.add(update);
     } catch (e, st) {
       _talker.handle(e, st, '[Realtime] Invalid rideLocation payload');
     }
   }
 
+  void _handleDeliveryLocation(dynamic raw) {
+    if (raw is! Map) return;
+
+    try {
+      final update = DeliveryLocationUpdate.fromJson(
+        Map<String, dynamic>.from(raw),
+      );
+
+      if (_activeDeliveryId != null &&
+          update.deliveryId != _activeDeliveryId) {
+        return;
+      }
+      _deliveryController?.add(update);
+    } catch (e, st) {
+      _talker.handle(e, st, '[Realtime] Invalid deliveryLocation payload');
+    }
+  }
+
   Future<void> disconnect() async {
+    _manualDisconnect = true;
     _activeRideId = null;
+    _activeDeliveryId = null;
     _socket?.off('rideLocation');
+    _socket?.off('deliveryLocation');
     _socket?.disconnect();
     _socket?.dispose();
     _socket = null;
-    await _controller?.close();
-    _controller = null;
+    await _rideController?.close();
+    await _deliveryController?.close();
+    _rideController = null;
+    _deliveryController = null;
   }
 }

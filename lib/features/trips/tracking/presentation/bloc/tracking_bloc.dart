@@ -77,6 +77,7 @@ class TrackingBloc extends Bloc<TrackingEvent, TrackingState> {
   double _avgSpeedMps = 8.33;
   double _phaseBoundaryProgress = 0.5;
   bool _driverArrivedNotified = false;
+  int _driverLocationTick = 0;
   TrackingRole _role = TrackingRole.rider;
   String? _tripId;
 
@@ -208,7 +209,13 @@ class TrackingBloc extends Bloc<TrackingEvent, TrackingState> {
       );
 
       _lastTickAt = DateTime.now();
+      _driverLocationTick = 0;
       if (_role == TrackingRole.driver) {
+        if (EnvConfig.usesRealBackend) {
+          unawaited(
+            _realtimeLocationService.joinRideRoom(activeTrip.id),
+          );
+        }
         _startAnimationTimer();
       } else if (activeTrip.driverId == null &&
           activeTrip.status != TripStatus.requested &&
@@ -400,6 +407,16 @@ class TrackingBloc extends Bloc<TrackingEvent, TrackingState> {
   Future<void> _publishDriverLocation(LatLng position) async {
     final tripId = _tripId;
     if (tripId == null) return;
+
+    if (EnvConfig.usesRealBackend) {
+      _realtimeLocationService.publishRideLocation(
+        rideId: tripId,
+        lat: position.latitude,
+        lng: position.longitude,
+      );
+      _driverLocationTick++;
+      if (_driverLocationTick % 10 != 0) return;
+    }
 
     try {
       await _driverTripRepository.updateDriverLocation(
