@@ -1,6 +1,9 @@
 import 'dart:async';
 
+import 'package:delivery_app/config/environment/env_config.dart';
 import 'package:delivery_app/core/network/fcm_service.dart';
+import 'package:delivery_app/core/realtime/realtime_location_service.dart';
+import 'package:delivery_app/core/realtime/ride_location_update.dart';
 import 'package:delivery_app/features/notifications/shared/domain/entities/notification_type.dart';
 import 'package:delivery_app/core/network/route_service.dart';
 import 'package:delivery_app/core/utils/route_geometry.dart';
@@ -32,6 +35,7 @@ class TrackingBloc extends Bloc<TrackingEvent, TrackingState> {
     required DriverTripRepository driverTripRepository,
     required AuthRepository authRepository,
     required FcmService fcmService,
+    required RealtimeLocationService realtimeLocationService,
     VoidCallback? onTripsChanged,
   })  : _routeService = routeService,
         _getTripDetail = getTripDetail,
@@ -41,12 +45,14 @@ class TrackingBloc extends Bloc<TrackingEvent, TrackingState> {
         _driverTripRepository = driverTripRepository,
         _authRepository = authRepository,
         _fcmService = fcmService,
+        _realtimeLocationService = realtimeLocationService,
         _onTripsChanged = onTripsChanged,
         super(const TrackingInitial()) {
     on<TrackingLoadRequested>(_onLoadRequested);
     on<TrackingTick>(_onTick);
     on<TrackingStatusPollRequested>(_onStatusPoll);
     on<TrackingDriverStatusRequested>(_onDriverStatusRequested);
+    on<TrackingLiveLocationReceived>(_onLiveLocationReceived);
     on<TrackingStopped>(_onStopped);
   }
 
@@ -58,10 +64,12 @@ class TrackingBloc extends Bloc<TrackingEvent, TrackingState> {
   final DriverTripRepository _driverTripRepository;
   final AuthRepository _authRepository;
   final FcmService _fcmService;
+  final RealtimeLocationService _realtimeLocationService;
   final VoidCallback? _onTripsChanged;
 
   Timer? _animationTimer;
   Timer? _statusPollTimer;
+  StreamSubscription<RideLocationUpdate>? _liveLocationSub;
   List<LatLng> _route = [];
   DateTime? _lastTickAt;
   double _distanceTraveledMeters = 0;
@@ -208,6 +216,11 @@ class TrackingBloc extends Bloc<TrackingEvent, TrackingState> {
         _startTimers();
       } else {
         _startStatusPollTimer();
+        if (_role == TrackingRole.rider &&
+            activeTrip.driverId != null &&
+            EnvConfig.usesRealBackend) {
+          _startLiveLocation(activeTrip.id);
+        }
       }
       _onTripsChanged?.call();
     } catch (_) {
@@ -397,6 +410,57 @@ class TrackingBloc extends Bloc<TrackingEvent, TrackingState> {
     } catch (_) {}
   }
 
+  void _startLiveLocation(String tripId) {
+    _liveLocationSub?.cancel();
+    _liveLocationSub = _realtimeLocationService.watchRide(tripId).listen(
+      (update) => add(TrackingLiveLocationReceived(update)),
+    );
+  }
+
+  Future<void> _stopLiveLocation() async {
+    await _liveLocationSub?.cancel();
+    _liveLocationSub = null;
+    await _realtimeLocationService.disconnect();
+  }
+
+  void _onLiveLocationReceived(
+    TrackingLiveLocationReceived event,
+    Emitter<TrackingState> emit,
+  ) {
+    if (state is! TrackingActive || _route.length < 2) return;
+    if (_role != TrackingRole.rider) return;
+
+    final current = state as TrackingActive;
+    final driverPos = LatLng(event.update.lat, event.update.lng);
+    final projection = projectPointOntoRoute(_route, driverPos);
+
+    _distanceTraveledMeters = projection.distanceAlongRoute
+        .clamp(0, _totalDistanceMeters)
+        .toDouble();
+
+    final progress = (_distanceTraveledMeters / _totalDistanceMeters)
+        .clamp(0.0, 1.0)
+        .toDouble();
+    final split = splitRouteAtProgress(_route, progress);
+    final remainingMeters = remainingDistanceMeters(_route, progress);
+    final etaMinutes =
+        _etaMinutesFromRemainingMeters(remainingMeters, _avgSpeedMps);
+    final bearing = event.update.heading ?? bearingAtProgress(_route, progress);
+
+    emit(
+      current.copyWith(
+        driverPosition: driverPos,
+        driverBearing: bearing,
+        traveledRoute: split.traveled,
+        remainingRoute: split.remaining,
+        progress: progress,
+        etaMinutes: etaMinutes,
+        phase: _phaseForProgress(progress),
+        remainingDistanceKm: remainingMeters / 1000,
+      ),
+    );
+  }
+
   Future<void> _onDriverStatusRequested(
     TrackingDriverStatusRequested event,
     Emitter<TrackingState> emit,
@@ -534,12 +598,14 @@ class TrackingBloc extends Bloc<TrackingEvent, TrackingState> {
 
       if (updatedTrip.status == TripStatus.cancelled) {
         _cancelTimers();
+        unawaited(_stopLiveLocation());
         emit(const TrackingError('tracking_trip_cancelled'));
         return;
       }
 
       if (updatedTrip.status == TripStatus.completed) {
         _cancelTimers();
+        unawaited(_stopLiveLocation());
         emit(
           TrackingCompleted(
             trip: updatedTrip,
@@ -583,6 +649,7 @@ class TrackingBloc extends Bloc<TrackingEvent, TrackingState> {
     Emitter<TrackingState> emit,
   ) async {
     _cancelTimers();
+    await _stopLiveLocation();
   }
 
   Future<TripEntity> _ensureInProgress(
@@ -642,6 +709,7 @@ class TrackingBloc extends Bloc<TrackingEvent, TrackingState> {
   @override
   Future<void> close() {
     _cancelTimers();
+    unawaited(_stopLiveLocation());
     return super.close();
   }
 }
