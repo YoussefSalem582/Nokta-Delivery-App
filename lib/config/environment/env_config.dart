@@ -33,4 +33,12 @@ abstract final class EnvConfig {
   static bool get usesRealBackend => !useMockApi;
 
   static bool get usesRealDriverApi => !useMockApi && !useMockDriverApi;
+
+  /// Socket.io server origin (NestJS gateway namespace `/realtime`).
+  static String get realtimeBaseUrl {
+    if (apiBaseUrl.endsWith('/api')) {
+      return apiBaseUrl.substring(0, apiBaseUrl.length - 4);
+    }
+    return apiBaseUrl;
+  }
 }
