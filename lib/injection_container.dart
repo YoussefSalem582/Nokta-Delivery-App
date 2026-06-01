@@ -19,6 +19,7 @@ import 'core/network/network_status.dart';
 import 'core/network/route_service.dart';
 import 'core/sync/app_data_coordinator.dart';
 import 'core/sync/driver_pending_sync_handler.dart';
+import 'core/sync/sync_batch_handler.dart';
 import 'core/sync/sync_remote_datasource.dart';
 import 'core/sync/sync_service.dart';
 import 'package:delivery_app/features/auth/shared/domain/repositories/auth_repository.dart';
@@ -337,6 +338,15 @@ Future<void> initDependencies() async {
     ),
   );
   sl.registerLazySingleton(
+    () => SyncBatchHandler(
+      pendingSync: sl(),
+      syncRemote: sl(),
+      tripLocal: sl(),
+      coordinator: sl(),
+      talker: sl(),
+    ),
+  );
+  sl.registerLazySingleton(
     () => SyncService(
       tripRepository: sl(),
       orderRepository: sl(),
@@ -344,6 +354,7 @@ Future<void> initDependencies() async {
       networkStatus: sl(),
       talker: sl(),
       driverPendingSyncHandler: sl(),
+      syncBatchHandler: sl(),
     ),
   );
   sl.registerLazySingleton(

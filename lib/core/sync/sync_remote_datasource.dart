@@ -22,6 +22,18 @@ class SyncRemoteDataSource {
     return response.data as Map<String, dynamic>;
   }
 
+  Future<List<Map<String, dynamic>>> syncActionsBatch(
+    List<Map<String, dynamic>> actions,
+  ) async {
+    if (actions.isEmpty) return [];
+
+    final response = await syncActions(actions);
+    final data = response['data'] as Map<String, dynamic>? ?? response;
+    final results = data['results'] as List<dynamic>? ?? const [];
+
+    return results.map((entry) => entry as Map<String, dynamic>).toList();
+  }
+
   /// Applies server active ride onto local cache when present.
   Future<TripEntity?> parseActiveRide(Map<String, dynamic> reconcile) async {
     final active = reconcile['activeRide'];

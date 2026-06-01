@@ -5,6 +5,7 @@ import 'package:talker_flutter/talker_flutter.dart';
 import 'package:workmanager/workmanager.dart';
 import 'package:delivery_app/config/environment/env_config.dart';
 import 'package:delivery_app/core/sync/driver_pending_sync_handler.dart';
+import 'package:delivery_app/core/sync/sync_batch_handler.dart';
 import 'package:delivery_app/features/auth/shared/domain/repositories/auth_repository.dart';
 import 'package:delivery_app/features/profile/shared/domain/repositories/order_repository.dart';
 import 'package:delivery_app/features/trips/shared/domain/repositories/trip_repository.dart';
@@ -19,13 +20,15 @@ class SyncService {
     required NetworkStatus networkStatus,
     required Talker talker,
     required DriverPendingSyncHandler driverPendingSyncHandler,
+    required SyncBatchHandler syncBatchHandler,
     this.onTripsChanged,
   })  : _tripRepository = tripRepository,
         _orderRepository = orderRepository,
         _authRepository = authRepository,
         _networkStatus = networkStatus,
         _talker = talker,
-        _driverPendingSyncHandler = driverPendingSyncHandler;
+        _driverPendingSyncHandler = driverPendingSyncHandler,
+        _syncBatchHandler = syncBatchHandler;
 
   final TripRepository _tripRepository;
   final OrderRepository _orderRepository;
@@ -33,6 +36,7 @@ class SyncService {
   final NetworkStatus _networkStatus;
   final Talker _talker;
   final DriverPendingSyncHandler _driverPendingSyncHandler;
+  final SyncBatchHandler _syncBatchHandler;
   VoidCallback? onTripsChanged;
 
   StreamSubscription<bool>? _subscription;
@@ -71,6 +75,7 @@ class SyncService {
     await _driverPendingSyncHandler.syncDriverStatusUpdates();
     if (EnvConfig.usesRealBackend) {
       await _tripRepository.reconcileWithServer();
+      await _syncBatchHandler.syncEligibleActions();
     }
     await _tripRepository.syncPendingChanges();
     await _orderRepository.getOrders(forceRefresh: true);
