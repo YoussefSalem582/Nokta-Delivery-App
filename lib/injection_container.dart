@@ -37,6 +37,8 @@ import 'package:delivery_app/features/driver/shared/presentation/cubit/driver_av
 import 'core/utils/map_tile_cache.dart';
 import 'core/utils/talker_setup.dart';
 import 'features/auth/shared/data/datasources/auth_local_datasource.dart';
+import 'features/auth/shared/data/datasources/auth_remote_datasource.dart';
+import 'features/auth/shared/data/datasources/auth_token_store.dart';
 import 'features/auth/shared/data/repositories/auth_repository_impl.dart';
 import 'features/auth/shared/domain/usecases/forgot_password_usecase.dart';
 import 'features/auth/shared/domain/usecases/get_cached_user_usecase.dart';
@@ -135,8 +137,12 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton<SharedPreferences>(() => prefs);
 
   // ─── Logger / API ────────────────────────────────────────────
-  sl.registerLazySingleton<ApiClient>(() => ApiClient(talker: sl()));
+  sl.registerLazySingleton(() => AuthTokenStore(sl()));
+  sl.registerLazySingleton<ApiClient>(
+    () => ApiClient(talker: sl(), tokenStore: sl()),
+  );
   sl.registerLazySingleton<Dio>(() => sl<ApiClient>().dio);
+  sl.registerLazySingleton(() => AuthRemoteDataSource(sl()));
 
   // ─── Settings ────────────────────────────────────────────────
   sl.registerLazySingleton(() => SettingsCubit(sharedPreferences: sl()));
@@ -271,6 +277,8 @@ Future<void> initDependencies() async {
       dio: sl(),
       cacheMetadata: sl(),
       networkStatus: sl(),
+      remote: sl(),
+      tokenStore: sl(),
     ),
   );
   sl.registerLazySingleton<NotificationRepository>(

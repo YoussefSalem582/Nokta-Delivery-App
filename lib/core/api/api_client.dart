@@ -4,11 +4,16 @@ import 'package:talker_flutter/talker_flutter.dart';
 
 import '../../config/environment/env_config.dart';
 import '../network/api_endpoints.dart';
+import '../network/auth_interceptor.dart';
 import '../network/mock_api_interceptor.dart';
+import '../../features/auth/shared/data/datasources/auth_token_store.dart';
 
 /// Dio wrapper with locale header and logging interceptors.
 class ApiClient {
-  ApiClient({required Talker talker}) : _talker = talker {
+  ApiClient({
+    required Talker talker,
+    AuthTokenStore? tokenStore,
+  }) : _talker = talker {
     _dio = Dio(
       BaseOptions(
         baseUrl: ApiEndpoints.baseUrl,
@@ -18,8 +23,15 @@ class ApiClient {
       ),
     );
 
-    _dio.interceptors.addAll([
-      MockApiInterceptor(),
+    final interceptors = <Interceptor>[];
+
+    if (EnvConfig.useMockApi) {
+      interceptors.add(MockApiInterceptor());
+    } else if (tokenStore != null) {
+      interceptors.add(AuthInterceptor(tokenStore));
+    }
+
+    interceptors.add(
       TalkerDioLogger(
         talker: _talker,
         settings: const TalkerDioLoggerSettings(
@@ -27,7 +39,9 @@ class ApiClient {
           printResponseHeaders: false,
         ),
       ),
-    ]);
+    );
+
+    _dio.interceptors.addAll(interceptors);
   }
 
   final Talker _talker;
