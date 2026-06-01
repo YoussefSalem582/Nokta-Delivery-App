@@ -24,6 +24,7 @@ abstract class TripRepository {
     required double lng,
   });
   Future<void> syncPendingChanges();
+  Future<void> reconcileWithServer();
   List<TripEntity> getCachedTrips();
   int getPendingRetryCount(String tripId);
 }
