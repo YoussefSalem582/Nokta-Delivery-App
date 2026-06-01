@@ -19,6 +19,7 @@ import 'core/network/network_status.dart';
 import 'core/network/route_service.dart';
 import 'core/sync/app_data_coordinator.dart';
 import 'core/sync/driver_pending_sync_handler.dart';
+import 'core/sync/sync_remote_datasource.dart';
 import 'core/sync/sync_service.dart';
 import 'package:delivery_app/features/auth/shared/domain/repositories/auth_repository.dart';
 import 'package:delivery_app/features/driver/jobs/presentation/bloc/driver_jobs_bloc.dart';
@@ -212,6 +213,7 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => DriverTripRemoteDataSource(sl()));
   sl.registerLazySingleton(() => NotificationLocalDataSource(sl()));
   sl.registerLazySingleton(() => PendingSyncLocalDataSource(sl()));
+  sl.registerLazySingleton(() => SyncRemoteDataSource(sl()));
   sl.registerLazySingleton(() => CacheMetadataLocalDataSource(sl()));
   sl.registerLazySingleton(() => RouteCacheLocalDataSource(sl()));
 
@@ -232,6 +234,7 @@ Future<void> initDependencies() async {
       networkStatus: sl(),
       talker: sl(),
       coordinator: sl(),
+      syncRemote: sl(),
     ),
   );
   sl.registerLazySingleton<DriverProfileRepository>(

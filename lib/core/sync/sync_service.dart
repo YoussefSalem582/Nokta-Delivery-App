@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 import 'package:workmanager/workmanager.dart';
+import 'package:delivery_app/config/environment/env_config.dart';
 import 'package:delivery_app/core/sync/driver_pending_sync_handler.dart';
 import 'package:delivery_app/features/auth/shared/domain/repositories/auth_repository.dart';
 import 'package:delivery_app/features/profile/shared/domain/repositories/order_repository.dart';
@@ -68,6 +69,9 @@ class SyncService {
   Future<void> syncAll() async {
     await _driverPendingSyncHandler.syncPending();
     await _driverPendingSyncHandler.syncDriverStatusUpdates();
+    if (EnvConfig.usesRealBackend) {
+      await _tripRepository.reconcileWithServer();
+    }
     await _tripRepository.syncPendingChanges();
     await _orderRepository.getOrders(forceRefresh: true);
     await _authRepository.getProfile(forceRefresh: true);
