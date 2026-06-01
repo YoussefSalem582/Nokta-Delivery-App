@@ -308,7 +308,7 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => UpdateTripStatusUseCase(sl()));
   sl.registerLazySingleton(() => RequestTripUseCase(sl(), sl()));
   sl.registerLazySingleton(() => GetRiderTripsUseCase(sl(), sl()));
-  sl.registerLazySingleton(() => EstimateFareUseCase());
+  sl.registerLazySingleton(() => EstimateFareUseCase(remote: sl()));
   sl.registerLazySingleton(() => GetChatMessagesUseCase(sl()));
   sl.registerLazySingleton(() => SendChatMessageUseCase(sl()));
   sl.registerLazySingleton(() => GetOrdersUseCase(sl()));

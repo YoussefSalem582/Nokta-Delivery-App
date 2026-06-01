@@ -68,6 +68,10 @@ class _RideSelectionSheetState extends State<RideSelectionSheet> {
           EstimateFareParams(
             tierKey: option.nameKey,
             distanceKm: distanceKm,
+            pickupLat: widget.draft.pickupLat,
+            pickupLng: widget.draft.pickupLng,
+            dropoffLat: widget.draft.dropoffLat,
+            dropoffLng: widget.draft.dropoffLng,
           ),
         );
         fareResult.fold(
