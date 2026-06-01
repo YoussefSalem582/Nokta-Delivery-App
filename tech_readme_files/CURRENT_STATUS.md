@@ -2,7 +2,7 @@
 
 > [INDEX](INDEX.md) > Current Status
 >
-> **Last Updated:** May 28, 2026 — Skills lock LF alignment for Linux CI drift check.
+> **Last Updated:** June 1, 2026 — Driver turn-by-turn navigation + delivery live tracking.
 > **Version:** `1.0.0+1`
 > **Flutter:** 3.16+ (SDK ^3.12.0)
 > **Status:** ✅ MVP template complete | ✅ Dual-mode driver demo | ✅ Web client demo | 🚧 Production backend TBD
@@ -42,11 +42,11 @@ Nokta is a Flutter ride-hailing / delivery MVP template with Clean Architecture 
 |---------|--------|
 | Auth (splash, onboarding, login, register) | ✅ Demo complete |
 | Home / map / ride request | ✅ Demo complete (Nominatim geocoding for pickup + dropoff, saved home/work chips, OSRM routing, per-km fare, payment/promo pickers) |
-| Trips (list, detail, tracking) | ✅ Demo complete (randomized driver near pickup ≤8 min approach, two-phase tracking, connected cache sync, current trip card, driver profile, chat + call) |
+| Trips (list, detail, tracking) | ✅ Demo complete (two-phase tracking, **driver OSRM nav UI**, connected cache sync, driver profile, chat + call) |
 | Notifications | ✅ Demo complete (typed inbox, All/Trip/Messages/Calls + Unread filters, live trip status chip, chat/call notifications, swipe delete + undo, mark-all-read, nav badge) |
-| Profile / orders | ✅ Demo complete (wallet top-up, edit name, order details) |
+| Profile / orders | ✅ Demo complete (wallet top-up, edit name, **delivery map tracking** CTA) |
 | Settings (theme, locale, driver mode) | ✅ Complete (shared `AppModeSwitchTile`, `LogoutButton`, `performAppLogout`) |
-| Driver mode (shell, offers, jobs, active trip) | ✅ Demo complete (offer map preview with passenger sheet; active trip uses shared `TrackingBloc` / `LiveTrackingPage`) |
+| Driver mode (shell, offers, jobs, active trip) | ✅ Demo complete (offer map preview; active trip + **active delivery** use driver nav chrome + `DeliveryTrackingBloc`) |
 | Web client demo (Device Preview + GitHub Pages) | ✅ Merged to `main`; deploys via GitHub Actions on push |
 | Real backend integration | 🚧 Mock API only |
 | Production auth (secure storage) | 🚧 Planned |

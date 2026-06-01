@@ -12,18 +12,42 @@ abstract final class DeliveryOrderMapper {
       amount: (json['fee'] as num?)?.toDouble() ?? 0,
       status: _mapStatus(statusRaw),
       createdAt: DateTime.parse(json['createdAt'] as String),
+      pickupAddress: pickup,
+      dropoffAddress: dropoff,
+      pickupLat: (json['pickupLat'] as num?)?.toDouble(),
+      pickupLng: (json['pickupLng'] as num?)?.toDouble(),
+      dropoffLat: (json['dropoffLat'] as num?)?.toDouble(),
+      dropoffLng: (json['dropoffLng'] as num?)?.toDouble(),
+      courierId: json['courierId'] as String?,
+      customerId: json['customerId'] as String?,
     );
   }
 
   static OrderStatus _mapStatus(String status) {
     switch (status) {
+      case 'assigned':
+        return OrderStatus.assigned;
       case 'pickedUp':
+        return OrderStatus.pickedUp;
       case 'inTransit':
         return OrderStatus.inTransit;
       case 'delivered':
         return OrderStatus.delivered;
+      case 'cancelled':
+        return OrderStatus.cancelled;
       default:
         return OrderStatus.pending;
     }
+  }
+
+  static String statusToApi(OrderStatus status) {
+    return switch (status) {
+      OrderStatus.assigned => 'assigned',
+      OrderStatus.pickedUp => 'pickedUp',
+      OrderStatus.inTransit => 'inTransit',
+      OrderStatus.delivered => 'delivered',
+      OrderStatus.cancelled => 'cancelled',
+      _ => 'requested',
+    };
   }
 }

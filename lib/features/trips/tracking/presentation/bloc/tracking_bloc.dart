@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:delivery_app/config/environment/env_config.dart';
+import 'package:delivery_app/core/navigation/navigation_guidance.dart';
+import 'package:delivery_app/core/navigation/route_maneuver.dart';
 import 'package:delivery_app/core/network/fcm_service.dart';
 import 'package:delivery_app/core/realtime/realtime_location_service.dart';
 import 'package:delivery_app/core/realtime/ride_location_update.dart';
@@ -71,6 +73,7 @@ class TrackingBloc extends Bloc<TrackingEvent, TrackingState> {
   Timer? _statusPollTimer;
   StreamSubscription<RideLocationUpdate>? _liveLocationSub;
   List<LatLng> _route = [];
+  TripRoutePlan? _routePlan;
   DateTime? _lastTickAt;
   double _distanceTraveledMeters = 0;
   double _totalDistanceMeters = 1;
@@ -152,6 +155,7 @@ class TrackingBloc extends Bloc<TrackingEvent, TrackingState> {
       );
 
       _route = routePlan.fullRoute;
+      _routePlan = routePlan;
       _totalDistanceMeters = routePlan.totalDistanceMeters;
       _avgSpeedMps = routePlan.avgSpeedMps;
       _phaseBoundaryProgress = routePlan.phaseBoundaryProgress;
@@ -186,25 +190,28 @@ class TrackingBloc extends Bloc<TrackingEvent, TrackingState> {
       final driverPhone = driver?.phone ?? activeTrip.driverPhone;
 
       emit(
-        TrackingActive(
-          trip: activeTrip,
-          route: _route,
-          driverPosition: interpolateAlongRoute(_route, progress),
-          driverBearing: bearingAtProgress(_route, progress),
-          traveledRoute: split.traveled,
-          remainingRoute: split.remaining,
-          progress: progress,
-          etaMinutes: etaMinutes,
-          phase: phase,
-          remainingDistanceKm: remainingMeters / 1000,
-          driverRating: driverRating,
-          driverVehicle: driverVehicle,
-          driverPhone: driverPhone,
-          role: _role,
-          riderName: riderName,
-          riderPhone: riderPhone,
-          riderAvatarUrl: riderAvatarUrl,
-          riderRating: riderRating,
+        _withNavigation(
+          TrackingActive(
+            trip: activeTrip,
+            route: _route,
+            driverPosition: interpolateAlongRoute(_route, progress),
+            driverBearing: bearingAtProgress(_route, progress),
+            traveledRoute: split.traveled,
+            remainingRoute: split.remaining,
+            progress: progress,
+            etaMinutes: etaMinutes,
+            phase: phase,
+            remainingDistanceKm: remainingMeters / 1000,
+            driverRating: driverRating,
+            driverVehicle: driverVehicle,
+            driverPhone: driverPhone,
+            role: _role,
+            riderName: riderName,
+            riderPhone: riderPhone,
+            riderAvatarUrl: riderAvatarUrl,
+            riderRating: riderRating,
+          ),
+          remainingMeters: remainingMeters,
         ),
       );
 
@@ -351,15 +358,18 @@ class TrackingBloc extends Bloc<TrackingEvent, TrackingState> {
     }
 
     emit(
-      current.copyWith(
-        driverPosition: interpolateAlongRoute(_route, progress),
-        driverBearing: bearingAtProgress(_route, progress),
-        traveledRoute: split.traveled,
-        remainingRoute: split.remaining,
-        progress: progress,
-        etaMinutes: etaMinutes,
-        phase: phase,
-        remainingDistanceKm: remainingMeters / 1000,
+      _withNavigation(
+        current.copyWith(
+          driverPosition: interpolateAlongRoute(_route, progress),
+          driverBearing: bearingAtProgress(_route, progress),
+          traveledRoute: split.traveled,
+          remainingRoute: split.remaining,
+          progress: progress,
+          etaMinutes: etaMinutes,
+          phase: phase,
+          remainingDistanceKm: remainingMeters / 1000,
+        ),
+        remainingMeters: remainingMeters,
       ),
     );
   }
@@ -389,15 +399,18 @@ class TrackingBloc extends Bloc<TrackingEvent, TrackingState> {
     final driverPosition = interpolateAlongRoute(_route, progress);
 
     emit(
-      current.copyWith(
-        driverPosition: driverPosition,
-        driverBearing: bearingAtProgress(_route, progress),
-        traveledRoute: split.traveled,
-        remainingRoute: split.remaining,
-        progress: progress,
-        etaMinutes: etaMinutes,
-        phase: phase,
-        remainingDistanceKm: remainingMeters / 1000,
+      _withNavigation(
+        current.copyWith(
+          driverPosition: driverPosition,
+          driverBearing: bearingAtProgress(_route, progress),
+          traveledRoute: split.traveled,
+          remainingRoute: split.remaining,
+          progress: progress,
+          etaMinutes: etaMinutes,
+          phase: phase,
+          remainingDistanceKm: remainingMeters / 1000,
+        ),
+        remainingMeters: remainingMeters,
       ),
     );
 
@@ -465,16 +478,51 @@ class TrackingBloc extends Bloc<TrackingEvent, TrackingState> {
     final bearing = event.update.heading ?? bearingAtProgress(_route, progress);
 
     emit(
-      current.copyWith(
-        driverPosition: driverPos,
-        driverBearing: bearing,
-        traveledRoute: split.traveled,
-        remainingRoute: split.remaining,
-        progress: progress,
-        etaMinutes: etaMinutes,
-        phase: _phaseForProgress(progress),
-        remainingDistanceKm: remainingMeters / 1000,
+      _withNavigation(
+        current.copyWith(
+          driverPosition: driverPos,
+          driverBearing: bearing,
+          traveledRoute: split.traveled,
+          remainingRoute: split.remaining,
+          progress: progress,
+          etaMinutes: etaMinutes,
+          phase: _phaseForProgress(progress),
+          remainingDistanceKm: remainingMeters / 1000,
+        ),
+        remainingMeters: remainingMeters,
       ),
+    );
+  }
+
+  TrackingActive _withNavigation(
+    TrackingActive active, {
+    required double remainingMeters,
+  }) {
+    if (_role != TrackingRole.driver || _routePlan == null) {
+      return active;
+    }
+
+    final navPhase = active.phase == TrackingPhase.approach
+        ? NavigationLegPhase.approach
+        : NavigationLegPhase.onTrip;
+    final guidance = NavigationGuidance.resolve(
+      routePlan: _routePlan!,
+      progress: active.progress,
+      phase: navPhase,
+      totalDistanceMeters: _totalDistanceMeters,
+    );
+    final etaSeconds = _avgSpeedMps > 0
+        ? (remainingMeters / _avgSpeedMps).round()
+        : active.etaMinutes * 60;
+    final destinationLabel = active.phase == TrackingPhase.approach
+        ? active.trip.pickupAddress
+        : active.trip.dropoffAddress;
+
+    return active.copyWith(
+      currentManeuver: guidance.current,
+      nextManeuver: guidance.next,
+      estimatedArrival: DateTime.now().add(Duration(seconds: etaSeconds)),
+      destinationLabel: destinationLabel,
     );
   }
 

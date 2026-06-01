@@ -191,7 +191,11 @@ class OrderStatusAdapter extends TypeAdapter<OrderStatus> {
 
   @override
   OrderStatus read(BinaryReader reader) {
-    return OrderStatus.values[reader.readByte()];
+    final index = reader.readByte();
+    if (index >= OrderStatus.values.length) {
+      return OrderStatus.pending;
+    }
+    return OrderStatus.values[index];
   }
 
   @override
@@ -206,12 +210,39 @@ class OrderEntityAdapter extends TypeAdapter<OrderEntity> {
 
   @override
   OrderEntity read(BinaryReader reader) {
+    final id = reader.readString();
+    final title = reader.readString();
+    final amount = reader.readDouble();
+    final status = reader.read() as OrderStatus;
+    final createdAt = DateTime.parse(reader.readString());
+
+    if (reader.availableBytes > 0) {
+      final version = reader.readByte();
+      if (version == 2) {
+        return OrderEntity(
+          id: id,
+          title: title,
+          amount: amount,
+          status: status,
+          createdAt: createdAt,
+          pickupAddress: reader.readString(),
+          dropoffAddress: reader.readString(),
+          pickupLat: reader.readDouble(),
+          pickupLng: reader.readDouble(),
+          dropoffLat: reader.readDouble(),
+          dropoffLng: reader.readDouble(),
+          courierId: reader.readBool() ? reader.readString() : null,
+          customerId: reader.readBool() ? reader.readString() : null,
+        );
+      }
+    }
+
     return OrderEntity(
-      id: reader.readString(),
-      title: reader.readString(),
-      amount: reader.readDouble(),
-      status: reader.read() as OrderStatus,
-      createdAt: DateTime.parse(reader.readString()),
+      id: id,
+      title: title,
+      amount: amount,
+      status: status,
+      createdAt: createdAt,
     );
   }
 
@@ -222,7 +253,18 @@ class OrderEntityAdapter extends TypeAdapter<OrderEntity> {
       ..writeString(obj.title)
       ..writeDouble(obj.amount)
       ..write(obj.status)
-      ..writeString(obj.createdAt.toIso8601String());
+      ..writeString(obj.createdAt.toIso8601String())
+      ..writeByte(2)
+      ..writeString(obj.pickupAddress ?? '')
+      ..writeString(obj.dropoffAddress ?? '')
+      ..writeDouble(obj.pickupLat ?? 0)
+      ..writeDouble(obj.pickupLng ?? 0)
+      ..writeDouble(obj.dropoffLat ?? 0)
+      ..writeDouble(obj.dropoffLng ?? 0)
+      ..writeBool(obj.courierId != null)
+      ..writeString(obj.courierId ?? '')
+      ..writeBool(obj.customerId != null)
+      ..writeString(obj.customerId ?? '');
   }
 }
 

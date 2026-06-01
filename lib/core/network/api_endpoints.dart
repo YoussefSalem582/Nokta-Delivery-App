@@ -29,6 +29,11 @@ class ApiEndpoints {
   static String get driverAvailability => _driverPath('/availability');
   static String get driverOffers => _driverPath('/offers');
 
+  static String deliveryById(String id) => '/deliveries/$id';
+  static String deliveryTracking(String id) => '/deliveries/$id/tracking';
+  static String deliveryStatus(String id) => '/deliveries/$id/status';
+  static String deliveryLocation(String id) => '/deliveries/$id/location';
+
   static String tripById(String id) => '/trips/$id';
   static String tripStatus(String id) => '/trips/$id/status';
   static String driverReviews(String driverId) => '/drivers/$driverId/reviews';

@@ -2,51 +2,46 @@ import 'package:delivery_app/core/utils/map_config.dart';
 import 'package:delivery_app/core/utils/ui_helpers.dart';
 import 'package:delivery_app/core/widgets/delivery_map.dart';
 import 'package:delivery_app/core/widgets/map_trip_scaffold.dart';
-import 'package:delivery_app/core/widgets/skeleton_trip_card.dart';
-import 'package:delivery_app/features/trips/tracking/presentation/bloc/tracking_bloc.dart';
-import 'package:delivery_app/features/trips/tracking/presentation/widgets/driver_navigation_actions.dart';
+import 'package:delivery_app/features/profile/orders/presentation/bloc/delivery_tracking_bloc.dart';
+import 'package:delivery_app/features/profile/orders/presentation/widgets/delivery_navigation_actions.dart';
+import 'package:delivery_app/features/profile/orders/presentation/widgets/delivery_tracking_bottom_sheet.dart';
 import 'package:delivery_app/features/trips/tracking/presentation/widgets/driver_navigation_banner.dart';
 import 'package:delivery_app/features/trips/tracking/presentation/widgets/driver_navigation_bar.dart';
-import 'package:delivery_app/features/trips/tracking/presentation/widgets/tracking_bottom_sheet.dart';
 import 'package:delivery_app/injection_container.dart';
 import 'package:delivery_app/shared/spacing/app_spacing.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:latlong2/latlong.dart';
-import 'package:skeletonizer/skeletonizer.dart';
-
-class LiveTrackingPage extends StatefulWidget {
-  const LiveTrackingPage({
+class DeliveryLiveTrackingPage extends StatefulWidget {
+  const DeliveryLiveTrackingPage({
     super.key,
-    required this.tripId,
-    required this.titleKey,
+    required this.deliveryId,
     required this.role,
     required this.onBack,
-    this.onDriverTripCompleted,
+    this.onCourierCompleted,
   });
 
-  final String tripId;
-  final String titleKey;
-  final TrackingRole role;
+  final String deliveryId;
+  final DeliveryTrackingRole role;
   final VoidCallback onBack;
-  final VoidCallback? onDriverTripCompleted;
+  final VoidCallback? onCourierCompleted;
 
   @override
-  State<LiveTrackingPage> createState() => _LiveTrackingPageState();
+  State<DeliveryLiveTrackingPage> createState() =>
+      _DeliveryLiveTrackingPageState();
 }
 
-class _LiveTrackingPageState extends State<LiveTrackingPage> {
+class _DeliveryLiveTrackingPageState extends State<DeliveryLiveTrackingPage> {
   final _mapKey = GlobalKey<DeliveryMapState>();
-  late final TrackingBloc _bloc;
+  late final DeliveryTrackingBloc _bloc;
 
   @override
   void initState() {
     super.initState();
-    _bloc = sl<TrackingBloc>()
+    _bloc = sl<DeliveryTrackingBloc>()
       ..add(
-        TrackingLoadRequested(
-          widget.tripId,
+        DeliveryTrackingLoadRequested(
+          deliveryId: widget.deliveryId,
           role: widget.role,
         ),
       );
@@ -54,110 +49,108 @@ class _LiveTrackingPageState extends State<LiveTrackingPage> {
 
   @override
   void dispose() {
-    _bloc.add(const TrackingStopped());
+    _bloc.add(const DeliveryTrackingStopped());
     _bloc.close();
     super.dispose();
-  }
-
-  void _reload() {
-    _bloc.add(
-      TrackingLoadRequested(
-        widget.tripId,
-        role: widget.role,
-      ),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider.value(
       value: _bloc,
-      child: BlocListener<TrackingBloc, TrackingState>(
+      child: BlocListener<DeliveryTrackingBloc, DeliveryTrackingState>(
         listenWhen: (previous, current) =>
-            current is TrackingError ||
-            (widget.role == TrackingRole.driver &&
-                current is TrackingCompleted),
+            current is DeliveryTrackingError ||
+            (widget.role == DeliveryTrackingRole.courier &&
+                current is DeliveryTrackingCompleted),
         listener: (context, state) {
-          if (state is TrackingError) {
+          if (state is DeliveryTrackingError) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(state.message.tr())),
             );
           }
-          if (state is TrackingCompleted &&
-              widget.role == TrackingRole.driver) {
-            widget.onDriverTripCompleted?.call();
+          if (state is DeliveryTrackingCompleted &&
+              widget.role == DeliveryTrackingRole.courier) {
+            widget.onCourierCompleted?.call();
           }
         },
-        child: BlocBuilder<TrackingBloc, TrackingState>(
+        child: BlocBuilder<DeliveryTrackingBloc, DeliveryTrackingState>(
           builder: (context, state) {
-            final title = widget.titleKey.tr();
-
-            if (state is TrackingError) {
+            if (state is DeliveryTrackingError) {
               return MapTripScaffold(
-                title: title,
+                title: 'delivery_tracking_title'.tr(),
                 onBack: widget.onBack,
-                useOverlayAppBar: false,
                 body: ErrorView(
                   message: state.message,
-                  onRetry: _reload,
-                ),
-              );
-            }
-
-            if (state is TrackingLoading || state is TrackingInitial) {
-              return MapTripScaffold(
-                title: title,
-                onBack: widget.onBack,
-                useOverlayAppBar: false,
-                body: Skeletonizer(
-                  enabled: true,
-                  child: ListView(
-                    padding: const EdgeInsets.all(AppSpacing.md),
-                    children: const [SkeletonTripCard()],
+                  onRetry: () => _bloc.add(
+                    DeliveryTrackingLoadRequested(
+                      deliveryId: widget.deliveryId,
+                      role: widget.role,
+                    ),
                   ),
                 ),
               );
             }
 
-            final mapData = MapTrackingData.fromState(state);
-            if (mapData == null) {
+            if (state is! DeliveryTrackingActive &&
+                state is! DeliveryTrackingCompleted) {
+              return MapTripScaffold(
+                title: 'delivery_tracking_title'.tr(),
+                onBack: widget.onBack,
+                body: const Center(child: CircularProgressIndicator()),
+              );
+            }
+
+            final active =
+                state is DeliveryTrackingActive ? state : null;
+            final completed =
+                state is DeliveryTrackingCompleted ? state : null;
+            if (active == null && completed == null) {
               return const SizedBox.shrink();
             }
 
+            final route = active?.route ?? completed!.route;
+            final driverPosition =
+                active?.driverPosition ?? completed!.driverPosition;
+            final driverBearing =
+                active?.driverBearing ?? completed!.driverBearing;
+            final traveled =
+                active?.traveledRoute ?? completed!.traveledRoute;
+            final remaining =
+                active?.remainingRoute ?? completed!.remainingRoute;
             final scheme = Theme.of(context).colorScheme;
-            final isDriverNav = widget.role == TrackingRole.driver &&
-                state is TrackingActive;
+            final isCourierNav = widget.role == DeliveryTrackingRole.courier &&
+                active != null;
 
-            if (isDriverNav) {
-              final active = state;
+            if (isCourierNav) {
               return Scaffold(
                 body: Stack(
                   children: [
                     Positioned.fill(
                       child: DeliveryMap(
                         key: _mapKey,
-                        center: mapData.driverPosition,
+                        center: driverPosition,
                         zoom: MapConfig.defaultZoom,
                         followCenter: true,
                         fitRouteBounds: true,
-                        traveledRoute: mapData.traveledRoute,
-                        remainingRoute: mapData.remainingRoute,
+                        traveledRoute: traveled,
+                        remainingRoute: remaining,
                         markers: [
                           MapMarkerData(
-                            point: mapData.route.first,
+                            point: route.first,
                             color: scheme.secondary,
-                            icon: Icons.trip_origin,
+                            icon: Icons.store,
                           ),
                           MapMarkerData(
-                            point: mapData.driverPosition,
+                            point: driverPosition,
                             color: scheme.primary,
-                            icon: Icons.local_taxi,
+                            icon: Icons.delivery_dining,
                             size: 36,
                             animate: true,
-                            rotation: mapData.driverBearing,
+                            rotation: driverBearing,
                           ),
                           MapMarkerData(
-                            point: mapData.route.last,
+                            point: route.last,
                             color: scheme.error,
                             icon: Icons.location_on,
                           ),
@@ -178,8 +171,8 @@ class _LiveTrackingPageState extends State<LiveTrackingPage> {
                       bottom: 200,
                       child: FloatingActionButton(
                         mini: true,
-                        onPressed: () => _mapKey.currentState
-                            ?.recenter(mapData.driverPosition),
+                        onPressed: () =>
+                            _mapKey.currentState?.recenter(driverPosition),
                         child: const Icon(Icons.my_location),
                       ),
                     ),
@@ -187,9 +180,9 @@ class _LiveTrackingPageState extends State<LiveTrackingPage> {
                       left: AppSpacing.md,
                       right: AppSpacing.md,
                       bottom: 120,
-                      child: DriverNavigationActions(
+                      child: DeliveryNavigationActions(
                         active: active,
-                        tripId: widget.tripId,
+                        deliveryId: widget.deliveryId,
                       ),
                     ),
                     Positioned(
@@ -201,7 +194,7 @@ class _LiveTrackingPageState extends State<LiveTrackingPage> {
                         remainingDistanceKm: active.remainingDistanceKm,
                         estimatedArrival: active.estimatedArrival,
                         onExit: () {
-                          _bloc.add(const TrackingStopped());
+                          _bloc.add(const DeliveryTrackingStopped());
                           widget.onBack();
                         },
                       ),
@@ -212,35 +205,35 @@ class _LiveTrackingPageState extends State<LiveTrackingPage> {
             }
 
             return MapTripScaffold(
-              title: title,
+              title: 'delivery_tracking_title'.tr(),
               onBack: widget.onBack,
               body: Stack(
                 children: [
                   Positioned.fill(
                     child: DeliveryMap(
                       key: _mapKey,
-                      center: mapData.driverPosition,
+                      center: driverPosition,
                       zoom: MapConfig.defaultZoom,
-                      followCenter: state is TrackingActive,
+                      followCenter: active != null,
                       fitRouteBounds: true,
-                      traveledRoute: mapData.traveledRoute,
-                      remainingRoute: mapData.remainingRoute,
+                      traveledRoute: traveled,
+                      remainingRoute: remaining,
                       markers: [
                         MapMarkerData(
-                          point: mapData.route.first,
+                          point: route.first,
                           color: scheme.secondary,
-                          icon: Icons.trip_origin,
+                          icon: Icons.store,
                         ),
                         MapMarkerData(
-                          point: mapData.driverPosition,
+                          point: driverPosition,
                           color: scheme.primary,
-                          icon: Icons.local_taxi,
+                          icon: Icons.delivery_dining,
                           size: 36,
-                          animate: state is TrackingActive,
-                          rotation: mapData.driverBearing,
+                          animate: active != null,
+                          rotation: driverBearing,
                         ),
                         MapMarkerData(
-                          point: mapData.route.last,
+                          point: route.last,
                           color: scheme.error,
                           icon: Icons.location_on,
                         ),
@@ -249,26 +242,24 @@ class _LiveTrackingPageState extends State<LiveTrackingPage> {
                   ),
                   Positioned(
                     right: AppSpacing.md,
-                    bottom: 220,
+                    bottom: 180,
                     child: FloatingActionButton(
+                      mini: true,
                       onPressed: () =>
-                          _mapKey.currentState?.recenter(mapData.driverPosition),
+                          _mapKey.currentState?.recenter(driverPosition),
                       child: const Icon(Icons.my_location),
                     ),
                   ),
-                  Positioned(
-                    left: AppSpacing.md,
-                    right: AppSpacing.md,
-                    bottom: AppSpacing.md,
-                    child: SafeArea(
-                      top: false,
-                      child: TrackingBottomSheet(
-                        state: state,
-                        tripId: widget.tripId,
-                        role: widget.role,
+                  if (active != null)
+                    Positioned(
+                      left: AppSpacing.md,
+                      right: AppSpacing.md,
+                      bottom: AppSpacing.md,
+                      child: SafeArea(
+                        top: false,
+                        child: DeliveryTrackingBottomSheet(active: active),
                       ),
                     ),
-                  ),
                 ],
               ),
             );
@@ -276,41 +267,5 @@ class _LiveTrackingPageState extends State<LiveTrackingPage> {
         ),
       ),
     );
-  }
-}
-
-class MapTrackingData {
-  const MapTrackingData({
-    required this.route,
-    required this.driverPosition,
-    required this.driverBearing,
-    required this.traveledRoute,
-    required this.remainingRoute,
-  });
-
-  final List<LatLng> route;
-  final LatLng driverPosition;
-  final double driverBearing;
-  final List<LatLng> traveledRoute;
-  final List<LatLng> remainingRoute;
-
-  static MapTrackingData? fromState(TrackingState state) {
-    return switch (state) {
-      TrackingActive active => MapTrackingData(
-          route: active.route,
-          driverPosition: active.driverPosition,
-          driverBearing: active.driverBearing,
-          traveledRoute: active.traveledRoute,
-          remainingRoute: active.remainingRoute,
-        ),
-      TrackingCompleted completed => MapTrackingData(
-          route: completed.route,
-          driverPosition: completed.driverPosition,
-          driverBearing: completed.driverBearing,
-          traveledRoute: completed.traveledRoute,
-          remainingRoute: completed.remainingRoute,
-        ),
-      _ => null,
-    };
   }
 }

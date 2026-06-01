@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Driver turn-by-turn navigation** — OSRM `steps=true` parsing into `RouteManeuver` / `NavigationGuidance`; driver trip tracking shows top maneuver banner, “Then” chip, bottom ETA/Exit bar, and compact status actions (`TrackingRole.driver` only); rider tracking UI unchanged.
+- **Delivery live tracking** — extended `OrderEntity` with coordinates and courier statuses; `DeliveryTrackingBloc` with two-phase route, `publishDeliveryLocation`, customer map + **Track delivery** CTA; courier `DriverActiveDeliveryPage` with same nav chrome; driver home lists active courier deliveries.
+- **Backend trip tracking API** — `GET /api/trips/:id/tracking` (live + history); Socket.io docs for `joinDelivery`, `publishDeliveryLocation`, `deliveryLocation`.
+
 ### Fixed
 
 - **GitHub Pages deploy** — corrected `--base-href` from `/delivery_app/` to `/Nokta-Delivery-App/` after repo rename; deploy workflow now triggers on `main` (web demo merged from `feature/web-client-demo`).

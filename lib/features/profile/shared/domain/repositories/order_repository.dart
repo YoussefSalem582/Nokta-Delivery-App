@@ -14,4 +14,13 @@ abstract class OrderRepository {
     String? packageNotes,
   });
   Future<void> syncPendingChanges();
+  Future<OrderEntity> getDeliveryById(String id);
+  Future<List<OrderEntity>> getDeliveriesForCourier(String courierId);
+  Future<OrderEntity> updateDeliveryStatus(String id, OrderStatus status);
+  Future<void> updateDeliveryLocation({
+    required String id,
+    required double lat,
+    required double lng,
+    double? heading,
+  });
 }

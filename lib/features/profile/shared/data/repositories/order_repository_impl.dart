@@ -154,4 +154,64 @@ class OrderRepositoryImpl implements OrderRepository {
 
     await getOrders(forceRefresh: true);
   }
+
+  @override
+  Future<OrderEntity> getDeliveryById(String id) async {
+    if (!await _networkStatus.isOnline) {
+      for (final order in _local.getAll()) {
+        if (order.id == id) return order;
+      }
+      throw StateError('Delivery $id not in cache while offline');
+    }
+
+    final remote = await _deliveryRemote.fetchDeliveryById(id);
+    await _local.save(remote);
+    return remote;
+  }
+
+  @override
+  Future<List<OrderEntity>> getDeliveriesForCourier(String courierId) async {
+    final deliveries = EnvConfig.usesRealBackend
+        ? await _deliveryRemote.fetchDeliveries()
+        : await getOrders(forceRefresh: true);
+    return deliveries
+        .where(
+          (d) =>
+              d.courierId == courierId && d.isActiveForCourier,
+        )
+        .toList();
+  }
+
+  @override
+  Future<OrderEntity> updateDeliveryStatus(
+    String id,
+    OrderStatus status,
+  ) async {
+    if (!EnvConfig.usesRealBackend) {
+      final cached = _local.getAll().firstWhere((o) => o.id == id);
+      final updated = cached.copyWith(status: status);
+      await _local.save(updated);
+      return updated;
+    }
+
+    final remote = await _deliveryRemote.updateStatus(id, status);
+    await _local.save(remote);
+    return remote;
+  }
+
+  @override
+  Future<void> updateDeliveryLocation({
+    required String id,
+    required double lat,
+    required double lng,
+    double? heading,
+  }) async {
+    if (!EnvConfig.usesRealBackend) return;
+    await _deliveryRemote.updateLocation(
+      id: id,
+      lat: lat,
+      lng: lng,
+      heading: heading,
+    );
+  }
 }

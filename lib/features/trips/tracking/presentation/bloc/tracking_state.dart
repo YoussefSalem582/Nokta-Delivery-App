@@ -43,6 +43,10 @@ class TrackingActive extends TrackingState {
     this.riderPhone,
     this.riderAvatarUrl,
     this.riderRating,
+    this.currentManeuver,
+    this.nextManeuver,
+    this.estimatedArrival,
+    this.destinationLabel,
   });
 
   final TripEntity trip;
@@ -64,6 +68,10 @@ class TrackingActive extends TrackingState {
   final String? riderPhone;
   final String? riderAvatarUrl;
   final double? riderRating;
+  final RouteManeuver? currentManeuver;
+  final RouteManeuver? nextManeuver;
+  final DateTime? estimatedArrival;
+  final String? destinationLabel;
 
   bool get canDriverMarkArrived =>
       role == TrackingRole.driver && trip.status == TripStatus.accepted;
@@ -94,6 +102,10 @@ class TrackingActive extends TrackingState {
     String? riderPhone,
     String? riderAvatarUrl,
     double? riderRating,
+    RouteManeuver? currentManeuver,
+    RouteManeuver? nextManeuver,
+    DateTime? estimatedArrival,
+    String? destinationLabel,
   }) {
     return TrackingActive(
       trip: trip ?? this.trip,
@@ -115,6 +127,10 @@ class TrackingActive extends TrackingState {
       riderPhone: riderPhone ?? this.riderPhone,
       riderAvatarUrl: riderAvatarUrl ?? this.riderAvatarUrl,
       riderRating: riderRating ?? this.riderRating,
+      currentManeuver: currentManeuver ?? this.currentManeuver,
+      nextManeuver: nextManeuver ?? this.nextManeuver,
+      estimatedArrival: estimatedArrival ?? this.estimatedArrival,
+      destinationLabel: destinationLabel ?? this.destinationLabel,
     );
   }
 
@@ -137,6 +153,10 @@ class TrackingActive extends TrackingState {
         riderPhone,
         riderAvatarUrl,
         riderRating,
+        currentManeuver,
+        nextManeuver,
+        estimatedArrival,
+        destinationLabel,
       ];
 
   @override

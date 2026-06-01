@@ -1,4 +1,6 @@
 import 'package:delivery_app/core/cache/datasources/route_cache_local_datasource.dart';
+import 'package:delivery_app/core/navigation/osrm_maneuver_parser.dart';
+import 'package:delivery_app/core/navigation/route_maneuver.dart';
 import 'package:delivery_app/features/trips/shared/domain/entities/route_cache_entity.dart';
 import 'package:delivery_app/core/utils/driver_placement.dart';
 import 'package:delivery_app/core/utils/route_constants.dart';
@@ -12,12 +14,14 @@ class RouteResult {
     required this.points,
     required this.distanceMeters,
     required this.durationSeconds,
+    this.maneuvers = const [],
     this.fromCache = false,
   });
 
   final List<LatLng> points;
   final double distanceMeters;
   final double durationSeconds;
+  final List<RouteManeuver> maneuvers;
   final bool fromCache;
 
   int get etaMinutes => (durationSeconds / 60).ceil().clamp(1, 99);
@@ -68,6 +72,7 @@ class RouteService {
   Future<RouteResult> getRoute({
     required LatLng pickup,
     required LatLng dropoff,
+    bool isApproachLeg = false,
   }) async {
     final cacheKey = _cacheKey(pickup, dropoff);
 
@@ -80,6 +85,10 @@ class RouteService {
         points: disk.points,
         distanceMeters: disk.distanceMeters,
         durationSeconds: disk.durationSeconds,
+        maneuvers: OsrmManeuverParser.syntheticFallback(
+          isApproachLeg: false,
+          legDistanceMeters: disk.distanceMeters,
+        ),
         fromCache: true,
       );
       _memoryCache[cacheKey] = result;
@@ -93,7 +102,12 @@ class RouteService {
       return inflight;
     }
 
-    final request = _resolveRoute(pickup, dropoff, cacheKey);
+    final request = _resolveRoute(
+      pickup,
+      dropoff,
+      cacheKey,
+      isApproachLeg: isApproachLeg,
+    );
     _inFlight[cacheKey] = request;
     try {
       return await request;
@@ -105,8 +119,9 @@ class RouteService {
   Future<RouteResult> _resolveRoute(
     LatLng pickup,
     LatLng dropoff,
-    String cacheKey,
-  ) async {
+    String cacheKey, {
+    bool isApproachLeg = false,
+  }) async {
     const distanceCalc = Distance();
     final straightMeters = distanceCalc(pickup, dropoff);
     if (straightMeters > RouteConstants.maxOsrmDistanceMeters) {
@@ -115,7 +130,12 @@ class RouteService {
       );
       return _cacheRoute(
         cacheKey,
-        _fallbackRoute(pickup, dropoff, straightMeters),
+        _fallbackRoute(
+          pickup,
+          dropoff,
+          straightMeters: straightMeters,
+          isApproachLeg: isApproachLeg,
+        ),
       );
     }
 
@@ -125,7 +145,12 @@ class RouteService {
       );
       return _cacheRoute(
         cacheKey,
-        _fallbackRoute(pickup, dropoff, straightMeters),
+        _fallbackRoute(
+          pickup,
+          dropoff,
+          straightMeters: straightMeters,
+          isApproachLeg: isApproachLeg,
+        ),
       );
     }
 
@@ -137,6 +162,7 @@ class RouteService {
         queryParameters: {
           'overview': 'full',
           'geometries': 'geojson',
+          'steps': 'true',
         },
         options: Options(
           extra: {'skipMockInterceptor': true},
@@ -151,7 +177,12 @@ class RouteService {
         _markOsrmFailure(cacheKey);
         return _cacheRoute(
           cacheKey,
-          _fallbackRoute(pickup, dropoff, straightMeters),
+          _fallbackRoute(
+            pickup,
+            dropoff,
+            straightMeters: straightMeters,
+            isApproachLeg: isApproachLeg,
+          ),
         );
       }
 
@@ -161,11 +192,18 @@ class RouteService {
         _markOsrmFailure(cacheKey);
         return _cacheRoute(
           cacheKey,
-          _fallbackRoute(pickup, dropoff, straightMeters),
+          _fallbackRoute(
+            pickup,
+            dropoff,
+            straightMeters: straightMeters,
+            isApproachLeg: isApproachLeg,
+          ),
         );
       }
 
       final route = routes.first as Map<String, dynamic>;
+      final distanceMeters = (route['distance'] as num).toDouble();
+      final durationSeconds = (route['duration'] as num).toDouble();
       final geometry = route['geometry'] as Map<String, dynamic>;
       final coordinates = geometry['coordinates'] as List<dynamic>;
       final rawPoints = coordinates
@@ -178,10 +216,22 @@ class RouteService {
           .toList();
       final points = densifyRoute(rawPoints);
 
+      final legs = route['legs'] as List<dynamic>?;
+      final steps = legs != null && legs.isNotEmpty
+          ? (legs.first as Map<String, dynamic>)['steps'] as List<dynamic>?
+          : null;
+      final maneuvers = steps != null && steps.isNotEmpty
+          ? OsrmManeuverParser.parseLegSteps(steps, distanceMeters)
+          : OsrmManeuverParser.syntheticFallback(
+              isApproachLeg: isApproachLeg,
+              legDistanceMeters: distanceMeters,
+            );
+
       final result = RouteResult(
         points: points,
-        distanceMeters: (route['distance'] as num).toDouble(),
-        durationSeconds: (route['duration'] as num).toDouble(),
+        distanceMeters: distanceMeters,
+        durationSeconds: durationSeconds,
+        maneuvers: maneuvers,
       );
       _osrmFailureAt.remove(cacheKey);
       return _cacheRoute(cacheKey, result);
@@ -190,7 +240,12 @@ class RouteService {
       _markOsrmFailure(cacheKey);
       return _cacheRoute(
         cacheKey,
-        _fallbackRoute(pickup, dropoff, straightMeters),
+        _fallbackRoute(
+          pickup,
+          dropoff,
+          straightMeters: straightMeters,
+          isApproachLeg: isApproachLeg,
+        ),
       );
     }
   }
@@ -205,6 +260,7 @@ class RouteService {
       points: [],
       distanceMeters: 0,
       durationSeconds: 0,
+      maneuvers: [],
     );
     LatLng driverStart = pickup;
 
@@ -220,6 +276,7 @@ class RouteService {
       approachLeg = await getRoute(
         pickup: driverStart,
         dropoff: pickup,
+        isApproachLeg: true,
       );
 
       if (approachLeg.durationSeconds <= DriverPlacement.maxApproachSeconds) {
@@ -296,9 +353,10 @@ class RouteService {
 
   RouteResult _fallbackRoute(
     LatLng pickup,
-    LatLng dropoff, [
+    LatLng dropoff, {
     double? straightMeters,
-  ]) {
+    bool isApproachLeg = false,
+  }) {
     const steps = 30;
     final rawPoints = List.generate(steps + 1, (i) {
       final t = i / steps;
@@ -318,6 +376,10 @@ class RouteService {
       points: points,
       distanceMeters: meters,
       durationSeconds: meters / avgSpeedMps,
+      maneuvers: OsrmManeuverParser.syntheticFallback(
+        isApproachLeg: isApproachLeg,
+        legDistanceMeters: meters,
+      ),
       fromCache: false,
     );
   }

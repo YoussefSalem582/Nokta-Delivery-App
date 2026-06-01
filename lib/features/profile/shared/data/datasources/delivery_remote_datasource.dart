@@ -31,4 +31,56 @@ class DeliveryRemoteDataSource {
       response.data as Map<String, dynamic>,
     );
   }
+
+  Future<List<OrderEntity>> fetchDeliveries() async {
+    final response = await _dio.get<dynamic>(ApiEndpoints.deliveries);
+    final list = response.data as List<dynamic>;
+    return list
+        .map(
+          (e) => DeliveryOrderMapper.fromDeliveryJson(
+            e as Map<String, dynamic>,
+          ),
+        )
+        .toList();
+  }
+
+  Future<OrderEntity> fetchDeliveryById(String id) async {
+    final response = await _dio.get<dynamic>(ApiEndpoints.deliveryById(id));
+    return DeliveryOrderMapper.fromDeliveryJson(
+      response.data as Map<String, dynamic>,
+    );
+  }
+
+  Future<OrderEntity> updateStatus(String id, OrderStatus status) async {
+    final response = await _dio.patch<dynamic>(
+      ApiEndpoints.deliveryStatus(id),
+      data: {'status': DeliveryOrderMapper.statusToApi(status)},
+    );
+    return DeliveryOrderMapper.fromDeliveryJson(
+      response.data as Map<String, dynamic>,
+    );
+  }
+
+  Future<void> updateLocation({
+    required String id,
+    required double lat,
+    required double lng,
+    double? heading,
+  }) async {
+    await _dio.patch<dynamic>(
+      ApiEndpoints.deliveryLocation(id),
+      data: {
+        'lat': lat,
+        'lng': lng,
+        if (heading != null) 'heading': heading,
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> fetchTracking(String id) async {
+    final response = await _dio.get<dynamic>(
+      ApiEndpoints.deliveryTracking(id),
+    );
+    return Map<String, dynamic>.from(response.data as Map);
+  }
 }

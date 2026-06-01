@@ -20,4 +20,6 @@ abstract final class RouteNames {
   static const driverJobs = 'driverJobs';
   static const driverShellProfile = 'driverShellProfile';
   static const driverActiveTrip = 'driverActiveTrip';
+  static const deliveryTracking = 'deliveryTracking';
+  static const driverActiveDelivery = 'driverActiveDelivery';
 }

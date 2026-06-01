@@ -4,6 +4,14 @@
 
 ---
 
+## 2026-06-01 — Driver navigation + delivery tracking
+
+**What changed:** Driver-only Google Maps–style nav (OSRM maneuvers, top banner, bottom ETA/Exit) on ride trips; delivery orders get full map tracking for customers and couriers; backend `GET /trips/:id/tracking` and expanded Socket.io docs.
+
+**Files touched:** `lib/core/navigation/`, `lib/core/network/route_service.dart`, `lib/features/trips/tracking/`, `lib/features/profile/orders/`, `lib/features/driver/active_delivery/`, `nokta_delivery_backend` rides/location modules, `docs/API.md`, `assets/translations/*.json`
+
+---
+
 ## 2026-05-28 — GitHub Pages deploy fix (base-href + main trigger)
 
 **What changed:** Updated `--base-href` to `/Nokta-Delivery-App/` to match renamed repo; added `--no-wasm-dry-run` to CI build; deploy workflow now triggers on `main` (web demo merged from `feature/web-client-demo`).

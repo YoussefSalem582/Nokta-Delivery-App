@@ -3,6 +3,7 @@ import 'package:delivery_app/core/network/connectivity_cubit.dart';
 import 'package:delivery_app/core/network/connectivity_state.dart';
 import 'package:delivery_app/features/auth/shared/presentation/bloc/auth_bloc.dart';
 import 'package:delivery_app/features/driver/active_trip/presentation/pages/driver_active_trip_page.dart';
+import 'package:delivery_app/features/driver/home/presentation/widgets/driver_active_deliveries_section.dart';
 import 'package:delivery_app/features/driver/offers/presentation/pages/driver_offer_preview_page.dart';
 import 'package:delivery_app/features/driver/jobs/presentation/bloc/driver_jobs_bloc.dart';
 import 'package:delivery_app/features/driver/offers/presentation/bloc/driver_offers_bloc.dart';
@@ -132,6 +133,7 @@ class _DriverHomePageState extends State<DriverHomePage> {
                 return const SizedBox.shrink();
               },
             ),
+            const DriverActiveDeliveriesSection(),
             BlocBuilder<DriverAvailabilityCubit, DriverAvailabilityState>(
               builder: (context, availabilityState) {
                 return BlocBuilder<DriverJobsBloc, DriverJobsState>(

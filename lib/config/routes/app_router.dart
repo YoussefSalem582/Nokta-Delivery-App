@@ -11,7 +11,9 @@ import '../../features/auth/register/presentation/pages/register_page.dart';
 import '../../features/auth/shared/presentation/bloc/auth_bloc.dart';
 import '../../features/auth/shared/presentation/widgets/auth/auth_form_bloc_listener.dart';
 import '../../features/auth/splash/presentation/pages/splash_page.dart';
+import '../../features/driver/active_delivery/presentation/pages/driver_active_delivery_page.dart';
 import '../../features/driver/active_trip/presentation/pages/driver_active_trip_page.dart';
+import '../../features/profile/orders/presentation/pages/delivery_tracking_page.dart';
 import '../../features/driver/main_shell/presentation/pages/driver_main_shell_page.dart';
 import '../../features/driver/onboarding/presentation/pages/driver_onboarding_page.dart';
 import '../../features/driver/shared/domain/entities/app_mode.dart';
@@ -158,6 +160,17 @@ class AppRouter {
           );
         },
       ),
+      GoRoute(
+        path: '/driver/deliveries/:deliveryId/active',
+        name: RouteNames.driverActiveDelivery,
+        pageBuilder: (context, state) {
+          final deliveryId = state.pathParameters['deliveryId']!;
+          return _fadePage(
+            state: state,
+            child: DriverActiveDeliveryPage(deliveryId: deliveryId),
+          );
+        },
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>
             MainShellPage(navigationShell: navigationShell),
@@ -263,6 +276,17 @@ class AppRouter {
           return _fadePage(
             state: state,
             child: TrackingPage(tripId: tripId),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/deliveries/:deliveryId/track',
+        name: RouteNames.deliveryTracking,
+        pageBuilder: (context, state) {
+          final deliveryId = state.pathParameters['deliveryId']!;
+          return _fadePage(
+            state: state,
+            child: DeliveryTrackingPage(deliveryId: deliveryId),
           );
         },
       ),

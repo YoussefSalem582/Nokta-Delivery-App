@@ -62,6 +62,7 @@ import 'features/notifications/notification_list/presentation/bloc/notification_
 import 'features/notifications/shared/data/datasources/notification_local_datasource.dart';
 import 'features/notifications/shared/data/repositories/notification_repository_impl.dart';
 import 'features/notifications/shared/domain/repositories/notification_repository.dart';
+import 'features/profile/orders/presentation/bloc/delivery_tracking_bloc.dart';
 import 'features/profile/orders/presentation/bloc/order_bloc.dart';
 import 'features/profile/profile_view/presentation/bloc/profile_bloc.dart';
 import 'features/profile/shared/data/datasources/delivery_remote_datasource.dart';
@@ -478,6 +479,13 @@ Future<void> initDependencies() async {
       getOrders: sl(),
       refreshOrders: sl(),
       networkStatus: sl(),
+    ),
+  );
+  sl.registerFactory(
+    () => DeliveryTrackingBloc(
+      orderRepository: sl(),
+      routeService: sl(),
+      realtimeLocationService: sl(),
     ),
   );
   sl.registerFactory(

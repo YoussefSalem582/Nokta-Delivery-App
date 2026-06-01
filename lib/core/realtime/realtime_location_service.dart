@@ -63,6 +63,13 @@ class RealtimeLocationService {
     await _ensureConnected(joinRideId: rideId);
   }
 
+  Future<void> joinDeliveryRoom(String deliveryId) async {
+    if (!EnvConfig.usesRealBackend || !_tokenStore.hasAccessToken) return;
+
+    _activeDeliveryId = deliveryId;
+    await _ensureConnected(joinDeliveryId: deliveryId);
+  }
+
   void publishRideLocation({
     required String rideId,
     required double lat,
