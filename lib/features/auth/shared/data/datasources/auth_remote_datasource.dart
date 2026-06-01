@@ -74,6 +74,16 @@ class AuthRemoteDataSource {
     return UserEntity.fromJson(data);
   }
 
+  Future<void> registerDeviceToken({
+    required String token,
+    required String platform,
+  }) async {
+    await _dio.post<dynamic>(
+      ApiEndpoints.authDeviceToken,
+      data: {'token': token, 'platform': platform},
+    );
+  }
+
   AuthSession _parseSession(dynamic raw) {
     if (raw is! Map<String, dynamic>) {
       throw DioException(

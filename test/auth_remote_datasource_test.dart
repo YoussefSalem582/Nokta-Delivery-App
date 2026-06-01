@@ -46,5 +46,37 @@ void main() {
       expect(session.user.id, 'user-1');
       expect(session.user.isLoggedIn, isTrue);
     });
+    test('registers device token with backend', () async {
+      Map<String, dynamic>? capturedBody;
+
+      final dio = Dio();
+      dio.interceptors.add(
+        InterceptorsWrapper(
+          onRequest: (options, handler) {
+            capturedBody = options.data as Map<String, dynamic>?;
+            handler.resolve(
+              Response(
+                requestOptions: options,
+                statusCode: 201,
+                data: {
+                  'success': true,
+                  'messageKey': 'common.success',
+                  'data': {'registered': true},
+                },
+              ),
+            );
+          },
+        ),
+      );
+
+      final dataSource = AuthRemoteDataSource(dio);
+      await dataSource.registerDeviceToken(
+        token: 'fcm-token-abc',
+        platform: 'android',
+      );
+
+      expect(capturedBody?['token'], 'fcm-token-abc');
+      expect(capturedBody?['platform'], 'android');
+    });
   });
 }
