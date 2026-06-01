@@ -31,4 +31,6 @@ abstract final class EnvConfig {
   );
 
   static bool get usesRealBackend => !useMockApi;
+
+  static bool get usesRealDriverApi => !useMockApi && !useMockDriverApi;
 }

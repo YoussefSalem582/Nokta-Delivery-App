@@ -1,5 +1,6 @@
 import 'package:delivery_app/core/cache/datasources/pending_sync_local_datasource.dart';
 import 'package:delivery_app/core/cache/entities/pending_sync_entity.dart';
+import 'package:delivery_app/config/environment/env_config.dart';
 import 'package:delivery_app/core/sync/app_data_coordinator.dart';
 import 'package:delivery_app/features/auth/shared/data/datasources/auth_local_datasource.dart';
 import 'package:delivery_app/features/driver/shared/data/datasources/driver_profile_remote_datasource.dart';
@@ -29,6 +30,19 @@ class DriverProfileRepositoryImpl implements DriverProfileRepository {
   @override
   Future<DriverProfileEntity?> getDriverProfile() async {
     final user = _authLocal.getCurrentUser();
+
+    if (EnvConfig.usesRealDriverApi && await _networkStatus.isOnline) {
+      try {
+        final remoteUser = await _remote.fetchProfile();
+        final merged = remoteUser.copyWith(isLoggedIn: user?.isLoggedIn ?? true);
+        await _authLocal.saveUser(merged);
+        _coordinator.notifyUserDataChanged(merged);
+        return merged.driverProfile;
+      } catch (_) {
+        return user?.driverProfile;
+      }
+    }
+
     return user?.driverProfile;
   }
 
@@ -45,7 +59,22 @@ class DriverProfileRepositoryImpl implements DriverProfileRepository {
       throw StateError('No authenticated user');
     }
 
-    if (await _networkStatus.isOnline) {
+    if (EnvConfig.usesRealDriverApi && await _networkStatus.isOnline) {
+      final user = await _remote.registerDriver({
+        'phone': phone,
+        'vehicleType': vehicleType,
+        'vehicleMakeModel': vehicleMakeModel,
+        'licensePlate': licensePlate,
+        'termsAccepted': termsAccepted,
+      });
+      final updated = user.copyWith(isLoggedIn: true);
+      await _authLocal.saveUser(updated);
+      _coordinator.notifyUserDataChanged(updated);
+      await _pendingSync.remove('register-driver');
+      return updated.driverProfile!;
+    }
+
+    if (await _networkStatus.isOnline && !EnvConfig.usesRealDriverApi) {
       final user = await _remote.registerDriver({
         'phone': phone,
         'vehicleType': vehicleType,
