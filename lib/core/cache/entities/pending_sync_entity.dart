@@ -7,6 +7,7 @@ enum SyncAction {
   acceptTripOffer,
   updateDriverAvailability,
   updateDriverLocation,
+  createDelivery,
 }
 
 class PendingSyncEntity extends HiveObject {

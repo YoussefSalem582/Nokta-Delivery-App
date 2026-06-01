@@ -78,6 +78,7 @@ class SyncService {
       await _syncBatchHandler.syncEligibleActions();
     }
     await _tripRepository.syncPendingChanges();
+    await _orderRepository.syncPendingChanges();
     await _orderRepository.getOrders(forceRefresh: true);
     await _authRepository.getProfile(forceRefresh: true);
     _talker.info('[SyncService] Sync complete');

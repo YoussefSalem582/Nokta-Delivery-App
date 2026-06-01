@@ -1,6 +1,9 @@
 import 'dart:async';
 
+import 'package:delivery_app/config/environment/env_config.dart';
 import 'package:delivery_app/features/trips/shared/domain/entities/trip_entity.dart';
+import 'package:delivery_app/features/profile/shared/domain/entities/order_entity.dart';
+import 'package:delivery_app/features/profile/shared/domain/usecases/order_usecases.dart';
 import 'package:delivery_app/features/trips/shared/domain/usecases/trip_usecases.dart';
 import 'package:delivery_app/core/network/fcm_service.dart';
 import 'package:delivery_app/features/notifications/shared/domain/entities/notification_type.dart';
@@ -16,9 +19,11 @@ part 'map_event.dart';
 class RequestRideBloc extends Bloc<RequestRideEvent, RequestRideState> {
   RequestRideBloc({
     required RequestTripUseCase requestTrip,
+    required CreateDeliveryUseCase createDelivery,
     required FcmService fcmService,
     VoidCallback? onTripsChanged,
   })  : _requestTrip = requestTrip,
+        _createDelivery = createDelivery,
         _fcmService = fcmService,
         _onTripsChanged = onTripsChanged,
         super(const RequestRideInitial()) {
@@ -26,6 +31,7 @@ class RequestRideBloc extends Bloc<RequestRideEvent, RequestRideState> {
   }
 
   final RequestTripUseCase _requestTrip;
+  final CreateDeliveryUseCase _createDelivery;
   final FcmService _fcmService;
   final VoidCallback? _onTripsChanged;
 
@@ -34,6 +40,38 @@ class RequestRideBloc extends Bloc<RequestRideEvent, RequestRideState> {
     Emitter<RequestRideState> emit,
   ) async {
     emit(const RequestRideLoading());
+
+    final isDeliveryRequest =
+        EnvConfig.usesRealBackend && event.rideTierKey == 'ride_delivery';
+
+    if (isDeliveryRequest) {
+      final result = await _createDelivery(
+        CreateDeliveryParams(
+          pickupAddress: event.pickupAddress,
+          dropoffAddress: event.dropoffAddress,
+          pickupLat: event.pickupLat,
+          pickupLng: event.pickupLng,
+          dropoffLat: event.dropoffLat,
+          dropoffLng: event.dropoffLng,
+          fee: event.fare,
+        ),
+      );
+
+      await result.fold(
+        (failure) async => emit(RequestRideError(failure.message)),
+        (order) async {
+          await _fcmService.simulateTripNotification(
+            title: 'notification_trip_update',
+            body: 'waiting_for_driver',
+            tripId: order.id,
+            type: NotificationType.tripUpdate,
+          );
+          emit(RequestDeliverySuccess(order));
+        },
+      );
+      return;
+    }
+
     final result = await _requestTrip(
       RequestTripParams(
         pickupAddress: event.pickupAddress,

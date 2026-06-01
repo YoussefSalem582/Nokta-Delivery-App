@@ -7,6 +7,7 @@ class ApiEndpoints {
   static const trips = '/trips';
   static const tripsActive = '/trips/active';
   static const orders = '/orders';
+  static const deliveries = '/deliveries';
   static const profile = '/profile';
   static const drivers = '/drivers';
   static const riders = '/riders';

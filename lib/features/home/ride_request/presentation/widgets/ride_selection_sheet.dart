@@ -214,6 +214,8 @@ class _RideSelectionSheetState extends State<RideSelectionSheet> {
           listener: (context, state) {
             if (state is RequestRideSuccess) {
               Navigator.of(context).pop(state.trip);
+            } else if (state is RequestDeliverySuccess) {
+              Navigator.of(context).pop(state.order);
             } else if (state is RequestRideError) {
               AppToast.error(context, state.message);
             }

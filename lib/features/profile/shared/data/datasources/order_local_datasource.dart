@@ -17,6 +17,14 @@ class OrderLocalDataSource {
       await _box.put(order.id, order);
     }
   }
+
+  Future<void> save(OrderEntity order) async {
+    await _box.put(order.id, order);
+  }
+
+  Future<void> delete(String id) async {
+    await _box.delete(id);
+  }
 }
 
 Future<Box<OrderEntity>> openOrdersBox() async {
