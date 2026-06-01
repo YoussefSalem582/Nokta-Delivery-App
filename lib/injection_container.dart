@@ -282,6 +282,7 @@ Future<void> initDependencies() async {
       networkStatus: sl(),
       remote: sl(),
       tokenStore: sl(),
+      onDeviceTokenSync: () => sl<FcmService>().syncDeviceTokenWithBackend(),
     ),
   );
   sl.registerLazySingleton<NotificationRepository>(
@@ -346,7 +347,12 @@ Future<void> initDependencies() async {
     ),
   );
   sl.registerLazySingleton(
-    () => FcmService(notificationRepository: sl(), talker: sl()),
+    () => FcmService(
+      notificationRepository: sl(),
+      talker: sl(),
+      authRemote: sl(),
+      tokenStore: sl(),
+    ),
   );
 
   // ─── BLoCs ───────────────────────────────────────────────────
