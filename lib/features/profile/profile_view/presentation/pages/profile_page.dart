@@ -16,6 +16,7 @@ import 'package:delivery_app/shared/widgets/banners/offline_banner.dart';
 import 'package:delivery_app/shared/widgets/inputs/app_text_field.dart';
 import 'package:delivery_app/core/widgets/skeleton_trip_card.dart';
 import 'package:delivery_app/features/profile/orders/presentation/bloc/order_bloc.dart';
+import 'package:delivery_app/features/profile/orders/presentation/widgets/order_live_tracking_banner.dart';
 import 'package:delivery_app/features/profile/profile_view/presentation/bloc/profile_bloc.dart';
 import 'package:delivery_app/shared/widgets/navigation/shell_tab_app_bar.dart';
 import 'package:delivery_app/shared/widgets/profile/logout_button.dart';
@@ -676,6 +677,7 @@ void _showOrderDetailsSheet(BuildContext context, OrderEntity order) {
               title: Text('fare'.tr()),
               trailing: Text('${order.amount.toStringAsFixed(2)} EGP'),
             ),
+            OrderLiveTrackingBanner(order: order),
           ],
         ),
       ),
