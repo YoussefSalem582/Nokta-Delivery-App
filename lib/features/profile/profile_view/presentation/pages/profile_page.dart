@@ -11,7 +11,7 @@ import 'package:delivery_app/shared/widgets/navigation/shell_tab_scaffold.dart';
 import 'package:delivery_app/shared/widgets/profile/app_mode_switch_tile.dart';
 import 'package:delivery_app/shared/widgets/profile/profile_user_card.dart';
 import 'package:delivery_app/shared/widgets/profile/stat_summary_card.dart';
-import 'package:delivery_app/shared/widgets/banners/app_toast.dart';
+
 import 'package:delivery_app/shared/widgets/banners/offline_banner.dart';
 import 'package:delivery_app/shared/widgets/inputs/app_text_field.dart';
 import 'package:delivery_app/core/widgets/skeleton_trip_card.dart';
@@ -144,8 +144,9 @@ class _ProfileContent extends StatelessWidget {
               style: FilledButton.styleFrom(
                 minimumSize: const Size(0, AppSpacing.buttonHeight),
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                backgroundColor:
-                    isDark ? scheme.primaryContainer : scheme.primary,
+                backgroundColor: isDark
+                    ? scheme.primaryContainer
+                    : scheme.primary,
                 foregroundColor: scheme.onPrimary,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,
@@ -440,6 +441,9 @@ class _OrderTile extends StatelessWidget {
       OrderStatus.delivered => 'order_delivered'.tr(),
       OrderStatus.pending => 'order_pending'.tr(),
       OrderStatus.inTransit => 'order_inTransit'.tr(),
+      OrderStatus.assigned => 'order_assigned'.tr(),
+      OrderStatus.pickedUp => 'order_pickedUp'.tr(),
+      OrderStatus.cancelled => 'order_cancelled'.tr(),
     };
   }
 
@@ -448,6 +452,9 @@ class _OrderTile extends StatelessWidget {
       OrderStatus.delivered => scheme.secondary,
       OrderStatus.inTransit => scheme.secondaryContainer,
       OrderStatus.pending => scheme.onSurfaceVariant,
+      OrderStatus.assigned => scheme.primary,
+      OrderStatus.pickedUp => scheme.primary,
+      OrderStatus.cancelled => scheme.error,
     };
   }
 
@@ -462,6 +469,15 @@ class _OrderTile extends StatelessWidget {
       OrderStatus.pending => scheme.surfaceContainerHighest.withValues(
         alpha: isDark ? 0.6 : 1,
       ),
+      OrderStatus.assigned => scheme.primary.withValues(
+        alpha: isDark ? 0.15 : 0.1,
+      ),
+      OrderStatus.pickedUp => scheme.primary.withValues(
+        alpha: isDark ? 0.2 : 0.2,
+      ),
+      OrderStatus.cancelled => scheme.error.withValues(
+        alpha: isDark ? 0.15 : 0.1,
+      ),
     };
   }
 
@@ -470,6 +486,9 @@ class _OrderTile extends StatelessWidget {
       OrderStatus.delivered => Icons.check_circle_outline,
       OrderStatus.inTransit => Icons.local_shipping_outlined,
       OrderStatus.pending => Icons.schedule,
+      OrderStatus.assigned => Icons.person_outline,
+      OrderStatus.pickedUp => Icons.inventory_2_outlined,
+      OrderStatus.cancelled => Icons.cancel_outlined,
     };
   }
 
@@ -690,5 +709,8 @@ String _orderStatusLabel(OrderStatus status) {
     OrderStatus.delivered => 'order_delivered'.tr(),
     OrderStatus.pending => 'order_pending'.tr(),
     OrderStatus.inTransit => 'order_inTransit'.tr(),
+    OrderStatus.assigned => 'order_assigned'.tr(),
+    OrderStatus.pickedUp => 'order_pickedUp'.tr(),
+    OrderStatus.cancelled => 'order_cancelled'.tr(),
   };
 }
