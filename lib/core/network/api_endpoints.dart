@@ -14,8 +14,8 @@ class ApiEndpoints {
   static const requestTrip = '/trips/request';
   static const estimateFare = '/rides/estimate-fare';
 
-  static const syncActions = '/v1/sync/actions';
-  static const syncReconcile = '/v1/sync/reconcile';
+  static const syncActions = '/sync/actions';
+  static const syncReconcile = '/sync/reconcile';
 
   static const authRegister = '/v1/auth/register';
   static const authLogin = '/v1/auth/login';
@@ -42,9 +42,9 @@ class ApiEndpoints {
   static String driverOfferDecline(String tripId) =>
       '${_driverPath('/offers')}/$tripId/decline';
   static String driverTripStatus(String tripId) =>
-      '${_driverPath('/trips')}/$tripId/status';
+      '/trips/$tripId/status';
   static String driverTripLocation(String tripId) =>
-      '${_driverPath('/trips')}/$tripId/location';
+      '/trips/$tripId/location';
 
   static String _driverPath(String suffix) {
     if (EnvConfig.useMockApi || EnvConfig.useMockDriverApi) {

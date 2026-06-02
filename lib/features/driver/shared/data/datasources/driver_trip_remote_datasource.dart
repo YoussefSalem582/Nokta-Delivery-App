@@ -42,7 +42,7 @@ class DriverTripRemoteDataSource {
     required double lat,
     required double lng,
   }) async {
-    final response = await _dio.patch<dynamic>(
+    final response = await _dio.post<dynamic>(
       ApiEndpoints.driverTripLocation(tripId),
       data: {'lat': lat, 'lng': lng},
     );
