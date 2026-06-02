@@ -4,11 +4,13 @@
 
 ---
 
-## 2026-06-02 — Web Demo DevicePreview enhancements
+## 2026-06-02 — Web Demo DevicePreview & API enhancements
 
-**What changed:** Modified `DevicePreview` configuration in `main.dart` and `app.dart` to only enable the device frame mockup on desktop web browsers (`TargetPlatform.windows`, `macOS`, `linux`). This prevents the UI from rendering as a "phone inside a phone" when the GitHub Pages demo is accessed via real iOS or Android devices.
+**What changed:** 
+1. Added `--dart-define=USE_MOCK_API=true` to the `deploy-web-demo.yml` GitHub action. This fixes CORS and `XMLHttpRequest` errors on the GitHub Pages demo by ensuring it uses the in-memory `MockApiInterceptor` instead of attempting to connect to the local development backend (`10.0.2.2`).
+2. Modified `DevicePreview` configuration in `main.dart` and `app.dart` to only enable the device frame mockup on desktop web browsers (`TargetPlatform.windows`, `macOS`, `linux`). This prevents the UI from rendering as a "phone inside a phone" when the GitHub Pages demo is accessed via real iOS or Android devices.
 
-**Files touched:** `lib/main.dart`, `lib/app.dart`
+**Files touched:** `.github/workflows/deploy-web-demo.yml`, `lib/main.dart`, `lib/app.dart`
 
 ---
 

@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Web Demo API Connection** — added `--dart-define=USE_MOCK_API=true` to the GitHub Actions `deploy-web-demo.yml` workflow. This prevents CORS and XMLHttpRequest errors by ensuring the web demo falls back to the in-memory mock interceptor instead of attempting to reach the local Android emulator backend (`10.0.2.2`).
 - **Web Demo DevicePreview** — Conditionally enabled `DevicePreview` on web to only show on desktop browsers (`TargetPlatform.windows`, `macOS`, `linux`). This prevents the "phone inside a phone" UI bug when viewing the GitHub Pages demo on real iOS/Android devices while preserving the mockup frame on desktop.
 - **GitHub Pages deploy** — corrected `--base-href` from `/delivery_app/` to `/Nokta-Delivery-App/` after repo rename; deploy workflow now triggers on `main` (web demo merged from `feature/web-client-demo`).
 - **Skills lock drift (CI)** — root cause was Windows `autocrlf` checkout (CRLF working tree) vs LF git blobs hashed on Linux CI; regenerated all 19 `computedHash` values from LF bytes, force `eol=lf` on `.agents/skills/**`, and normalize CRLF→LF in both drift-check scripts.
