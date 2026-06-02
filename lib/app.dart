@@ -71,38 +71,45 @@ class _NoktaAppState extends State<NoktaApp> {
                 context.setLocale(settings.locale);
               });
             }
+            final isDesktopWeb =
+                kIsWeb &&
+                (defaultTargetPlatform != TargetPlatform.iOS &&
+                    defaultTargetPlatform != TargetPlatform.android);
 
             return MaterialApp.router(
               title: AppConstants.appName,
               debugShowCheckedModeBanner: false,
-              useInheritedMediaQuery: kIsWeb,
+              useInheritedMediaQuery: isDesktopWeb,
               localizationsDelegates: context.localizationDelegates,
               supportedLocales: context.supportedLocales,
-              locale: kIsWeb ? DevicePreview.locale(context) : settings.locale,
+              locale: isDesktopWeb
+                  ? DevicePreview.locale(context)
+                  : settings.locale,
               theme: AppTheme.light(locale: settings.locale.languageCode),
               darkTheme: AppTheme.dark(locale: settings.locale.languageCode),
               themeMode: settings.themeMode,
               routerConfig: AppRouter.router,
               builder: (context, child) {
-                final appContent = BlocBuilder<ConnectivityCubit, ConnectivityStatus>(
-                  builder: (context, status) {
-                    final content = MediaQuery(
-                      data: MediaQuery.of(
-                        context,
-                      ).copyWith(alwaysUse24HourFormat: false),
-                      child: child ?? const SizedBox.shrink(),
+                final appContent =
+                    BlocBuilder<ConnectivityCubit, ConnectivityStatus>(
+                      builder: (context, status) {
+                        final content = MediaQuery(
+                          data: MediaQuery.of(
+                            context,
+                          ).copyWith(alwaysUse24HourFormat: false),
+                          child: child ?? const SizedBox.shrink(),
+                        );
+                        return Column(
+                          children: [
+                            if (status == ConnectivityStatus.offline)
+                              const GlobalOfflineBanner(),
+                            Expanded(child: content),
+                          ],
+                        );
+                      },
                     );
-                    return Column(
-                      children: [
-                        if (status == ConnectivityStatus.offline)
-                          const GlobalOfflineBanner(),
-                        Expanded(child: content),
-                      ],
-                    );
-                  },
-                );
 
-                if (kIsWeb) {
+                if (isDesktopWeb) {
                   return DevicePreview.appBuilder(context, appContent);
                 }
                 return appContent;

@@ -38,14 +38,15 @@ Future<void> main() async {
 
   runApp(
     DevicePreview(
-      enabled: kIsWeb,
+      enabled:
+          kIsWeb &&
+          (defaultTargetPlatform != TargetPlatform.iOS &&
+              defaultTargetPlatform != TargetPlatform.android),
       builder: (context) => EasyLocalization(
         supportedLocales: const [Locale('en'), Locale('ar')],
         path: 'assets/translations',
         fallbackLocale: const Locale('en'),
-        child: ToastificationWrapper(
-          child: const NoktaApp(),
-        ),
+        child: ToastificationWrapper(child: const NoktaApp()),
       ),
     ),
   );

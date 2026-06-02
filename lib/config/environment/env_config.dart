@@ -14,10 +14,10 @@ abstract final class EnvConfig {
     defaultValue: 'http://10.0.2.2:8000/api',
   );
 
-  /// When true (default), driver endpoints use mock paths unless [useMockApi] is false.
+  /// When true, driver endpoints use mock paths. Default is false (use real backend).
   static const bool useMockDriverApi = bool.fromEnvironment(
     'USE_MOCK_DRIVER_API',
-    defaultValue: true,
+    defaultValue: false,
   );
 
   static const bool enableLogging = bool.fromEnvironment(

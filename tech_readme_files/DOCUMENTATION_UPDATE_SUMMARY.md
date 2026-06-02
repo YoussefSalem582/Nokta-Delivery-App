@@ -4,6 +4,14 @@
 
 ---
 
+## 2026-06-02 — Web Demo DevicePreview enhancements
+
+**What changed:** Modified `DevicePreview` configuration in `main.dart` and `app.dart` to only enable the device frame mockup on desktop web browsers (`TargetPlatform.windows`, `macOS`, `linux`). This prevents the UI from rendering as a "phone inside a phone" when the GitHub Pages demo is accessed via real iOS or Android devices.
+
+**Files touched:** `lib/main.dart`, `lib/app.dart`
+
+---
+
 ## 2026-06-01 — Driver navigation + delivery tracking
 
 **What changed:** Driver-only Google Maps–style nav (OSRM maneuvers, top banner, bottom ETA/Exit) on ride trips; delivery orders get full map tracking for customers and couriers; backend `GET /trips/:id/tracking` and expanded Socket.io docs.
@@ -434,3 +442,6 @@
 - Run `.\scripts\sync_ai_ignores.ps1`
 - Run `.\scripts\check_docs_freshness.ps1`
 - Run `.\scripts\check_skills_drift.ps1`
+
+### 2026-06-02
+- Connected Nokta app driver endpoints to backend by setting USE_MOCK_DRIVER_API default to false.

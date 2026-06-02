@@ -64,3 +64,5 @@ Nokta is a Flutter ride-hailing / delivery MVP template with Clean Architecture 
 | tech_readme_files/ | ✅ Initial set |
 | CHANGELOG.md | ✅ |
 | CI docs workflow | ✅ |
+
+- Backend connectivity: Fully connected all endpoints, including driver and delivery endpoints.

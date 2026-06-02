@@ -10,6 +10,7 @@ import 'package:delivery_app/features/home/map_view/presentation/bloc/map_bloc.d
 import 'package:delivery_app/features/trips/shared/domain/entities/trip_entity.dart';
 import 'package:delivery_app/features/trips/shared/domain/usecases/trip_usecases.dart';
 import 'package:delivery_app/features/trips/trip_list/presentation/bloc/trip_list_bloc.dart';
+import 'package:delivery_app/features/profile/shared/domain/usecases/order_usecases.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:mocktail/mocktail.dart';
@@ -159,10 +160,12 @@ void main() {
   group('RequestRideBloc', () {
     late MockFcmService fcmService;
     late MockRequestTripUseCase requestTrip;
+    late MockCreateDeliveryUseCase createDelivery;
 
     setUp(() {
       fcmService = MockFcmService();
       requestTrip = MockRequestTripUseCase();
+      createDelivery = MockCreateDeliveryUseCase();
       when(
         () => fcmService.simulateTripNotification(
           title: any(named: 'title'),
@@ -194,6 +197,7 @@ void main() {
         return RequestRideBloc(
           requestTrip: requestTrip,
           fcmService: fcmService,
+          createDelivery: createDelivery,
         );
       },
       act: (bloc) => bloc.add(
@@ -222,3 +226,5 @@ void main() {
 class MockRequestTripUseCase extends Mock implements RequestTripUseCase {}
 
 class MockFcmService extends Mock implements FcmService {}
+
+class MockCreateDeliveryUseCase extends Mock implements CreateDeliveryUseCase {}

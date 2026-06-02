@@ -14,6 +14,7 @@ import 'package:delivery_app/features/trips/shared/domain/usecases/get_driver_fo
 import 'package:delivery_app/features/trips/shared/domain/usecases/get_rider_for_trip_usecase.dart';
 import 'package:delivery_app/features/trips/shared/domain/usecases/trip_usecases.dart';
 import 'package:delivery_app/features/trips/tracking/presentation/bloc/tracking_bloc.dart';
+import 'package:delivery_app/core/realtime/realtime_location_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:latlong2/latlong.dart';
@@ -110,6 +111,8 @@ TripRoutePlan _sampleRoutePlan({
   );
 }
 
+class MockRealtimeLocationService extends Mock implements RealtimeLocationService {}
+
 void main() {
   late MockRouteService routeService;
   late MockGetTripDetailUseCase getTripDetail;
@@ -119,6 +122,7 @@ void main() {
   late MockAuthRepository authRepository;
   late MockFcmService fcmService;
   late MockDriverTripRepository driverTripRepository;
+  late MockRealtimeLocationService realtimeLocationService;
 
   setUpAll(() {
     registerFallbackValue(const LatLng(0, 0));
@@ -144,6 +148,17 @@ void main() {
     authRepository = MockAuthRepository();
     fcmService = MockFcmService();
     driverTripRepository = MockDriverTripRepository();
+    realtimeLocationService = MockRealtimeLocationService();
+
+    when(() => realtimeLocationService.disconnect()).thenAnswer((_) async {});
+    when(() => realtimeLocationService.joinRideRoom(any())).thenAnswer((_) async {});
+    when(() => realtimeLocationService.publishRideLocation(
+          rideId: any(named: 'rideId'),
+          lat: any(named: 'lat'),
+          lng: any(named: 'lng'),
+        )).thenAnswer((_) async {});
+    when(() => realtimeLocationService.watchRide(any()))
+        .thenAnswer((_) => const Stream.empty());
 
     when(() => driverTripRepository.updateDriverLocation(
           any(),
@@ -209,6 +224,7 @@ void main() {
       driverTripRepository: driverTripRepository,
       authRepository: authRepository,
       fcmService: fcmService,
+      realtimeLocationService: realtimeLocationService,
       onTripsChanged: onTripsChanged,
     );
   }
@@ -457,8 +473,8 @@ void main() {
       expect(active.role, TrackingRole.driver);
       expect(active.progress, greaterThan(0));
       verify(
-        () => driverTripRepository.updateDriverLocation(
-          '1',
+        () => realtimeLocationService.publishRideLocation(
+          rideId: '1',
           lat: any(named: 'lat'),
           lng: any(named: 'lng'),
         ),
