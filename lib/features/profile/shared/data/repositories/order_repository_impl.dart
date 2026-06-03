@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:dio/dio.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 import 'package:uuid/uuid.dart';
@@ -50,7 +52,7 @@ class OrderRepositoryImpl implements OrderRepository {
     if (!forceRefresh &&
         cached.isNotEmpty &&
         (!await _networkStatus.isOnline ||
-            CacheFreshness.isFresh(lastFetched))) {
+            CacheFreshness.isFresh(lastFetched, cacheKey: CacheKeys.orders))) {
       return cached;
     }
 
@@ -132,8 +134,16 @@ class OrderRepositoryImpl implements OrderRepository {
   Future<void> syncPendingChanges() async {
     if (!await _networkStatus.isOnline) return;
 
+    final now = DateTime.now();
     for (final item in _pendingSync.getAll()) {
       if (item.action != SyncAction.createDelivery) continue;
+
+      if (item.retryCount > 0 && item.lastAttemptAt != null) {
+        final delayMinutes = math.pow(2, item.retryCount).clamp(0, 1440);
+        if (now.difference(item.lastAttemptAt!).inMinutes < delayMinutes) {
+          continue;
+        }
+      }
 
       try {
         final remote = await _deliveryRemote.createDelivery(
@@ -147,7 +157,10 @@ class OrderRepositoryImpl implements OrderRepository {
       } catch (e, st) {
         _talker.handle(e, st, '[OrderRepo] Failed to sync delivery ${item.id}');
         await _pendingSync.enqueueOrReplace(
-          item.copyWith(retryCount: item.retryCount + 1),
+          item.copyWith(
+            retryCount: item.retryCount + 1,
+            lastAttemptAt: DateTime.now(),
+          ),
         );
       }
     }

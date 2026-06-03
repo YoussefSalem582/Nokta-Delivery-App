@@ -138,7 +138,7 @@ class AuthRepositoryImpl implements AuthRepository {
     if (cached != null &&
         !forceRefresh &&
         (!await _networkStatus.isOnline ||
-            CacheFreshness.isFresh(lastFetched))) {
+            CacheFreshness.isFresh(lastFetched, cacheKey: CacheKeys.profile))) {
       return cached;
     }
 

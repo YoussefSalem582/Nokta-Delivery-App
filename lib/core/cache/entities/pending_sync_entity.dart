@@ -17,6 +17,7 @@ class PendingSyncEntity extends HiveObject {
     required this.payload,
     required this.createdAt,
     this.retryCount = 0,
+    this.lastAttemptAt,
   });
 
   final String id;
@@ -24,14 +25,16 @@ class PendingSyncEntity extends HiveObject {
   final Map<String, dynamic> payload;
   final DateTime createdAt;
   final int retryCount;
+  final DateTime? lastAttemptAt;
 
-  PendingSyncEntity copyWith({int? retryCount}) {
+  PendingSyncEntity copyWith({int? retryCount, DateTime? lastAttemptAt}) {
     return PendingSyncEntity(
       id: id,
       action: action,
       payload: payload,
       createdAt: createdAt,
       retryCount: retryCount ?? this.retryCount,
+      lastAttemptAt: lastAttemptAt ?? this.lastAttemptAt,
     );
   }
 }

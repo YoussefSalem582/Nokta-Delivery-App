@@ -13,6 +13,7 @@ import '../../features/auth/shared/presentation/widgets/auth/auth_form_bloc_list
 import '../../features/auth/splash/presentation/pages/splash_page.dart';
 import '../../features/driver/active_delivery/presentation/pages/driver_active_delivery_page.dart';
 import '../../features/driver/active_trip/presentation/pages/driver_active_trip_page.dart';
+import '../../features/profile/offline_queue/presentation/pages/offline_queue_page.dart';
 import '../../features/profile/orders/presentation/pages/delivery_tracking_page.dart';
 import '../../features/driver/main_shell/presentation/pages/driver_main_shell_page.dart';
 import '../../features/driver/onboarding/presentation/pages/driver_onboarding_page.dart';
@@ -147,6 +148,14 @@ class AppRouter {
         pageBuilder: (context, state) => _fadePage(
           state: state,
           child: const DriverOnboardingPage(),
+        ),
+      ),
+      GoRoute(
+        path: '/offline-queue',
+        name: RouteNames.offlineQueue,
+        pageBuilder: (context, state) => _fadePage(
+          state: state,
+          child: const OfflineQueuePage(),
         ),
       ),
       GoRoute(

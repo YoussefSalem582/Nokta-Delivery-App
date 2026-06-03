@@ -400,8 +400,16 @@ class PendingSyncEntityAdapter extends TypeAdapter<PendingSyncEntity> {
       payload: jsonDecode(reader.readString()) as Map<String, dynamic>,
       createdAt: DateTime.parse(reader.readString()),
     );
+    int retryCount = 0;
+    DateTime? lastAttemptAt;
     try {
-      return entity.copyWith(retryCount: reader.readInt());
+      if (reader.availableBytes > 0) {
+        retryCount = reader.readInt();
+      }
+      if (reader.availableBytes > 0) {
+        lastAttemptAt = reader.readBool() ? DateTime.parse(reader.readString()) : null;
+      }
+      return entity.copyWith(retryCount: retryCount, lastAttemptAt: lastAttemptAt);
     } catch (_) {
       return entity;
     }
@@ -414,7 +422,9 @@ class PendingSyncEntityAdapter extends TypeAdapter<PendingSyncEntity> {
       ..write(obj.action)
       ..writeString(jsonEncode(obj.payload))
       ..writeString(obj.createdAt.toIso8601String())
-      ..writeInt(obj.retryCount);
+      ..writeInt(obj.retryCount)
+      ..writeBool(obj.lastAttemptAt != null);
+    if (obj.lastAttemptAt != null) writer.writeString(obj.lastAttemptAt!.toIso8601String());
   }
 }
 

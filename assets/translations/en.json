@@ -331,5 +331,8 @@
   "delivery_start_transit": "Start delivery",
   "delivery_mark_delivered": "Mark delivered",
   "driver_active_delivery": "Active delivery",
-  "driver_no_active_delivery": "No active deliveries"
+  "driver_no_active_delivery": "No active deliveries",
+  "offline_queue": "Offline Queue",
+  "retry_all": "Retry All",
+  "queue_empty": "Queue is empty"
 }

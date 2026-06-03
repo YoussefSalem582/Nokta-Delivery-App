@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:dio/dio.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 import 'package:uuid/uuid.dart';
@@ -69,7 +71,7 @@ class TripRepositoryImpl implements TripRepository {
     if (!forceRefresh &&
         cached.isNotEmpty &&
         (!await _networkStatus.isOnline ||
-            CacheFreshness.isFresh(lastFetched))) {
+            CacheFreshness.isFresh(lastFetched, cacheKey: CacheKeys.trips))) {
       _talker.info('[TripRepo] Returning ${cached.length} cached trips');
       return cached;
     }
@@ -261,8 +263,16 @@ class TripRepositoryImpl implements TripRepository {
   Future<void> syncPendingChanges() async {
     if (!await _networkStatus.isOnline) return;
 
+    final now = DateTime.now();
     final pending = _pendingSync.getAll();
     for (final item in pending) {
+      if (item.retryCount > 0 && item.lastAttemptAt != null) {
+        final delayMinutes = math.pow(2, item.retryCount).clamp(0, 1440);
+        if (now.difference(item.lastAttemptAt!).inMinutes < delayMinutes) {
+          continue;
+        }
+      }
+
       if (DriverPendingSyncHandler.isDriverAction(item.action)) continue;
       if (item.action == SyncAction.createDelivery) continue;
       if (item.action == SyncAction.updateTripStatus &&
@@ -299,7 +309,10 @@ class TripRepositoryImpl implements TripRepository {
       } catch (e, st) {
         _talker.handle(e, st, '[TripRepo] Failed to sync ${item.id}');
         await _pendingSync.enqueueOrReplace(
-          item.copyWith(retryCount: item.retryCount + 1),
+          item.copyWith(
+            retryCount: item.retryCount + 1,
+            lastAttemptAt: DateTime.now(),
+          ),
         );
       }
     }

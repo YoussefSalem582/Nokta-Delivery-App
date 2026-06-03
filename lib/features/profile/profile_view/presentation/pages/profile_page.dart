@@ -362,6 +362,12 @@ class _SettingsTab extends StatelessWidget {
                 ),
               ),
               _SettingsTile(
+                icon: Icons.cloud_off,
+                title: 'offline_queue'.tr(),
+                showDivider: true,
+                onTap: () => context.pushNamed(RouteNames.offlineQueue),
+              ),
+              _SettingsTile(
                 icon: Icons.bug_report_outlined,
                 title: 'open_talker'.tr(),
                 onTap: () {

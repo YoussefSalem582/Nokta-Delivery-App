@@ -8,7 +8,10 @@ class AppConstants {
   static const routeCacheBox = 'route_cache_box';
   static const chatMessagesBox = 'chat_messages_box';
 
-  static const cacheTtl = Duration(minutes: 5);
+  static const cacheTtlTrips = Duration(minutes: 1);
+  static const cacheTtlOrders = Duration(minutes: 5);
+  static const cacheTtlProfile = Duration(minutes: 15);
+  static const cacheTtlDefault = Duration(minutes: 5);
   static const routeCacheMaxEntries = 50;
 
   static const themeKey = 'theme_mode';

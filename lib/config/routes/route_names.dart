@@ -22,4 +22,5 @@ abstract final class RouteNames {
   static const driverActiveTrip = 'driverActiveTrip';
   static const deliveryTracking = 'deliveryTracking';
   static const driverActiveDelivery = 'driverActiveDelivery';
+  static const offlineQueue = 'offlineQueue';
 }
