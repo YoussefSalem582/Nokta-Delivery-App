@@ -10,8 +10,9 @@
 1. Changed `EnvConfig.apiBaseUrl` to dynamically detect when the app is running on web (`kIsWeb`) or desktop platforms and fallback to `127.0.0.1:8000` instead of the Android emulator IP (`10.0.2.2:8000`). This fixes connection timeouts when running `flutter run` locally on web browsers.
 2. Added `Accept: application/json` to `ApiClient` to fix Laravel redirecting unauthenticated requests to a non-existent web login route (causing 500 errors).
 3. Updated `AuthRemoteDataSource._parseSession` to correctly extract `access_token` and `refresh_token` from the backend's `tokens` object.
+4. Updated `UserEntity.fromJson` to support snake_case fields returned by the backend (`wallet_balance`, `avatar_url`) and safely parse string-encoded numbers.
 
-**Files touched:** `lib/config/environment/env_config.dart`, `lib/core/api/api_client.dart`, `lib/features/auth/shared/data/datasources/auth_remote_datasource.dart`
+**Files touched:** `lib/config/environment/env_config.dart`, `lib/core/api/api_client.dart`, `lib/features/auth/shared/data/datasources/auth_remote_datasource.dart`, `lib/features/auth/shared/domain/entities/user_entity.dart`
 
 ---
 

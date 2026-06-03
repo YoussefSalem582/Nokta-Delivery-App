@@ -68,14 +68,21 @@ class UserEntity extends HiveObject {
       name: json['name'] as String,
       email: json['email'] as String,
       phone: json['phone'] as String,
-      walletBalance: (json['walletBalance'] as num).toDouble(),
-      avatarUrl: json['avatarUrl'] as String?,
-      isDriverRegistered: json['isDriverRegistered'] as bool? ?? false,
+      walletBalance: _parseDouble(json['walletBalance'] ?? json['wallet_balance']),
+      avatarUrl: json['avatarUrl'] ?? json['avatar_url'] as String?,
+      isDriverRegistered: json['isDriverRegistered'] ?? json['is_driver_registered'] as bool? ?? false,
       driverProfile: json['driverProfile'] != null
           ? DriverProfileEntity.fromJson(
               json['driverProfile'] as Map<String, dynamic>,
             )
           : null,
     );
+  }
+
+  static double _parseDouble(dynamic value) {
+    if (value == null) return 0.0;
+    if (value is num) return value.toDouble();
+    if (value is String) return double.tryParse(value) ?? 0.0;
+    return 0.0;
   }
 }
