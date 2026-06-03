@@ -15,6 +15,18 @@ class TripLocalDataSource {
   TripEntity? getById(String id) => _box.get(id);
 
   Future<void> saveAll(List<TripEntity> trips) async {
+    final remoteIds = trips.map((t) => t.id).toSet();
+    final toDelete = <String>[];
+    
+    for (final key in _box.keys) {
+      final trip = _box.get(key);
+      if (trip != null && !trip.isPendingSync && !remoteIds.contains(trip.id)) {
+        toDelete.add(key as String);
+      }
+    }
+    
+    await _box.deleteAll(toDelete);
+
     for (final trip in trips) {
       await _box.put(trip.id, trip);
     }

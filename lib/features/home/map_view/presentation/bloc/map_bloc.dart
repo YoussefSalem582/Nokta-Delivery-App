@@ -114,6 +114,34 @@ class MapBloc extends Bloc<MapEvent, MapState> {
 
   Future<void> _onStarted(MapStarted event, Emitter<MapState> emit) async {
     emit(const MapLoading());
+    if (kIsWeb) {
+      try {
+        final permission = await Geolocator.checkPermission();
+        if (permission == LocationPermission.denied) {
+          await Geolocator.requestPermission();
+        }
+        final position = await Geolocator.getCurrentPosition(
+          locationSettings: const LocationSettings(accuracy: LocationAccuracy.low),
+        );
+        emit(
+          MapReady(
+            userPosition: LatLng(position.latitude, position.longitude),
+          ),
+        );
+      } catch (_) {
+        emit(
+          const MapReady(
+            userPosition: LatLng(
+              AppConstants.defaultPickupLat,
+              AppConstants.defaultPickupLng,
+            ),
+            usingFallback: true,
+          ),
+        );
+      }
+      return;
+    }
+
     final permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       final requested = await Geolocator.requestPermission();

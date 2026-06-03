@@ -115,14 +115,17 @@ void _wireAppDataCoordinator() {
     sl<TripListBloc>().add(const TripListCacheSyncRequested());
     if (sl.isRegistered<DriverJobsBloc>()) {
       final authState = sl<AuthBloc>().state;
-      if (authState is AuthAuthenticated) {
+      if (authState is AuthAuthenticated && authState.user.isDriverRegistered) {
         sl<DriverJobsBloc>().add(
           DriverJobsCacheSyncRequested(driverId: authState.user.id),
         );
       }
     }
     if (sl.isRegistered<DriverOffersBloc>()) {
-      sl<DriverOffersBloc>().add(const DriverOffersRefreshRequested());
+      final authState = sl<AuthBloc>().state;
+      if (authState is AuthAuthenticated && authState.user.isDriverRegistered) {
+        sl<DriverOffersBloc>().add(const DriverOffersRefreshRequested());
+      }
     }
     if (sl.isRegistered<NotificationBloc>()) {
       sl<NotificationBloc>().add(const NotificationReceived());

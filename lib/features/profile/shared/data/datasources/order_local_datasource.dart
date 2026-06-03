@@ -13,6 +13,10 @@ class OrderLocalDataSource {
   }
 
   Future<void> saveAll(List<OrderEntity> orders) async {
+    final remoteIds = orders.map((o) => o.id).toSet();
+    final toDelete = _box.keys.where((k) => !remoteIds.contains(k)).toList();
+    await _box.deleteAll(toDelete);
+
     for (final order in orders) {
       await _box.put(order.id, order);
     }

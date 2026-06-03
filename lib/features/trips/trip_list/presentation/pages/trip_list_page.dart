@@ -34,7 +34,12 @@ class TripListPage extends StatelessWidget {
           actions: [
             IconButton(
               tooltip: 'simulate_offline'.tr(),
-              onPressed: () => sl<SyncService>().syncAll(),
+              onPressed: () async {
+                await sl<SyncService>().syncAll();
+                if (context.mounted) {
+                  AppToast.success(context, 'sync_complete'.tr());
+                }
+              },
               icon: const Icon(Icons.sync),
             ),
             const ProfileAvatarButton(),
