@@ -216,7 +216,6 @@ class _RequestRideSheetBodyState extends State<_RequestRideSheetBody> {
     );
   }
 
-  @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
@@ -248,7 +247,7 @@ class _RequestRideSheetBodyState extends State<_RequestRideSheetBody> {
           padding: EdgeInsets.only(bottom: bottomInset),
           child: Container(
             constraints: BoxConstraints(
-              maxHeight: MediaQuery.sizeOf(context).height * 0.85,
+              maxHeight: MediaQuery.sizeOf(context).height * 0.9,
             ),
             decoration: BoxDecoration(
               color: scheme.surfaceContainerLowest,
@@ -258,100 +257,126 @@ class _RequestRideSheetBodyState extends State<_RequestRideSheetBody> {
               boxShadow: const [
                 BoxShadow(
                   color: AppColors.elevationShadow,
-                  blurRadius: 12,
+                  blurRadius: 16,
                   offset: Offset(0, -4),
                 ),
               ],
             ),
             child: SafeArea(
               top: false,
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.md,
-                  0,
-                  AppSpacing.md,
-                  AppSpacing.lg,
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const AppSheetHandle(),
-                    Text(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const AppSheetHandle(),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.md),
+                    child: Text(
                       'request_ride_title'.tr(),
-                      style: Theme.of(context).textTheme.headlineMedium,
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                    const SizedBox(height: AppSpacing.lg),
-                    _LocationInputs(
-                      pickupController: _pickupController,
-                      dropoffController: _dropoffController,
-                      pickupFocus: _pickupFocus,
-                      dropoffFocus: _dropoffFocus,
-                      onPickupTap: () {
-                        context
-                            .read<LocationSearchCubit>()
-                            .setActiveField(LocationSearchField.pickup);
-                        setState(() {
-                          _showSuggestions = true;
-                          _refreshSearch(_pickupController.text);
-                        });
-                      },
-                      onDropoffTap: () {
-                        context
-                            .read<LocationSearchCubit>()
-                            .setActiveField(LocationSearchField.dropoff);
-                        setState(() {
-                          _showSuggestions = true;
-                          _refreshSearch(_dropoffController.text);
-                        });
-                      },
-                    ),
-                    if (widget.hintMessageKey != null)
-                      Padding(
-                        padding: const EdgeInsets.only(top: AppSpacing.sm),
-                        child: Text(
-                          widget.hintMessageKey!.tr(),
-                          style:
-                              Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    color: scheme.tertiary,
+                  ),
+                  Flexible(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          _LocationInputs(
+                            pickupController: _pickupController,
+                            dropoffController: _dropoffController,
+                            pickupFocus: _pickupFocus,
+                            dropoffFocus: _dropoffFocus,
+                            onPickupTap: () {
+                              context
+                                  .read<LocationSearchCubit>()
+                                  .setActiveField(LocationSearchField.pickup);
+                              setState(() {
+                                _showSuggestions = true;
+                                _refreshSearch(_pickupController.text);
+                              });
+                            },
+                            onDropoffTap: () {
+                              context
+                                  .read<LocationSearchCubit>()
+                                  .setActiveField(LocationSearchField.dropoff);
+                              setState(() {
+                                _showSuggestions = true;
+                                _refreshSearch(_dropoffController.text);
+                              });
+                            },
+                          ),
+                          if (widget.hintMessageKey != null)
+                            Padding(
+                              padding: const EdgeInsets.only(top: AppSpacing.md),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.lightbulb_outline, size: 18, color: scheme.primary),
+                                  const SizedBox(width: AppSpacing.xs),
+                                  Expanded(
+                                    child: Text(
+                                      widget.hintMessageKey!.tr(),
+                                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                            color: scheme.primary,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                    ),
                                   ),
-                        ),
-                      ),
-                    if (!canContinue)
-                      Padding(
-                        padding: const EdgeInsets.only(top: AppSpacing.sm),
-                        child: Text(
-                          'location_select_both_hint'.tr(),
-                          style:
-                              Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    color: scheme.onSurfaceVariant,
+                                ],
+                              ),
+                            ),
+                          if (!canContinue && !_showSuggestions)
+                            Padding(
+                              padding: const EdgeInsets.only(top: AppSpacing.md),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.info_outline, size: 16, color: scheme.onSurfaceVariant),
+                                  const SizedBox(width: AppSpacing.xs),
+                                  Expanded(
+                                    child: Text(
+                                      'location_select_both_hint'.tr(),
+                                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                            color: scheme.onSurfaceVariant,
+                                          ),
+                                    ),
                                   ),
-                        ),
+                                ],
+                              ),
+                            ),
+                          if (_showSuggestions) ...[
+                            const SizedBox(height: AppSpacing.md),
+                            BlocBuilder<LocationSearchCubit, LocationSearchState>(
+                              builder: (context, searchState) {
+                                final hasQuery = searchState.activeField ==
+                                        LocationSearchField.pickup
+                                    ? _pickupController.text.trim().isNotEmpty
+                                    : _dropoffController.text.trim().isNotEmpty;
+                                return _PlaceSuggestions(
+                                  state: searchState,
+                                  hasQuery: hasQuery,
+                                  onSelect: _selectPlace,
+                                );
+                              },
+                            ),
+                          ],
+                          const SizedBox(height: AppSpacing.xl),
+                        ],
                       ),
-                    if (_showSuggestions) ...[
-                      const SizedBox(height: AppSpacing.sm),
-                      BlocBuilder<LocationSearchCubit, LocationSearchState>(
-                        builder: (context, searchState) {
-                          final hasQuery = searchState.activeField ==
-                                  LocationSearchField.pickup
-                              ? _pickupController.text.trim().isNotEmpty
-                              : _dropoffController.text.trim().isNotEmpty;
-                          return _PlaceSuggestions(
-                            state: searchState,
-                            hasQuery: hasQuery,
-                            onSelect: _selectPlace,
-                          );
-                        },
-                      ),
-                    ],
-                    const SizedBox(height: AppSpacing.lg),
-                    AppButton(
-                      label: 'continue'.tr(),
-                      usePrimaryContainer: true,
-                      onPressed: canContinue ? _continue : null,
                     ),
-                  ],
-                ),
+                  ),
+                  if (!_showSuggestions || canContinue)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.lg),
+                      child: AppButton(
+                        label: 'continue'.tr(),
+                        usePrimaryContainer: true,
+                        onPressed: canContinue ? _continue : null,
+                      ),
+                    ),
+                ],
               ),
             ),
           ),
@@ -378,7 +403,7 @@ class _PlaceSuggestions extends StatelessWidget {
 
     if (state.status == LocationSearchStatus.loading) {
       return Padding(
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl),
         child: Center(
           child: SizedBox(
             width: 24,
@@ -394,6 +419,7 @@ class _PlaceSuggestions extends StatelessWidget {
 
     if (state.status == LocationSearchStatus.offline) {
       return _MessageText(
+        icon: Icons.wifi_off,
         text: 'location_search_offline'.tr(),
         color: scheme.error,
       );
@@ -401,6 +427,7 @@ class _PlaceSuggestions extends StatelessWidget {
 
     if (state.status == LocationSearchStatus.error) {
       return _MessageText(
+        icon: Icons.error_outline,
         text: 'location_search_error'.tr(),
         color: scheme.error,
       );
@@ -408,6 +435,7 @@ class _PlaceSuggestions extends StatelessWidget {
 
     if (!hasQuery) {
       return _MessageText(
+        icon: Icons.search,
         text: 'location_search_type_hint'.tr(),
         color: scheme.onSurfaceVariant,
       );
@@ -415,53 +443,75 @@ class _PlaceSuggestions extends StatelessWidget {
 
     if (state.status == LocationSearchStatus.empty || state.suggestions.isEmpty) {
       return _MessageText(
+        icon: Icons.location_off_outlined,
         text: 'destination_no_results'.tr(),
         color: scheme.onSurfaceVariant,
       );
     }
 
     return Material(
-      color: scheme.surfaceContainerLow,
-      borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+      color: scheme.surface,
+      elevation: 2,
+      shadowColor: scheme.shadow.withValues(alpha: 0.1),
+      borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
       clipBehavior: Clip.antiAlias,
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxHeight: 220),
+        constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height * 0.4),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Flexible(
               child: ListView.separated(
                 shrinkWrap: true,
-                padding: EdgeInsets.zero,
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
                 itemCount: state.suggestions.length,
                 separatorBuilder: (_, _) => Divider(
                   height: 1,
-                  color: scheme.outlineVariant.withValues(alpha: 0.4),
+                  indent: 56,
+                  color: scheme.outlineVariant.withValues(alpha: 0.3),
                 ),
                 itemBuilder: (context, index) {
                   final place = state.suggestions[index];
                   return ListTile(
-                    leading: Icon(
-                      Icons.location_on_outlined,
-                      color: scheme.primary,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                    leading: CircleAvatar(
+                      backgroundColor: scheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                      child: Icon(
+                        Icons.location_on_outlined,
+                        color: scheme.primary,
+                        size: 20,
+                      ),
                     ),
-                    title: Text(place.title),
-                    subtitle:
-                        place.subtitle.isNotEmpty ? Text(place.subtitle) : null,
+                    title: Text(
+                      place.title,
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500),
+                    ),
+                    subtitle: place.subtitle.isNotEmpty
+                        ? Text(
+                            place.subtitle,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                  color: scheme.onSurfaceVariant,
+                                ),
+                          )
+                        : null,
                     onTap: () => onSelect(place),
                   );
                 },
               ),
             ),
-            Padding(
+            Container(
+              width: double.infinity,
+              color: scheme.surfaceContainerLowest,
               padding: const EdgeInsets.symmetric(
                 horizontal: AppSpacing.md,
-                vertical: AppSpacing.xs,
+                vertical: AppSpacing.sm,
               ),
               child: Text(
                 'location_osm_attribution'.tr(),
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: scheme.onSurfaceVariant,
+                      color: scheme.outline,
                     ),
                 textAlign: TextAlign.center,
               ),
@@ -474,18 +524,26 @@ class _PlaceSuggestions extends StatelessWidget {
 }
 
 class _MessageText extends StatelessWidget {
-  const _MessageText({required this.text, required this.color});
+  const _MessageText({required this.text, required this.color, required this.icon});
 
   final String text;
   final Color color;
+  final IconData icon;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-      child: Text(
-        text,
-        style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: color),
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl),
+      child: Column(
+        children: [
+          Icon(icon, size: 32, color: color.withValues(alpha: 0.7)),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            text,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: color),
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }
@@ -516,25 +574,29 @@ class _LocationInputs extends StatelessWidget {
       children: [
         Positioned(
           left: 23,
-          top: 40,
-          bottom: 40,
+          top: AppSpacing.inputHeight / 2 + 8,
+          bottom: AppSpacing.inputHeight / 2 + 8,
           child: Container(
             width: 2,
-            color: scheme.outlineVariant,
+            decoration: BoxDecoration(
+              color: scheme.outlineVariant.withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(2),
+            ),
           ),
         ),
         Column(
           children: [
             _LocationRow(
-              icon: Icons.trip_origin,
+              icon: Icons.radio_button_checked,
               iconColor: scheme.primary,
               controller: pickupController,
               hint: 'pickup_search_hint'.tr(),
               focusNode: pickupFocus,
               onTap: onPickupTap,
-              textInputAction: TextInputAction.search,
+              textInputAction: TextInputAction.next,
+              isFocused: pickupFocus.hasFocus,
             ),
-            const SizedBox(height: AppSpacing.sm),
+            const SizedBox(height: AppSpacing.md),
             _LocationRow(
               icon: Icons.location_on,
               iconColor: scheme.error,
@@ -543,6 +605,7 @@ class _LocationInputs extends StatelessWidget {
               focusNode: dropoffFocus,
               onTap: onDropoffTap,
               textInputAction: TextInputAction.search,
+              isFocused: dropoffFocus.hasFocus,
             ),
           ],
         ),
@@ -560,6 +623,7 @@ class _LocationRow extends StatelessWidget {
     required this.focusNode,
     required this.onTap,
     required this.textInputAction,
+    required this.isFocused,
   });
 
   final IconData icon;
@@ -569,6 +633,7 @@ class _LocationRow extends StatelessWidget {
   final FocusNode focusNode;
   final VoidCallback onTap;
   final TextInputAction textInputAction;
+  final bool isFocused;
 
   @override
   Widget build(BuildContext context) {
@@ -578,15 +643,29 @@ class _LocationRow extends StatelessWidget {
       children: [
         SizedBox(
           width: 48,
-          child: Icon(icon, color: iconColor),
+          child: Icon(icon, color: isFocused ? iconColor : scheme.onSurfaceVariant, size: 20),
         ),
         Expanded(
-          child: Container(
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
             height: AppSpacing.inputHeight,
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             decoration: BoxDecoration(
-              color: scheme.surfaceContainerLow,
+              color: isFocused ? scheme.surface : scheme.surfaceContainerHighest.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+              border: Border.all(
+                color: isFocused ? scheme.primary : Colors.transparent,
+                width: 1.5,
+              ),
+              boxShadow: isFocused
+                  ? [
+                      BoxShadow(
+                        color: scheme.primary.withValues(alpha: 0.1),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      )
+                    ]
+                  : null,
             ),
             alignment: Alignment.center,
             child: TextField(
@@ -594,9 +673,12 @@ class _LocationRow extends StatelessWidget {
               focusNode: focusNode,
               onTap: onTap,
               textInputAction: textInputAction,
-              style: Theme.of(context).textTheme.bodyLarge,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    fontWeight: isFocused ? FontWeight.w500 : FontWeight.normal,
+                  ),
               decoration: InputDecoration(
                 hintText: hint,
+                hintStyle: TextStyle(color: scheme.onSurfaceVariant),
                 border: InputBorder.none,
                 isDense: true,
                 contentPadding: EdgeInsets.zero,

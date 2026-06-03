@@ -329,6 +329,7 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => AddNotificationUseCase(sl()));
   sl.registerLazySingleton(() => GetUnreadNotificationCountUseCase(sl()));
   sl.registerLazySingleton(() => SearchPlacesUseCase(sl()));
+  sl.registerLazySingleton(() => ReverseGeocodeUseCase(sl()));
   sl.registerLazySingleton(() => RegisterDriverUseCase(sl()));
   sl.registerLazySingleton(() => GetDriverProfileUseCase(sl()));
 

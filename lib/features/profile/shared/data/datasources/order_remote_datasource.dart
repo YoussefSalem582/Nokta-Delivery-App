@@ -11,7 +11,15 @@ class OrderRemoteDataSource {
 
   Future<List<OrderEntity>> fetchOrders() async {
     final response = await _dio.get<dynamic>(ApiEndpoints.orders);
-    final list = response.data as List<dynamic>;
+    
+    // Handle ApiResponse envelope
+    List<dynamic> list;
+    if (response.data is Map<String, dynamic> && (response.data as Map<String, dynamic>).containsKey('data')) {
+      final payload = (response.data as Map<String, dynamic>)['data'];
+      list = (payload as List<dynamic>?) ?? [];
+    } else {
+      list = response.data as List<dynamic>;
+    }
 
     if (EnvConfig.usesRealBackend) {
       return list

@@ -1,6 +1,7 @@
 import 'package:delivery_app/features/home/ride_request/domain/entities/quick_destination_type.dart';
 import 'package:delivery_app/shared/spacing/app_spacing.dart';
 import 'package:delivery_app/shared/widgets/navigation/app_bottom_nav_bar.dart';
+import 'package:delivery_app/config/theme/app_colors.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
@@ -14,7 +15,6 @@ class HomeDestinationPanel extends StatelessWidget {
   final VoidCallback onSearchTap;
   final ValueChanged<QuickDestinationType>? onQuickDestination;
 
-  @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -23,23 +23,23 @@ class HomeDestinationPanel extends StatelessWidget {
       elevation: 0,
       color: scheme.surfaceContainerLowest,
       borderRadius: const BorderRadius.vertical(
-        top: Radius.circular(AppSpacing.radiusLg),
+        top: Radius.circular(AppSpacing.radiusSheet),
       ),
       child: Container(
         decoration: BoxDecoration(
           borderRadius: const BorderRadius.vertical(
-            top: Radius.circular(AppSpacing.radiusLg),
+            top: Radius.circular(AppSpacing.radiusSheet),
           ),
           border: isDark
               ? Border(top: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.4)))
               : null,
           boxShadow: isDark
               ? null
-              : const [
+              : [
                   BoxShadow(
-                    color: Color(0x1F000000),
+                    color: AppColors.elevationShadow,
                     blurRadius: 24,
-                    offset: Offset(0, -4),
+                    offset: const Offset(0, -4),
                   ),
                 ],
         ),
@@ -47,36 +47,42 @@ class HomeDestinationPanel extends StatelessWidget {
           AppSpacing.md,
           AppSpacing.sm,
           AppSpacing.md,
-          AppSpacing.lg,
+          AppSpacing.xl,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const AppSheetHandle(),
-            Text(
-              'request_ride_title'.tr(),
-              style: Theme.of(context).textTheme.titleLarge,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
+              child: Text(
+                'request_ride_title'.tr(),
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
-            const SizedBox(height: AppSpacing.md),
+            const SizedBox(height: AppSpacing.sm),
             Material(
-              color: isDark ? scheme.surfaceContainerHigh : scheme.surfaceContainerLow,
-              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+              color: scheme.surfaceContainerHighest.withValues(alpha: 0.4),
+              borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+              clipBehavior: Clip.antiAlias,
               child: InkWell(
                 onTap: onSearchTap,
-                borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
                 child: Container(
-                  height: AppSpacing.inputHeight,
+                  height: AppSpacing.inputHeight + 4,
                   padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
                   child: Row(
                     children: [
-                      Icon(Icons.search, color: scheme.primary),
-                      const SizedBox(width: AppSpacing.sm),
+                      Icon(Icons.search, color: scheme.primary, size: 24),
+                      const SizedBox(width: AppSpacing.md),
                       Expanded(
                         child: Text(
                           'search_locations'.tr(),
-                          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                color: scheme.outline,
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                color: scheme.onSurfaceVariant,
+                                fontWeight: FontWeight.normal,
                               ),
                         ),
                       ),
@@ -88,6 +94,7 @@ class HomeDestinationPanel extends StatelessWidget {
             const SizedBox(height: AppSpacing.md),
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
+              clipBehavior: Clip.none,
               child: Row(
                 children: [
                   _QuickChip(
@@ -131,27 +138,32 @@ class _QuickChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Material(
-      color: isDark ? scheme.surfaceContainerHigh : scheme.surface,
-      shape: StadiumBorder(
-        side: BorderSide(color: scheme.outlineVariant.withValues(alpha: isDark ? 0.6 : 1)),
+      color: scheme.surfaceContainerLow,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+        side: BorderSide(
+          color: scheme.outlineVariant.withValues(alpha: 0.5),
+          width: 1,
+        ),
       ),
+      clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
-        customBorder: const StadiumBorder(),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm + 2),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, size: 18, color: scheme.secondary),
-              const SizedBox(width: 6),
+              Icon(icon, size: 20, color: scheme.primary),
+              const SizedBox(width: AppSpacing.sm),
               Text(
                 label,
                 style: Theme.of(context).textTheme.labelLarge?.copyWith(
                       color: scheme.onSurface,
+                      fontWeight: FontWeight.w600,
                     ),
               ),
             ],

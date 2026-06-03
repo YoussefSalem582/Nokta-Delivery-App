@@ -64,13 +64,19 @@ class AuthRemoteDataSource {
 
   Future<UserEntity> fetchProfile() async {
     final response = await _dio.get<dynamic>(ApiEndpoints.profile);
-    final data = response.data;
-    if (data is! Map<String, dynamic>) {
+    final raw = response.data;
+    if (raw is! Map<String, dynamic>) {
       throw DioException(
         requestOptions: response.requestOptions,
         message: 'Invalid profile response',
       );
     }
+    
+    // Handle ApiResponse envelope
+    final Map<String, dynamic> data = raw.containsKey('data') && raw['data'] is Map<String, dynamic> 
+        ? raw['data'] as Map<String, dynamic>
+        : raw;
+
     return UserEntity.fromJson(data);
   }
 

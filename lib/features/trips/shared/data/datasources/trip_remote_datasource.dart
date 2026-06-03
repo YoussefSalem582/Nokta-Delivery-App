@@ -11,7 +11,10 @@ class TripRemoteDataSource {
 
   Future<List<TripEntity>> fetchTrips() async {
     final response = await _dio.get<dynamic>(ApiEndpoints.trips);
-    final list = response.data as List<dynamic>;
+    final responseData = response.data;
+    final list = responseData is Map<String, dynamic>
+        ? (responseData['data'] as List<dynamic>?) ?? []
+        : responseData as List<dynamic>;
     return list
         .map((e) => TripEntity.fromJson(e as Map<String, dynamic>))
         .toList();
