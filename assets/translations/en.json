@@ -334,5 +334,6 @@
   "driver_no_active_delivery": "No active deliveries",
   "offline_queue": "Offline Queue",
   "retry_all": "Retry All",
-  "queue_empty": "Queue is empty"
+  "queue_empty": "Queue is empty",
+  "trips_not_found": "Trip not found."
 }

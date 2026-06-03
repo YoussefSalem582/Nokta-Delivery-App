@@ -67,7 +67,7 @@ class GetTripDetailUseCase extends UseCase<TripEntity, GetTripDetailParams> {
     try {
       final trip = await _repository.getTripById(params.tripId);
       if (trip == null) {
-        return const Left(NotFoundFailure(message: 'Trip not found'));
+        return const Left(NotFoundFailure(message: 'trips_not_found'));
       }
       return Right(trip);
     } catch (e) {

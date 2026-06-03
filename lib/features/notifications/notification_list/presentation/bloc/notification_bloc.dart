@@ -81,7 +81,9 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
     NotificationLoadRequested event,
     Emitter<NotificationState> emit,
   ) async {
-    emit(const NotificationLoading());
+    if (state is! NotificationLoaded) {
+      emit(const NotificationLoading());
+    }
     await _emitLoaded(emit);
   }
 

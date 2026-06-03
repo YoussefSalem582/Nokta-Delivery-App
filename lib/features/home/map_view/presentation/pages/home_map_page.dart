@@ -34,7 +34,10 @@ class HomeMapPage extends StatefulWidget {
   State<HomeMapPage> createState() => _HomeMapPageState();
 }
 
-class _HomeMapPageState extends State<HomeMapPage> {
+class _HomeMapPageState extends State<HomeMapPage> with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
   final _mapKey = GlobalKey<DeliveryMapState>();
   RideRequestDraft? _previewDraft;
   List<LatLng> _previewRoute = const [];
@@ -153,6 +156,7 @@ class _HomeMapPageState extends State<HomeMapPage> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final scheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
