@@ -1,20 +1,22 @@
-import 'package:delivery_app/features/home/ride_request/domain/entities/quick_destination_type.dart';
+import 'package:delivery_app/config/theme/app_colors.dart';
 import 'package:delivery_app/shared/spacing/app_spacing.dart';
 import 'package:delivery_app/shared/widgets/navigation/app_bottom_nav_bar.dart';
-import 'package:delivery_app/config/theme/app_colors.dart';
+import 'package:delivery_app/features/home/ride_request/domain/entities/quick_destination_type.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'quick_destination_chips.dart';
 
-class HomeDestinationPanel extends StatelessWidget {
-  const HomeDestinationPanel({
+class CollapsedRideView extends StatelessWidget {
+  const CollapsedRideView({
     super.key,
     required this.onSearchTap,
-    this.onQuickDestination,
+    required this.onQuickDestination,
   });
 
   final VoidCallback onSearchTap;
-  final ValueChanged<QuickDestinationType>? onQuickDestination;
+  final ValueChanged<QuickDestinationType> onQuickDestination;
 
+  @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -36,10 +38,10 @@ class HomeDestinationPanel extends StatelessWidget {
           boxShadow: isDark
               ? null
               : [
-                  BoxShadow(
+                  const BoxShadow(
                     color: AppColors.elevationShadow,
                     blurRadius: 24,
-                    offset: const Offset(0, -4),
+                    offset: Offset(0, -4),
                   ),
                 ],
         ),
@@ -97,77 +99,27 @@ class HomeDestinationPanel extends StatelessWidget {
               clipBehavior: Clip.none,
               child: Row(
                 children: [
-                  _QuickChip(
+                  QuickChip(
                     icon: Icons.home_outlined,
                     label: 'quick_home'.tr(),
-                    onTap: () => onQuickDestination?.call(QuickDestinationType.home),
+                    onTap: () => onQuickDestination(QuickDestinationType.home),
                   ),
                   const SizedBox(width: AppSpacing.sm),
-                  _QuickChip(
+                  QuickChip(
                     icon: Icons.work_outline,
                     label: 'quick_work'.tr(),
-                    onTap: () => onQuickDestination?.call(QuickDestinationType.work),
+                    onTap: () => onQuickDestination(QuickDestinationType.work),
                   ),
                   const SizedBox(width: AppSpacing.sm),
-                  _QuickChip(
+                  QuickChip(
                     icon: Icons.flight_takeoff,
                     label: 'quick_airport'.tr(),
-                    onTap: () => onQuickDestination?.call(QuickDestinationType.airport),
+                    onTap: () => onQuickDestination(QuickDestinationType.airport),
                   ),
                 ],
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _QuickChip extends StatelessWidget {
-  const _QuickChip({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-
-    return Material(
-      color: scheme.surfaceContainerLow,
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-        side: BorderSide(
-          color: scheme.outlineVariant.withValues(alpha: 0.5),
-          width: 1,
-        ),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm + 2),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, size: 20, color: scheme.primary),
-              const SizedBox(width: AppSpacing.sm),
-              Text(
-                label,
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      color: scheme.onSurface,
-                      fontWeight: FontWeight.w600,
-                    ),
-              ),
-            ],
-          ),
         ),
       ),
     );

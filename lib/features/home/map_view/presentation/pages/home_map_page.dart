@@ -8,15 +8,10 @@ import 'package:delivery_app/shared/widgets/banners/app_toast.dart';
 import 'package:delivery_app/core/utils/map_config.dart';
 import 'package:delivery_app/core/utils/ui_helpers.dart';
 import 'package:delivery_app/core/widgets/delivery_map.dart';
-import 'package:delivery_app/features/home/ride_request/domain/entities/quick_destination_type.dart';
-import 'package:delivery_app/features/home/ride_request/presentation/cubit/location_search_state.dart';
 import 'package:delivery_app/features/home/ride_request/presentation/widgets/ride_option_card.dart';
 import 'package:delivery_app/features/home/map_view/presentation/bloc/map_bloc.dart';
-import 'package:delivery_app/features/home/ride_request/presentation/widgets/home_destination_panel.dart';
-import 'package:delivery_app/features/home/ride_request/presentation/widgets/request_ride_sheet.dart';
+import 'package:delivery_app/features/home/ride_request/presentation/widgets/expandable_sheet/expandable_ride_sheet.dart';
 import 'package:delivery_app/features/home/ride_request/presentation/widgets/ride_selection_sheet.dart';
-import 'package:delivery_app/features/home/shared/data/datasources/saved_places_local_datasource.dart';
-import 'package:delivery_app/features/home/shared/domain/entities/place_suggestion.dart';
 import 'package:delivery_app/features/profile/shared/domain/entities/order_entity.dart';
 import 'package:delivery_app/features/trips/shared/domain/entities/trip_entity.dart';
 import 'package:delivery_app/shared/widgets/navigation/shell_app_bar_logo.dart';
@@ -42,67 +37,11 @@ class _HomeMapPageState extends State<HomeMapPage> with AutomaticKeepAliveClient
   RideRequestDraft? _previewDraft;
   List<LatLng> _previewRoute = const [];
 
-  Future<void> _startRideFlow(
-    BuildContext context,
-    MapReady mapState, {
-    QuickDestinationType? quickDestination,
-  }) async {
-    PlaceSuggestion? initialDropoff;
-    String? initialDropoffQuery;
-    String? hintMessageKey;
-    LocationSearchField? initialActiveField;
+  bool _isSheetExpanded = false;
 
-    if (quickDestination != null) {
-      initialActiveField = LocationSearchField.dropoff;
-      switch (quickDestination) {
-        case QuickDestinationType.home:
-          final saved = sl<SavedPlacesLocalDataSource>().getHome();
-          if (saved != null) {
-            initialDropoff = PlaceSuggestion(
-              id: 'saved_home',
-              title: saved.address ?? 'quick_home'.tr(),
-              subtitle: '',
-              lat: saved.lat,
-              lng: saved.lng,
-            );
-          } else {
-            hintMessageKey = 'saved_place_missing_home';
-          }
-        case QuickDestinationType.work:
-          final saved = sl<SavedPlacesLocalDataSource>().getWork();
-          if (saved != null) {
-            initialDropoff = PlaceSuggestion(
-              id: 'saved_work',
-              title: saved.address ?? 'quick_work'.tr(),
-              subtitle: '',
-              lat: saved.lat,
-              lng: saved.lng,
-            );
-          } else {
-            hintMessageKey = 'saved_place_missing_work';
-          }
-        case QuickDestinationType.airport:
-          initialDropoffQuery = 'place_airport_search_query'.tr();
-      }
-    }
-
-    final draft = await showModalBottomSheet<RideRequestDraft>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => RequestRideSheet(
-        pickupLat: mapState.userPosition.latitude,
-        pickupLng: mapState.userPosition.longitude,
-        initialDropoff: initialDropoff,
-        initialDropoffQuery: initialDropoffQuery,
-        hintMessageKey: hintMessageKey,
-        initialActiveField: initialActiveField,
-      ),
-    );
-
-    if (draft == null || !context.mounted) return;
-
+  Future<void> _handleRideRequest(RideRequestDraft draft) async {
     setState(() {
+      _isSheetExpanded = false;
       _previewDraft = draft;
       _previewRoute = _fallbackRoutePoints(draft);
     });
@@ -118,20 +57,20 @@ class _HomeMapPageState extends State<HomeMapPage> with AutomaticKeepAliveClient
       ),
     );
 
-    if (context.mounted) {
+    if (mounted) {
       setState(() {
         _previewDraft = null;
         _previewRoute = const [];
       });
     }
 
-    if (result is TripEntity && context.mounted) {
+    if (result is TripEntity && mounted) {
       AppToast.success(context, 'trip_requested_success'.tr());
       context.pushNamed(
         RouteNames.tracking,
         pathParameters: {'tripId': result.id},
       );
-    } else if (result is OrderEntity && context.mounted) {
+    } else if (result is OrderEntity && mounted) {
       AppToast.success(context, 'trip_requested_success'.tr());
     }
   }
@@ -247,14 +186,33 @@ class _HomeMapPageState extends State<HomeMapPage> with AutomaticKeepAliveClient
                     ),
                   ),
                 if (state is MapReady)
+                  Positioned.fill(
+                    child: IgnorePointer(
+                      ignoring: !_isSheetExpanded,
+                      child: GestureDetector(
+                        onTap: () => setState(() => _isSheetExpanded = false),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
+                          color: _isSheetExpanded ? Colors.black.withValues(alpha: 0.5) : Colors.transparent,
+                        ),
+                      ),
+                    ),
+                  ),
+                if (state is MapReady)
                   Positioned(
                     left: 0,
                     right: 0,
                     bottom: 0,
-                    child: HomeDestinationPanel(
-                      onSearchTap: () => _startRideFlow(context, state),
-                      onQuickDestination: (type) =>
-                          _startRideFlow(context, state, quickDestination: type),
+                    child: ExpandableRideSheet(
+                      pickupLat: state.userPosition.latitude,
+                      pickupLng: state.userPosition.longitude,
+                      isExpanded: _isSheetExpanded,
+                      onToggleExpand: () {
+                        setState(() {
+                          _isSheetExpanded = !_isSheetExpanded;
+                        });
+                      },
+                      onContinue: _handleRideRequest,
                     ),
                   ),
               ],
