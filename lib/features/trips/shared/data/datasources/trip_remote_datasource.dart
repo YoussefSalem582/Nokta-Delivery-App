@@ -24,13 +24,20 @@ class TripRemoteDataSource {
     final response = await _dio.get<dynamic>(ApiEndpoints.tripsActive);
     final data = response.data;
     if (data == null) return null;
-    if (data is Map<String, dynamic> && data.isEmpty) return null;
-    return TripEntity.fromJson(data as Map<String, dynamic>);
+    if (data is Map<String, dynamic>) {
+      if (data.isEmpty) return null;
+      final tripData = data.containsKey('data') ? data['data'] as Map<String, dynamic>? : data;
+      if (tripData == null || tripData.isEmpty) return null;
+      return TripEntity.fromJson(tripData);
+    }
+    return null;
   }
 
   Future<TripEntity> fetchTripById(String id) async {
     final response = await _dio.get<dynamic>(ApiEndpoints.tripById(id));
-    return TripEntity.fromJson(response.data as Map<String, dynamic>);
+    final data = response.data as Map<String, dynamic>;
+    final tripData = data.containsKey('data') ? data['data'] as Map<String, dynamic> : data;
+    return TripEntity.fromJson(tripData);
   }
 
   Future<TripEntity> requestTrip(
@@ -49,7 +56,9 @@ class TripRemoteDataSource {
           ? idempotencyOptions(idempotencyKey)
           : null,
     );
-    return TripEntity.fromJson(response.data as Map<String, dynamic>);
+    final data = response.data as Map<String, dynamic>;
+    final tripData = data.containsKey('data') ? data['data'] as Map<String, dynamic> : data;
+    return TripEntity.fromJson(tripData);
   }
 
   Future<TripEntity> updateStatus(String id, TripStatus status) async {
@@ -57,7 +66,8 @@ class TripRemoteDataSource {
       ApiEndpoints.tripStatus(id),
       data: {'status': status.name},
     );
-    final data = response.data as Map<String, dynamic>;
+    final responseData = response.data as Map<String, dynamic>;
+    final data = responseData.containsKey('data') ? responseData['data'] as Map<String, dynamic> : responseData;
 
     if (data.containsKey('pickupAddress')) {
       return TripEntity.fromJson(data);
