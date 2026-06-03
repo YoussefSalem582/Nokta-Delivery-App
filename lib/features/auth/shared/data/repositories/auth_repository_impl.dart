@@ -42,24 +42,19 @@ class AuthRepositoryImpl implements AuthRepository {
     required String email,
     required String password,
   }) async {
-    if (EnvConfig.usesRealBackend && await _networkStatus.isOnline) {
-      try {
-        final session = await _remote.login(email: email, password: password);
-        await _tokenStore.saveTokens(
-          accessToken: session.accessToken,
-          refreshToken: session.refreshToken,
-        );
-        await _local.saveUser(session.user);
-        MockSessionContext.setUserId(session.user.id);
-        await _cacheMetadata.markFetched(CacheKeys.profile);
-        await _onDeviceTokenSync?.call();
-        return session.user;
-      } on DioException {
-        rethrow;
-      }
+    try {
+      final session = await _remote.login(email: email, password: password);
+      await _tokenStore.saveTokens(
+        accessToken: session.accessToken,
+        refreshToken: session.refreshToken,
+      );
+      await _local.saveUser(session.user);
+      await _cacheMetadata.markFetched(CacheKeys.profile);
+      await _onDeviceTokenSync?.call();
+      return session.user;
+    } on DioException {
+      rethrow;
     }
-
-    return _mockLogin(email: email);
   }
 
   @override
@@ -68,51 +63,36 @@ class AuthRepositoryImpl implements AuthRepository {
     required String email,
     required String password,
   }) async {
-    if (EnvConfig.usesRealBackend && await _networkStatus.isOnline) {
-      final session = await _remote.register(
-        name: name,
-        email: email,
-        password: password,
-        phone: '+201000000000',
-      );
-      await _tokenStore.saveTokens(
-        accessToken: session.accessToken,
-        refreshToken: session.refreshToken,
-      );
-      await _local.saveUser(session.user);
-      MockSessionContext.setUserId(session.user.id);
-      await _cacheMetadata.markFetched(CacheKeys.profile);
-      await _onDeviceTokenSync?.call();
-      return session.user;
-    }
-
-    final user = await _mockLogin(email: email);
-    final registered = user.copyWith(name: name, email: email);
-    await _local.saveUser(registered);
-    return registered;
+    final session = await _remote.register(
+      name: name,
+      email: email,
+      password: password,
+      phone: '+201000000000',
+    );
+    await _tokenStore.saveTokens(
+      accessToken: session.accessToken,
+      refreshToken: session.refreshToken,
+    );
+    await _local.saveUser(session.user);
+    await _cacheMetadata.markFetched(CacheKeys.profile);
+    await _onDeviceTokenSync?.call();
+    return session.user;
   }
 
   @override
   Future<void> logout() async {
-    if (EnvConfig.usesRealBackend && await _networkStatus.isOnline) {
-      try {
-        await _remote.logout(refreshToken: _tokenStore.refreshToken);
-      } on DioException {
-        // Clear local session even if remote logout fails.
-      }
+    try {
+      await _remote.logout(refreshToken: _tokenStore.refreshToken);
+    } on DioException {
+      // Clear local session even if remote logout fails.
     }
     await _tokenStore.clearTokens();
-    MockSessionContext.clear();
     await _local.clearUser();
   }
 
   @override
   Future<void> requestPasswordReset({required String email}) async {
-    if (EnvConfig.usesRealBackend && await _networkStatus.isOnline) {
-      await _remote.requestPasswordReset(email: email);
-      return;
-    }
-    await Future<void>.delayed(const Duration(milliseconds: 900));
+    await _remote.requestPasswordReset(email: email);
   }
 
   @override
@@ -145,7 +125,7 @@ class AuthRepositoryImpl implements AuthRepository {
     if (await _networkStatus.isOnline) {
       try {
         final UserEntity user;
-        if (EnvConfig.usesRealBackend && _tokenStore.hasAccessToken) {
+        if (_tokenStore.hasAccessToken) {
           user = (await _remote.fetchProfile())
               .copyWith(isLoggedIn: cached?.isLoggedIn ?? true);
         } else {
@@ -155,7 +135,6 @@ class AuthRepositoryImpl implements AuthRepository {
         }
         await _local.saveUser(user);
         await _cacheMetadata.markFetched(CacheKeys.profile);
-        MockSessionContext.setUserId(user.id);
         return user;
       } on DioException {
         if (cached != null) return cached;
@@ -189,37 +168,5 @@ class AuthRepositoryImpl implements AuthRepository {
     return updated;
   }
 
-  Future<UserEntity> _mockLogin({required String email}) async {
-    UserEntity user;
-    if (await _networkStatus.isOnline) {
-      try {
-        final response = await _dio.get<dynamic>(ApiEndpoints.profile);
-        user = UserEntity.fromJson(response.data as Map<String, dynamic>)
-            .copyWith(email: email, isLoggedIn: true);
-        await _cacheMetadata.markFetched(CacheKeys.profile);
-      } on DioException {
-        user = UserEntity(
-          id: 'local-user',
-          name: 'Demo User',
-          email: email,
-          phone: '+201000000000',
-          walletBalance: 250,
-          isLoggedIn: true,
-        );
-      }
-    } else {
-      user = UserEntity(
-        id: 'local-user',
-        name: 'Demo User',
-        email: email,
-        phone: '+201000000000',
-        walletBalance: 250,
-        isLoggedIn: true,
-      );
-    }
 
-    await _local.saveUser(user);
-    MockSessionContext.setUserId(user.id);
-    return user;
-  }
 }

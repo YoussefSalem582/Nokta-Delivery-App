@@ -4,7 +4,7 @@ import 'package:delivery_app/core/cache/entities/pending_sync_entity.dart';
 
 import 'package:delivery_app/core/sync/app_data_coordinator.dart';
 
-import 'package:delivery_app/core/network/mock_session_context.dart';
+
 
 import 'package:delivery_app/features/auth/shared/data/datasources/auth_local_datasource.dart';
 
@@ -65,10 +65,7 @@ class DriverTripRepositoryImpl implements DriverTripRepository {
 
   @override
   Future<List<TripEntity>> getOffers() async {
-    final driverId =
-        MockSessionContext.currentUserId ??
-        _authLocal.getCurrentUser()?.id ??
-        '';
+    final driverId = _authLocal.getCurrentUser()?.id ?? '';
 
     if (!await _networkStatus.isOnline) {
       return TripQuery.openOffers(_local.getAll(), driverId);
