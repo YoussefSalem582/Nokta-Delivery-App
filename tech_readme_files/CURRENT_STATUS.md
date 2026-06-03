@@ -2,7 +2,7 @@
 
 > [INDEX](INDEX.md) > Current Status
 >
-> **Last Updated:** June 1, 2026 — Driver turn-by-turn navigation + delivery live tracking.
+> **Last Updated:** June 03, 2026 — Dynamic API Base URL for Web.
 > **Version:** `1.0.0+1`
 > **Flutter:** 3.16+ (SDK ^3.12.0)
 > **Status:** ✅ MVP template complete | ✅ Dual-mode driver demo | ✅ Web client demo | 🚧 Production backend TBD

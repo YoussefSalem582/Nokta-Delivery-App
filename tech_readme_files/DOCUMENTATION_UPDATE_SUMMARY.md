@@ -4,6 +4,15 @@
 
 ---
 
+## 2026-06-03 — Dynamic API Base URL for Web
+
+**What changed:** 
+Changed `EnvConfig.apiBaseUrl` to dynamically detect when the app is running on web (`kIsWeb`) or desktop platforms and fallback to `127.0.0.1:8000` instead of the Android emulator IP (`10.0.2.2:8000`). This fixes connection timeouts when running `flutter run` locally on web browsers.
+
+**Files touched:** `lib/config/environment/env_config.dart`
+
+---
+
 ## 2026-06-02 — Web Demo DevicePreview & API enhancements
 
 **What changed:** 
