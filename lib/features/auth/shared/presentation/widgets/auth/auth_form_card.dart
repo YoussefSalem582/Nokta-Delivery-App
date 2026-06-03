@@ -46,11 +46,11 @@ class AuthFormCard extends StatelessWidget {
         border: Border.all(
           color: scheme.outlineVariant.withValues(alpha: 0.3),
         ),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
-            color: Color(0x0A000000),
+            color: scheme.shadow.withValues(alpha: 0.04),
             blurRadius: 24,
-            offset: Offset(0, 8),
+            offset: const Offset(0, 8),
           ),
         ],
       ),

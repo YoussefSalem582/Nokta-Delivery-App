@@ -202,11 +202,11 @@ class _RideSelectionSheetState extends State<RideSelectionSheet> {
           borderRadius: const BorderRadius.vertical(
             top: Radius.circular(AppSpacing.radiusSheet),
           ),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x1F000000),
+          boxShadow: [
+             BoxShadow(
+              color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.12),
               blurRadius: 24,
-              offset: Offset(0, -8),
+              offset: const Offset(0, -8),
             ),
           ],
         ),

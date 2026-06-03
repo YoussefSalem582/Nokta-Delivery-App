@@ -1,5 +1,6 @@
 import 'package:delivery_app/core/widgets/avatar_image.dart';
 import 'package:delivery_app/features/auth/shared/domain/entities/user_entity.dart';
+import 'package:delivery_app/config/theme/app_colors.dart';
 import 'package:delivery_app/shared/spacing/app_spacing.dart';
 import 'package:flutter/material.dart';
 
@@ -124,7 +125,7 @@ class _HeroUserHeader extends StatelessWidget {
                     ? null
                     : const [
                         BoxShadow(
-                          color: Color(0x14000000),
+                          color: AppColors.elevationShadow,
                           blurRadius: 8,
                           offset: Offset(0, 2),
                         ),
@@ -149,7 +150,7 @@ class _HeroUserHeader extends StatelessWidget {
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(
+                          color: scheme.shadow.withValues(
                             alpha: isDark ? 0.4 : 0.15,
                           ),
                           blurRadius: 6,

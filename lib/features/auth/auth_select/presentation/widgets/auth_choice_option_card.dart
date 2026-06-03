@@ -51,11 +51,11 @@ class AuthChoiceOptionCard extends StatelessWidget {
                         offset: const Offset(0, 6),
                       ),
                     ]
-                  : const [
+                  : [
                       BoxShadow(
-                        color: Color(0x08000000),
+                        color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.03),
                         blurRadius: 8,
-                        offset: Offset(0, 2),
+                        offset: const Offset(0, 2),
                       ),
                     ],
             ),

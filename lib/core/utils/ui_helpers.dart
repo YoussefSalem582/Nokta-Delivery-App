@@ -33,7 +33,7 @@ Color tripStatusColor(TripStatus status, BuildContext context) {
     TripStatus.accepted => scheme.primary,
     TripStatus.driverArrived => scheme.tertiary,
     TripStatus.inProgress => scheme.secondary,
-    TripStatus.completed => Colors.green,
+    TripStatus.completed => scheme.primary,
     TripStatus.cancelled => scheme.error,
   };
 }

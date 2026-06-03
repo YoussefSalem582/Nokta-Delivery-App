@@ -170,7 +170,7 @@ class AppButtonSkeleton extends StatelessWidget {
     return Container(
       height: AppSpacing.buttonHeight,
       decoration: BoxDecoration(
-        color: Colors.grey.shade300,
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
       ),
     );

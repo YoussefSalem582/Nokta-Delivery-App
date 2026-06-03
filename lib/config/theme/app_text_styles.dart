@@ -3,9 +3,10 @@ import 'package:google_fonts/google_fonts.dart';
 
 abstract final class AppTextStyles {
   static TextTheme forLocale(ColorScheme colorScheme, String locale) {
+    final baseTextTheme = ThemeData(brightness: colorScheme.brightness).textTheme;
     final base = locale == 'ar'
-        ? GoogleFonts.cairoTextTheme()
-        : GoogleFonts.interTextTheme();
+        ? GoogleFonts.cairoTextTheme(baseTextTheme)
+        : GoogleFonts.interTextTheme(baseTextTheme);
     return base.copyWith(
       displayLarge: base.displayLarge?.copyWith(
         fontSize: 48,
@@ -62,7 +63,7 @@ abstract final class AppTextStyles {
         height: 20 / 14,
         fontWeight: FontWeight.w600,
         letterSpacing: 0.1,
-        color: colorScheme.onPrimary,
+        color: colorScheme.onSurfaceVariant,
       ),
       labelSmall: base.labelSmall?.copyWith(
         fontSize: 12,

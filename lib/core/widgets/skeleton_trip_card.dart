@@ -15,7 +15,7 @@ class SkeletonTripCard extends StatelessWidget {
               height: 18,
               width: double.infinity,
               decoration: BoxDecoration(
-                color: Colors.grey.shade300,
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
@@ -24,7 +24,7 @@ class SkeletonTripCard extends StatelessWidget {
               height: 14,
               width: 180,
               decoration: BoxDecoration(
-                color: Colors.grey.shade300,
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
@@ -33,7 +33,7 @@ class SkeletonTripCard extends StatelessWidget {
               height: 14,
               width: 120,
               decoration: BoxDecoration(
-                color: Colors.grey.shade300,
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
@@ -52,13 +52,13 @@ class SkeletonListTile extends StatelessWidget {
     return Card(
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: Colors.grey.shade300,
+          backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
         ),
         title: Container(
           height: 14,
           width: 160,
           decoration: BoxDecoration(
-            color: Colors.grey.shade300,
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(8),
           ),
         ),
@@ -68,7 +68,7 @@ class SkeletonListTile extends StatelessWidget {
             height: 12,
             width: 100,
             decoration: BoxDecoration(
-              color: Colors.grey.shade300,
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(8),
             ),
           ),

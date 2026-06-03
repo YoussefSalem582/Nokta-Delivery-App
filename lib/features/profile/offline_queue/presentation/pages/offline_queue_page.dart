@@ -67,7 +67,7 @@ class OfflineQueuePage extends StatelessWidget {
                       ),
                       isThreeLine: true,
                       trailing: IconButton(
-                        icon: const Icon(Icons.delete_outline, color: Colors.red),
+                        icon: Icon(Icons.delete_outline, color: Theme.of(context).colorScheme.error),
                         onPressed: () {
                           context
                               .read<PendingSyncBloc>()

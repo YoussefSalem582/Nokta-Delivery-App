@@ -4,6 +4,16 @@
 
 ---
 
+## 2026-06-03 — Hardcoded colors theming and mock removal
+
+**What changed:** 
+1. Replaced all remaining raw color values with the app's official design tokens and dynamic theme context (`Theme.of(context).colorScheme` and `AppColors`).
+2. Removed mock offline fallbacks from `AuthRepositoryImpl`, `NotificationRepositoryImpl`, and `DriverTripRepositoryImpl` to enforce real backend data usage.
+
+**Files touched:** `ui_helpers.dart`, `skeleton_trip_card.dart`, `offline_queue_page.dart`, `trip_list_page.dart`, `profile_user_card.dart`, `auth_repository_impl.dart`, `notification_repository_impl.dart`, `driver_trip_repository_impl.dart`
+
+---
+
 ## 2026-06-03 — Dynamic API Base URL for Web and Backend Auth Compatibility
 
 **What changed:** 
