@@ -4,12 +4,14 @@
 
 ---
 
-## 2026-06-03 — Dynamic API Base URL for Web
+## 2026-06-03 — Dynamic API Base URL for Web and Backend Auth Compatibility
 
 **What changed:** 
-Changed `EnvConfig.apiBaseUrl` to dynamically detect when the app is running on web (`kIsWeb`) or desktop platforms and fallback to `127.0.0.1:8000` instead of the Android emulator IP (`10.0.2.2:8000`). This fixes connection timeouts when running `flutter run` locally on web browsers.
+1. Changed `EnvConfig.apiBaseUrl` to dynamically detect when the app is running on web (`kIsWeb`) or desktop platforms and fallback to `127.0.0.1:8000` instead of the Android emulator IP (`10.0.2.2:8000`). This fixes connection timeouts when running `flutter run` locally on web browsers.
+2. Added `Accept: application/json` to `ApiClient` to fix Laravel redirecting unauthenticated requests to a non-existent web login route (causing 500 errors).
+3. Updated `AuthRemoteDataSource._parseSession` to correctly extract `access_token` and `refresh_token` from the backend's `tokens` object.
 
-**Files touched:** `lib/config/environment/env_config.dart`
+**Files touched:** `lib/config/environment/env_config.dart`, `lib/core/api/api_client.dart`, `lib/features/auth/shared/data/datasources/auth_remote_datasource.dart`
 
 ---
 

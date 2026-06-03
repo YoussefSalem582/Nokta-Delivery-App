@@ -94,8 +94,10 @@ class AuthRemoteDataSource {
 
     final data = raw['data'] as Map<String, dynamic>? ?? raw;
     final userJson = data['user'] as Map<String, dynamic>?;
-    final accessToken = data['accessToken'] as String?;
-    final refreshToken = data['refreshToken'] as String?;
+    final tokens = data['tokens'] as Map<String, dynamic>?;
+    
+    final accessToken = (tokens != null ? tokens['access_token'] : data['accessToken']) as String?;
+    final refreshToken = (tokens != null ? tokens['refresh_token'] : data['refreshToken']) as String?;
 
     if (userJson == null || accessToken == null || refreshToken == null) {
       throw DioException(

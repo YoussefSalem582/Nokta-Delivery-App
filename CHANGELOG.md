@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **API Token Parsing** — updated `AuthRemoteDataSource` to correctly extract `access_token` and `refresh_token` from the `tokens` object in the backend's standard JSON response.
+- **API Accept Headers** — added `Accept: application/json` to `ApiClient` global headers so the backend returns 401/403 JSON responses instead of redirecting to a web login route, which caused 500 RouteNotFound errors.
 - **Web API Connection Timeout** — changed `EnvConfig.apiBaseUrl` to dynamically use `127.0.0.1` instead of `10.0.2.2` when running locally on web browsers or desktop platforms. This resolves the `XMLHttpRequest` connection errors during local development with `flutter run`.
 - **Web Demo API Connection** — added `--dart-define=USE_MOCK_API=true` to the GitHub Actions `deploy-web-demo.yml` workflow. This prevents CORS and XMLHttpRequest errors by ensuring the web demo falls back to the in-memory mock interceptor instead of attempting to reach the local Android emulator backend (`10.0.2.2`).
 - **Web Demo DevicePreview** — Conditionally enabled `DevicePreview` on web to only show on desktop browsers (`TargetPlatform.windows`, `macOS`, `linux`). This prevents the "phone inside a phone" UI bug when viewing the GitHub Pages demo on real iOS/Android devices while preserving the mockup frame on desktop.
