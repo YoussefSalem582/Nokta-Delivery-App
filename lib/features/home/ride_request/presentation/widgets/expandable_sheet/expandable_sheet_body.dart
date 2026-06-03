@@ -146,8 +146,22 @@ class _ExpandableSheetBodyState extends State<ExpandableSheetBody> {
     context.read<LocationSearchCubit>().clearSuggestions();
   }
 
+  PlaceSuggestion? get _effectivePickup {
+    if (_selectedPickup != null) return _selectedPickup;
+    if (_pickupController.text == 'current_location'.tr() || _pickupController.text.isEmpty) {
+      return PlaceSuggestion(
+        id: 'current_location',
+        title: _pickupController.text.isNotEmpty ? _pickupController.text : 'current_location'.tr(),
+        subtitle: '',
+        lat: widget.pickupLat,
+        lng: widget.pickupLng,
+      );
+    }
+    return null;
+  }
+
   void _continue() {
-    final pickup = _selectedPickup;
+    final pickup = _effectivePickup;
     final dropoff = _selectedDropoff;
     if (pickup == null || dropoff == null) return;
 
@@ -309,7 +323,7 @@ class _ExpandableSheetBodyState extends State<ExpandableSheetBody> {
                       },
                       onContinue: _continue,
                       onSelectPlace: _selectPlace,
-                      canContinue: _selectedPickup != null && _selectedDropoff != null,
+                      canContinue: _effectivePickup != null && _selectedDropoff != null,
                       showSuggestions: _showSuggestions,
                       hintMessageKey: _hintMessageKey,
                     )

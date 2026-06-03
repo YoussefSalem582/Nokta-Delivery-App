@@ -7,6 +7,7 @@ import 'package:delivery_app/core/utils/route_constants.dart';
 import 'package:delivery_app/core/utils/route_geometry.dart';
 import 'package:dio/dio.dart';
 import 'package:latlong2/latlong.dart';
+import 'dart:convert';
 import 'package:talker_flutter/talker_flutter.dart';
 
 class RouteResult {
@@ -16,6 +17,7 @@ class RouteResult {
     required this.durationSeconds,
     this.maneuvers = const [],
     this.fromCache = false,
+    this.isFallback = false,
   });
 
   final List<LatLng> points;
@@ -23,6 +25,7 @@ class RouteResult {
   final double durationSeconds;
   final List<RouteManeuver> maneuvers;
   final bool fromCache;
+  final bool isFallback;
 
   int get etaMinutes => (durationSeconds / 60).ceil().clamp(1, 99);
 }
@@ -61,23 +64,29 @@ class RouteService {
   final RouteCacheLocalDataSource _routeCache;
 
   static const _osrmBase = 'https://router.project-osrm.org';
-  static const _osrmConnectTimeout = Duration(seconds: 5);
-  static const _osrmReceiveTimeout = Duration(seconds: 8);
-  static const _osrmFailureCooldown = Duration(minutes: 5);
+  static const _osrmConnectTimeout = Duration(seconds: 10);
+  static const _osrmReceiveTimeout = Duration(seconds: 15);
 
   final _memoryCache = <String, RouteResult>{};
   final _inFlight = <String, Future<RouteResult>>{};
-  final _osrmFailureAt = <String, DateTime>{};
 
   Future<RouteResult> getRoute({
     required LatLng pickup,
     required LatLng dropoff,
     bool isApproachLeg = false,
   }) async {
-    final cacheKey = _cacheKey(pickup, dropoff);
+    final cacheKey = _buildCacheKey(pickup, dropoff, isApproachLeg: isApproachLeg);
 
-    final memory = _memoryCache[cacheKey];
-    if (memory != null) return memory;
+    if (_memoryCache.containsKey(cacheKey)) {
+      final cached = _memoryCache[cacheKey]!;
+      return RouteResult(
+        points: cached.points,
+        distanceMeters: cached.distanceMeters,
+        durationSeconds: cached.durationSeconds,
+        maneuvers: cached.maneuvers,
+        fromCache: true,
+      );
+    }
 
     final disk = _routeCache.get(cacheKey);
     if (disk != null) {
@@ -139,23 +148,8 @@ class RouteService {
       );
     }
 
-    if (_isOsrmInCooldown(cacheKey)) {
-      _talker.info(
-        '[RouteService] OSRM recently failed for route; using cached straight line',
-      );
-      return _cacheRoute(
-        cacheKey,
-        _fallbackRoute(
-          pickup,
-          dropoff,
-          straightMeters: straightMeters,
-          isApproachLeg: isApproachLeg,
-        ),
-      );
-    }
-
     try {
-      final response = await _dio.get<Map<String, dynamic>>(
+      final response = await _dio.get<dynamic>(
         '$_osrmBase/route/v1/driving/'
         '${pickup.longitude},${pickup.latitude};'
         '${dropoff.longitude},${dropoff.latitude}',
@@ -172,32 +166,28 @@ class RouteService {
         ),
       );
 
-      if (response.statusCode == 400) {
-        _talker.info('[RouteService] OSRM returned no route, using straight line');
-        _markOsrmFailure(cacheKey);
+      if (response.statusCode != 200) {
+        _talker.error('[RouteService] OSRM returned error status: ${response.statusCode}, Body: ${response.data}');
         return _cacheRoute(
           cacheKey,
-          _fallbackRoute(
-            pickup,
-            dropoff,
-            straightMeters: straightMeters,
-            isApproachLeg: isApproachLeg,
-          ),
+          _fallbackRoute(pickup, dropoff, isApproachLeg: isApproachLeg),
         );
       }
 
-      final data = response.data;
-      final routes = data?['routes'] as List<dynamic>?;
-      if (routes == null || routes.isEmpty) {
-        _markOsrmFailure(cacheKey);
+      final dynamic rawData = response.data;
+      final Map<String, dynamic> data;
+      if (rawData is String) {
+        data = jsonDecode(rawData) as Map<String, dynamic>;
+      } else {
+        data = rawData as Map<String, dynamic>;
+      }
+
+      final routes = data['routes'] as List<dynamic>? ?? [];
+      if (routes.isEmpty) {
+        _talker.warning('[RouteService] OSRM returned 200 but no routes found');
         return _cacheRoute(
           cacheKey,
-          _fallbackRoute(
-            pickup,
-            dropoff,
-            straightMeters: straightMeters,
-            isApproachLeg: isApproachLeg,
-          ),
+          _fallbackRoute(pickup, dropoff, isApproachLeg: isApproachLeg),
         );
       }
 
@@ -206,51 +196,38 @@ class RouteService {
       final durationSeconds = (route['duration'] as num).toDouble();
       final geometry = route['geometry'] as Map<String, dynamic>;
       final coordinates = geometry['coordinates'] as List<dynamic>;
+
       final rawPoints = coordinates
-          .map(
-            (c) => LatLng(
-              (c[1] as num).toDouble(),
-              (c[0] as num).toDouble(),
-            ),
-          )
+          .map((c) => LatLng((c[1] as num).toDouble(), (c[0] as num).toDouble()))
           .toList();
+
       final points = densifyRoute(rawPoints);
 
-      final legs = route['legs'] as List<dynamic>?;
-      final steps = legs != null && legs.isNotEmpty
-          ? (legs.first as Map<String, dynamic>)['steps'] as List<dynamic>?
-          : null;
-      final maneuvers = steps != null && steps.isNotEmpty
-          ? OsrmManeuverParser.parseLegSteps(steps, distanceMeters)
-          : OsrmManeuverParser.syntheticFallback(
-              isApproachLeg: isApproachLeg,
-              legDistanceMeters: distanceMeters,
-            );
-
-      final result = RouteResult(
-        points: points,
-        distanceMeters: distanceMeters,
-        durationSeconds: durationSeconds,
-        maneuvers: maneuvers,
+      final legs = route['legs'] as List<dynamic>;
+      final maneuvers = OsrmManeuverParser.parseLegSteps(
+        legs.first['steps'] as List<dynamic>,
+        distanceMeters,
       );
-      _osrmFailureAt.remove(cacheKey);
-      return _cacheRoute(cacheKey, result);
-    } catch (e, st) {
-      _talker.handle(e, st, '[RouteService] Falling back to straight line');
-      _markOsrmFailure(cacheKey);
+
       return _cacheRoute(
         cacheKey,
-        _fallbackRoute(
-          pickup,
-          dropoff,
-          straightMeters: straightMeters,
-          isApproachLeg: isApproachLeg,
+        RouteResult(
+          points: points,
+          distanceMeters: distanceMeters,
+          durationSeconds: durationSeconds,
+          maneuvers: maneuvers,
+          fromCache: false,
         ),
+      );
+    } catch (e, st) {
+      _talker.error('[RouteService] Failed to fetch OSRM route: $e\n$st');
+      return _cacheRoute(
+        cacheKey,
+        _fallbackRoute(pickup, dropoff, isApproachLeg: isApproachLeg),
       );
     }
   }
 
-  /// Two-leg plan: randomized driver → pickup (approach), then pickup → dropoff.
   Future<TripRoutePlan> getTripRoutePlan({
     required LatLng pickup,
     required LatLng dropoff,
@@ -318,31 +295,24 @@ class RouteService {
     );
   }
 
-  String _cacheKey(LatLng pickup, LatLng dropoff) =>
-      '${pickup.latitude},${pickup.longitude}_${dropoff.latitude},${dropoff.longitude}';
-
-  bool _isOsrmInCooldown(String cacheKey) {
-    final failedAt = _osrmFailureAt[cacheKey];
-    if (failedAt == null) return false;
-    return DateTime.now().difference(failedAt) < _osrmFailureCooldown;
-  }
-
-  void _markOsrmFailure(String cacheKey) {
-    _osrmFailureAt[cacheKey] = DateTime.now();
+  String _buildCacheKey(LatLng pickup, LatLng dropoff, {required bool isApproachLeg}) {
+    return 'route_${pickup.latitude}_${pickup.longitude}_${dropoff.latitude}_${dropoff.longitude}_$isApproachLeg';
   }
 
   Future<RouteResult> _cacheRoute(String cacheKey, RouteResult result) async {
     _memoryCache[cacheKey] = result;
-    await _routeCache.put(
-      RouteCacheEntity(
-        cacheKey: cacheKey,
-        points: result.points,
-        distanceMeters: result.distanceMeters,
-        durationSeconds: result.durationSeconds,
-        createdAt: DateTime.now(),
-      ),
-    );
-    if (!result.fromCache) {
+    if (!result.isFallback) {
+      await _routeCache.put(
+        RouteCacheEntity(
+          cacheKey: cacheKey,
+          points: result.points,
+          distanceMeters: result.distanceMeters,
+          durationSeconds: result.durationSeconds,
+          createdAt: DateTime.now(),
+        ),
+      );
+    }
+    if (!result.fromCache && !result.isFallback) {
       _talker.info(
         '[RouteService] Route cached (${result.points.length} points, '
         '${result.distanceMeters.toStringAsFixed(0)} m)',
@@ -381,6 +351,7 @@ class RouteService {
         legDistanceMeters: meters,
       ),
       fromCache: false,
+      isFallback: true,
     );
   }
 }

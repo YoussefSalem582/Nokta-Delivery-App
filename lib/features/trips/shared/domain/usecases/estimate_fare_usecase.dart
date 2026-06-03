@@ -33,6 +33,7 @@ class EstimateFareUseCase extends UseCase<FareEstimate, EstimateFareParams> {
           'pickupLng': params.pickupLng,
           'dropoffLat': params.dropoffLat,
           'dropoffLng': params.dropoffLng,
+          'distanceKm': params.distanceKm,
         };
         final backendTier = RideTierMapper.toBackendTierKey(params.tierKey);
         if (backendTier != null) {

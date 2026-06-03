@@ -5,7 +5,7 @@ class AppConstants {
   static const notificationsBox = 'notifications_box';
   static const pendingSyncBox = 'pending_sync_box';
   static const cacheMetaBox = 'cache_meta_box';
-  static const routeCacheBox = 'route_cache_box';
+  static const routeCacheBox = 'route_cache_box_v2';
   static const chatMessagesBox = 'chat_messages_box';
 
   static const cacheTtlTrips = Duration(minutes: 1);
