@@ -232,7 +232,11 @@ class DeliveryTrackingBloc
           lng: position.longitude,
           heading: bearing,
         );
-      } catch (_) {}
+      } catch (e, st) {
+        // Throttled publish loop — degrade gracefully but surface the failure
+        // to the Talker bloc observer instead of swallowing it silently.
+        addError(e, st);
+      }
     }
   }
 
