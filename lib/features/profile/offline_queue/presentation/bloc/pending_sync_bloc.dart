@@ -41,8 +41,13 @@ class PendingSyncBloc extends Bloc<PendingSyncEvent, PendingSyncState> {
     Emitter<PendingSyncState> emit,
   ) async {
     emit(const PendingSyncLoading());
-    await _syncService.syncAll();
-    add(const PendingSyncLoadRequested());
+    try {
+      await _syncService.syncAll();
+      emit(PendingSyncLoaded(items: _pendingSync.getAll(), justSynced: true));
+    } catch (e) {
+      // A failing drain leaves items queued; surface it instead of throwing.
+      emit(PendingSyncError(e.toString()));
+    }
   }
 
   Future<void> _onClear(

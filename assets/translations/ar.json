@@ -530,5 +530,14 @@
   "offline_queue": "قائمة الانتظار",
   "retry_all": "إعادة المحاولة للكل",
   "queue_empty": "قائمة الانتظار فارغة",
-  "trips_not_found": "الرحلة غير موجودة."
+  "trips_not_found": "الرحلة غير موجودة.",
+  "sync_failed": "فشلت المزامنة — لا تزال بعض التغييرات في قائمة الانتظار",
+  "queue_item_retries": "المحاولات: {count}",
+  "queue_action_createTrip": "إنشاء رحلة",
+  "queue_action_updateTripStatus": "تحديث حالة الرحلة",
+  "queue_action_registerDriver": "تسجيل سائق",
+  "queue_action_acceptTripOffer": "قبول عرض الرحلة",
+  "queue_action_updateDriverAvailability": "تحديث التوفر",
+  "queue_action_updateDriverLocation": "تحديث الموقع",
+  "queue_action_createDelivery": "إنشاء توصيلة"
 }

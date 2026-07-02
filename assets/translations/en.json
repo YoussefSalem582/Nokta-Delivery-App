@@ -335,5 +335,14 @@
   "offline_queue": "Offline Queue",
   "retry_all": "Retry All",
   "queue_empty": "Queue is empty",
-  "trips_not_found": "Trip not found."
+  "trips_not_found": "Trip not found.",
+  "sync_failed": "Sync failed — some changes are still queued",
+  "queue_item_retries": "Retries: {count}",
+  "queue_action_createTrip": "Create trip",
+  "queue_action_updateTripStatus": "Update trip status",
+  "queue_action_registerDriver": "Register driver",
+  "queue_action_acceptTripOffer": "Accept trip offer",
+  "queue_action_updateDriverAvailability": "Update availability",
+  "queue_action_updateDriverLocation": "Update location",
+  "queue_action_createDelivery": "Create delivery"
 }
