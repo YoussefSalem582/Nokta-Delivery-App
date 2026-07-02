@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Offline queue error/retry UX** — the offline queue page rendered `PendingSyncError` as bare untranslated text with no retry and showed raw `Retries: n` / `DateTime.toString()` rows. It now uses the shared `ErrorView` with a Retry action, surfaces `AppToast` success/failure after a manual retry, and localizes each row (action name via `queue_action_*`, retry count, locale-aware queued time). `PendingSyncBloc` retry now wraps `syncAll()` in try/catch (a failing drain emits `PendingSyncError` instead of an unhandled exception) and flags the reload with `justSynced`. Added `sync_failed`, `queue_item_retries`, and `queue_action_*` keys to `en.json`/`ar.json`.
+- **Inconsistent error surface** — `delivery_live_tracking_page` used a raw `ScaffoldMessenger` SnackBar; switched to `AppToast.error` to match the rest of the app.
 - **User Model Parsing** — updated `UserEntity.fromJson` to handle snake_case backend keys (`wallet_balance`, `avatar_url`) and safely parse numeric strings into doubles to prevent `TypeError` on login/register.
 - **API Token Parsing** — updated `AuthRemoteDataSource` to correctly extract `access_token` and `refresh_token` from the `tokens` object in the backend's standard JSON response.
 - **API Accept Headers** — added `Accept: application/json` to `ApiClient` global headers so the backend returns 401/403 JSON responses instead of redirecting to a web login route, which caused 500 RouteNotFound errors.

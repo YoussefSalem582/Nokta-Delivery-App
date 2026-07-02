@@ -4,6 +4,13 @@
 
 ---
 
+## 2026-07-02 — Offline queue error/retry UX
+
+**What changed:** Reworked the offline queue page to use the shared `ErrorView` with retry, `AppToast` sync feedback, and fully localized rows; hardened `PendingSyncBloc` retry with try/catch + a `justSynced` flag; standardized `delivery_live_tracking_page` on `AppToast`. Added `sync_failed`, `queue_item_retries`, and `queue_action_*` keys to both translation files (parity preserved).
+
+**Files touched:** `lib/features/profile/offline_queue/presentation/pages/offline_queue_page.dart`, `lib/features/profile/offline_queue/presentation/bloc/pending_sync_bloc.dart`, `lib/features/profile/offline_queue/presentation/bloc/pending_sync_state.dart`, `lib/features/profile/orders/presentation/pages/delivery_live_tracking_page.dart`, `assets/translations/en.json`, `assets/translations/ar.json`, `CHANGELOG.md`, `tech_readme_files/CURRENT_STATUS.md`
+
+---
 ## 2026-06-03 — Hardcoded colors theming and mock removal
 
 **What changed:** 

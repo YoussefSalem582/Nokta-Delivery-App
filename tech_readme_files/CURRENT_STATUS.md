@@ -2,7 +2,7 @@
 
 > [INDEX](INDEX.md) > Current Status
 >
-> **Last Updated:** June 03, 2026 — Hardcoded colors theming and mock removal.
+> **Last Updated:** July 02, 2026 — Offline queue error/retry UX and localization.
 > **Version:** `1.0.0+1`
 > **Flutter:** 3.16+ (SDK ^3.12.0)
 > **Status:** ✅ MVP template complete | ✅ Dual-mode driver demo | ✅ Web client demo | 🚧 Production backend TBD
