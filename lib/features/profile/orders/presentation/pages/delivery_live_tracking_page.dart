@@ -2,6 +2,7 @@ import 'package:delivery_app/core/utils/map_config.dart';
 import 'package:delivery_app/core/utils/ui_helpers.dart';
 import 'package:delivery_app/core/widgets/delivery_map.dart';
 import 'package:delivery_app/core/widgets/map_trip_scaffold.dart';
+import 'package:delivery_app/shared/widgets/banners/app_toast.dart';
 import 'package:delivery_app/features/profile/orders/presentation/bloc/delivery_tracking_bloc.dart';
 import 'package:delivery_app/features/profile/orders/presentation/widgets/delivery_navigation_actions.dart';
 import 'package:delivery_app/features/profile/orders/presentation/widgets/delivery_tracking_bottom_sheet.dart';
@@ -65,9 +66,7 @@ class _DeliveryLiveTrackingPageState extends State<DeliveryLiveTrackingPage> {
                 current is DeliveryTrackingCompleted),
         listener: (context, state) {
           if (state is DeliveryTrackingError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message.tr())),
-            );
+            AppToast.error(context, state.message.tr());
           }
           if (state is DeliveryTrackingCompleted &&
               widget.role == DeliveryTrackingRole.courier) {
