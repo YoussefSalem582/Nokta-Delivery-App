@@ -2,7 +2,7 @@
 
 > [INDEX](INDEX.md) > Current Status
 >
-> **Last Updated:** June 03, 2026 — Hardcoded colors theming and mock removal.
+> **Last Updated:** July 03, 2026 — Driver flow improvements (offer countdown, post-trip summary, earnings dashboard, availability sync fix).
 > **Version:** `1.0.0+1`
 > **Flutter:** 3.16+ (SDK ^3.12.0)
 > **Status:** ✅ MVP template complete | ✅ Dual-mode driver demo | ✅ Web client demo | 🚧 Production backend TBD
@@ -46,7 +46,7 @@ Nokta is a Flutter ride-hailing / delivery MVP template with Clean Architecture 
 | Notifications | ✅ Demo complete (typed inbox, All/Trip/Messages/Calls + Unread filters, live trip status chip, chat/call notifications, swipe delete + undo, mark-all-read, nav badge) |
 | Profile / orders | ✅ Demo complete (wallet top-up, edit name, **delivery map tracking** CTA) |
 | Settings (theme, locale, driver mode) | ✅ Complete (shared `AppModeSwitchTile`, `LogoutButton`, `performAppLogout`) |
-| Driver mode (shell, offers, jobs, active trip) | ✅ Demo complete (offer map preview; active trip + **active delivery** use driver nav chrome + `DeliveryTrackingBloc`) |
+| Driver mode (shell, offers, jobs, active trip) | ✅ Demo complete (offer map preview + **45s offer countdown/auto-decline**; active trip + **active delivery** use driver nav chrome + `DeliveryTrackingBloc`; **post-trip summary sheet**; **earnings & rating dashboard** on driver profile) |
 | Web client demo (Device Preview + GitHub Pages) | ✅ Merged to `main`; deploys via GitHub Actions on push |
 | Real backend integration | 🚧 Mock API only |
 | Production auth (secure storage) | 🚧 Planned |
@@ -54,7 +54,7 @@ Nokta is a Flutter ride-hailing / delivery MVP template with Clean Architecture 
 
 ## Testing
 
-- `flutter test` — 72 tests including `GetRiderForTripUseCase`, `DriverOfferPreviewCubit`, `TrackingBloc` driver rider fields, `SwitchAppModeUseCase`, entity Hive round-trip, trip query filters
+- `flutter test` — 72+ tests including `GetRiderForTripUseCase`, `DriverOfferPreviewCubit`, `TrackingBloc` driver rider fields, `SwitchAppModeUseCase`, entity Hive round-trip, trip query filters, **`DriverAvailabilityCubit.lockOnTrip` offline/online sync**, and **driver earnings/stats `TripQuery` helpers**
 
 ## Documentation
 
