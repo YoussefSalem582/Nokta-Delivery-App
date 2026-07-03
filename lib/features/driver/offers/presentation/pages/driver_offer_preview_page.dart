@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:delivery_app/core/utils/map_config.dart';
 import 'package:delivery_app/core/utils/ui_helpers.dart';
 import 'package:delivery_app/core/widgets/delivery_map.dart';
@@ -23,8 +25,13 @@ class DriverOfferPreviewPage extends StatefulWidget {
 }
 
 class _DriverOfferPreviewPageState extends State<DriverOfferPreviewPage> {
+  /// How long a driver has to decide on an offer before it auto-declines.
+  static const _offerTtlSeconds = 45;
+
   final _mapKey = GlobalKey<DeliveryMapState>();
   late final DriverOfferPreviewCubit _cubit;
+  Timer? _countdownTimer;
+  int _secondsRemaining = _offerTtlSeconds;
 
   @override
   void initState() {
@@ -33,21 +40,40 @@ class _DriverOfferPreviewPageState extends State<DriverOfferPreviewPage> {
       routeService: sl(),
       getRiderForTrip: sl(),
     )..load(widget.trip);
+    _startCountdown();
+  }
+
+  void _startCountdown() {
+    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      if (_secondsRemaining <= 1) {
+        timer.cancel();
+        _decline();
+        return;
+      }
+      setState(() => _secondsRemaining--);
+    });
   }
 
   @override
   void dispose() {
+    _countdownTimer?.cancel();
     _cubit.close();
     super.dispose();
   }
 
   void _accept() {
+    _countdownTimer?.cancel();
     context.read<DriverOffersBloc>().add(
           DriverOffersAcceptRequested(tripId: widget.trip.id),
         );
   }
 
   void _decline() {
+    _countdownTimer?.cancel();
     context.read<DriverOffersBloc>().add(
           DriverOffersDeclineRequested(tripId: widget.trip.id),
         );
@@ -156,6 +182,8 @@ class _DriverOfferPreviewPageState extends State<DriverOfferPreviewPage> {
                           isBusy: isBusy,
                           onAccept: _accept,
                           onDecline: _decline,
+                          secondsRemaining: _secondsRemaining,
+                          ttlSeconds: _offerTtlSeconds,
                         ),
                       ),
                     ),

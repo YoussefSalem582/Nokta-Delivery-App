@@ -196,6 +196,7 @@
   "driver_offer_preview_title": "Trip offer",
   "driver_offer_approach_eta": "{minutes} min to pickup",
   "driver_offer_trip_eta": "{minutes} min trip",
+  "driver_offer_expires_in": "Expires in {seconds}s",
   "passenger": "Passenger",
   "message_passenger": "Message passenger",
   "call_passenger": "Call passenger",
