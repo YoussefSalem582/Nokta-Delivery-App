@@ -3,6 +3,7 @@ import 'package:delivery_app/core/utils/ui_helpers.dart';
 import 'package:delivery_app/core/widgets/delivery_map.dart';
 import 'package:delivery_app/core/widgets/map_trip_scaffold.dart';
 import 'package:delivery_app/core/widgets/skeleton_trip_card.dart';
+import 'package:delivery_app/features/trips/shared/domain/entities/trip_entity.dart';
 import 'package:delivery_app/features/trips/tracking/presentation/bloc/tracking_bloc.dart';
 import 'package:delivery_app/features/trips/tracking/presentation/widgets/driver_navigation_actions.dart';
 import 'package:delivery_app/features/trips/tracking/presentation/widgets/driver_navigation_banner.dart';
@@ -30,7 +31,7 @@ class LiveTrackingPage extends StatefulWidget {
   final String titleKey;
   final TrackingRole role;
   final VoidCallback onBack;
-  final VoidCallback? onDriverTripCompleted;
+  final void Function(TripEntity trip)? onDriverTripCompleted;
 
   @override
   State<LiveTrackingPage> createState() => _LiveTrackingPageState();
@@ -85,7 +86,7 @@ class _LiveTrackingPageState extends State<LiveTrackingPage> {
           }
           if (state is TrackingCompleted &&
               widget.role == TrackingRole.driver) {
-            widget.onDriverTripCompleted?.call();
+            widget.onDriverTripCompleted?.call(state.trip);
           }
         },
         child: BlocBuilder<TrackingBloc, TrackingState>(
