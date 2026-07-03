@@ -4,6 +4,19 @@
 
 ---
 
+## 2026-07-03 — Driver flow improvements
+
+**What changed:**
+1. **Offer countdown** — offer preview runs a 45s countdown (progress bar + “Expires in Ns”); the offer auto-declines and closes on expiry.
+2. **Post-trip summary** — completing a driver trip shows a receipt sheet (fare, distance, duration, route) before returning home; `LiveTrackingPage.onDriverTripCompleted` now carries the completed `TripEntity`.
+3. **Earnings & performance dashboard** — driver profile shows trips completed, average fare, today/this-week earnings, and a star-rating pill; new pure `TripQuery` helpers (`completedDriverTripCount`, `driverAverageFare`, `driverEarningsSince`).
+4. **Availability sync fix** — `DriverAvailabilityCubit.lockOnTrip` now persists and syncs (or queues) the on-trip status instead of only mutating local state.
+5. **Error logging** — two silent `catch (_) {}` blocks in the throttled location-publish loops now `addError` to the Talker bloc observer.
+
+**Files touched:** `driver_offer_preview_page.dart`, `driver_offer_bottom_sheet.dart`, `live_tracking_page.dart`, `driver_active_trip_page.dart`, `driver_trip_summary_sheet.dart` (new), `driver_profile_tab_page.dart`, `trip_extensions.dart`, `driver_availability_cubit.dart`, `tracking_bloc.dart`, `delivery_tracking_bloc.dart`, `assets/translations/{en,ar}.json`, `test/driver_availability_cubit_test.dart` (new), `test/trip_query_test.dart`
+
+---
+
 ## 2026-06-03 — Hardcoded colors theming and mock removal
 
 **What changed:** 

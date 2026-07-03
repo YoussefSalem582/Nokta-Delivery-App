@@ -14,9 +14,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Driver turn-by-turn navigation** — OSRM `steps=true` parsing into `RouteManeuver` / `NavigationGuidance`; driver trip tracking shows top maneuver banner, “Then” chip, bottom ETA/Exit bar, and compact status actions (`TrackingRole.driver` only); rider tracking UI unchanged.
 - **Delivery live tracking** — extended `OrderEntity` with coordinates and courier statuses; `DeliveryTrackingBloc` with two-phase route, `publishDeliveryLocation`, customer map + **Track delivery** CTA; courier `DriverActiveDeliveryPage` with same nav chrome; driver home lists active courier deliveries.
 - **Backend trip tracking API** — `GET /api/trips/:id/tracking` (live + history); Socket.io docs for `joinDelivery`, `publishDeliveryLocation`, `deliveryLocation`.
+- **Driver offer countdown** — incoming ride offers now show a 45s “Expires in Ns” countdown with a progress bar in the offer preview; the offer auto-declines and the preview closes when it lapses (`DriverOfferPreviewPage` timer + `DriverOfferBottomSheet`).
+- **Driver post-trip summary** — completing a driver trip now shows a receipt sheet (fare earned, distance, duration, route) before returning to the home shell; `LiveTrackingPage.onDriverTripCompleted` carries the completed `TripEntity` and `DriverTripSummarySheet` renders it.
+- **Driver earnings & performance dashboard** — driver profile now shows trips completed, average fare, today's and this-week's earnings, and a star-rating pill; backed by new pure `TripQuery` helpers (`completedDriverTripCount`, `driverAverageFare`, `driverEarningsSince`).
 
 ### Fixed
 
+- **Driver availability offline sync** — `DriverAvailabilityCubit.lockOnTrip` now routes through `setAvailability`, so accepting an offer persists **and** syncs (or queues) the on-trip status; previously it only mutated local state, leaving remote availability stale after an offline accept.
+- **Silenced tracking errors** — replaced two empty `catch (_) {}` blocks in the throttled location-publish loops (`TrackingBloc`, `DeliveryTrackingBloc`) with `addError`, surfacing failures to the Talker bloc observer instead of swallowing them.
 - **User Model Parsing** — updated `UserEntity.fromJson` to handle snake_case backend keys (`wallet_balance`, `avatar_url`) and safely parse numeric strings into doubles to prevent `TypeError` on login/register.
 - **API Token Parsing** — updated `AuthRemoteDataSource` to correctly extract `access_token` and `refresh_token` from the `tokens` object in the backend's standard JSON response.
 - **API Accept Headers** — added `Accept: application/json` to `ApiClient` global headers so the backend returns 401/403 JSON responses instead of redirecting to a web login route, which caused 500 RouteNotFound errors.
