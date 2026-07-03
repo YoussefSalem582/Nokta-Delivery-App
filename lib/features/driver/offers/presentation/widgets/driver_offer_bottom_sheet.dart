@@ -78,7 +78,7 @@ class DriverOfferBottomSheet extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
               child: LinearProgressIndicator(
-                value: (secondsRemaining! / ttlSeconds).clamp(0.0, 1.0),
+                value: (secondsRemaining! / ttlSeconds).clamp(0.0, 1.0).toDouble(),
                 minHeight: 4,
                 backgroundColor: scheme.surfaceContainerHighest,
                 color: scheme.error,
