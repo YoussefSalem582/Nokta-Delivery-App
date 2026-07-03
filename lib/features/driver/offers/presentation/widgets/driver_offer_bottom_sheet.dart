@@ -18,12 +18,16 @@ class DriverOfferBottomSheet extends StatelessWidget {
     required this.isBusy,
     required this.onAccept,
     required this.onDecline,
+    this.secondsRemaining,
+    this.ttlSeconds = 45,
   });
 
   final DriverOfferPreviewLoaded loaded;
   final bool isBusy;
   final VoidCallback onAccept;
   final VoidCallback onDecline;
+  final int? secondsRemaining;
+  final int ttlSeconds;
 
   @override
   Widget build(BuildContext context) {
@@ -52,6 +56,36 @@ class DriverOfferBottomSheet extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          if (secondsRemaining != null) ...[
+            Row(
+              children: [
+                Icon(Icons.timer_outlined, size: 18, color: scheme.error),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: Text(
+                    'driver_offer_expires_in'.tr(
+                      namedArgs: {'seconds': '${secondsRemaining!}'},
+                    ),
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                          color: scheme.error,
+                          fontWeight: FontWeight.w600,
+                        ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+              child: LinearProgressIndicator(
+                value: (secondsRemaining! / ttlSeconds).clamp(0.0, 1.0).toDouble(),
+                minHeight: 4,
+                backgroundColor: scheme.surfaceContainerHighest,
+                color: scheme.error,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+          ],
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

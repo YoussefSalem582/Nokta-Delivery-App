@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:delivery_app/core/cache/datasources/pending_sync_local_datasource.dart';
 import 'package:delivery_app/core/cache/entities/pending_sync_entity.dart';
 import 'package:delivery_app/core/constants/storage_keys.dart';
@@ -77,11 +79,11 @@ class DriverAvailabilityCubit extends Cubit<DriverAvailabilityState> {
   Future<void> goOffline() => setAvailability(DriverAvailability.offline);
 
   void lockOnTrip() {
-    emit(state.copyWith(availability: DriverAvailability.onTrip));
-    _prefs.setString(
-      StorageKeys.driverAvailability,
-      DriverAvailability.onTrip.storageKey,
-    );
+    // Persist + sync (or enqueue) the on-trip status through the shared
+    // availability path. Previously this only mutated local state, so
+    // accepting an offer while offline left the remote availability stale
+    // until the next manual toggle.
+    unawaited(setAvailability(DriverAvailability.onTrip));
   }
 
   /// Clears stale on-trip lock when no active assignment remains (e.g. after complete or pop).

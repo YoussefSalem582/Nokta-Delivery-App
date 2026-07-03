@@ -437,7 +437,11 @@ class TrackingBloc extends Bloc<TrackingEvent, TrackingState> {
         lat: position.latitude,
         lng: position.longitude,
       );
-    } catch (_) {}
+    } catch (e, st) {
+      // Throttled publish loop — degrade gracefully but surface the failure to
+      // the Talker bloc observer instead of swallowing it silently.
+      addError(e, st);
+    }
   }
 
   void _startLiveLocation(String tripId) {
